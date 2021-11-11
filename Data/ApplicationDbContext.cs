@@ -5,10 +5,10 @@ using Stonks.Models;
 namespace Stonks.Data;
 public class ApplicationDbContext : IdentityDbContext
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-        : base(options)
-    {
-    }
+	public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+		: base(options)
+	{
+	}
 
-    public DbSet<Log> Log { get; set; }
+	public DbSet<Log> Log { get; set; }
 }
