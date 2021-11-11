@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Stonks.Data;
+using Stonks.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,3 +43,14 @@ app.MapControllerRoute(
 app.MapRazorPages();
 
 app.Run();
+
+using (var ctx = new ApplicationDbContext(new DbContextOptions<ApplicationDbContext>()))
+{
+    ctx.Log.Add(new Log
+    {
+        Id = Guid.NewGuid(),
+        Message = "Hello",
+        Timestamp = DateTime.Now
+    });
+    ctx.SaveChanges();
+}
