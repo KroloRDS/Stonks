@@ -1,11 +1,4 @@
+pool:
+  vmImage: 'ubuntu-latest'
 steps:
-- task: AzureRmWebAppDeployment@4
-  inputs:
-    ConnectionType: 'AzureRM'
-    azureSubscription: 'Azure subscription 1(bc3e6938-d893-46be-822c-bee17d5c258a)'
-    appType: 'webAppLinux'
-    WebAppName: 'stonks'
-    deployToSlotOrASE: true
-    ResourceGroupName: 'Stonks'
-    SlotName: 'production'
-    packageForLinux: '$(System.DefaultWorkingDirectory)/**/*.zip'
+- bash: echo "Hello world"
