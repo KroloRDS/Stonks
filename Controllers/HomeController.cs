@@ -1,22 +1,17 @@
 ﻿using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using Stonks.Managers;
 using Stonks.Models;
 
 namespace Stonks.Controllers;
 
 public class HomeController : Controller
 {
-	private readonly ILogManager _logManager;
-
-	public HomeController(ILogManager logManager)
+	public HomeController()
 	{
-		_logManager = logManager;
 	}
 
 	public IActionResult Index()
 	{
-		_logManager.Log("test");
 		return View();
 	}
 
