@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Stonks.Data;
-using Stonks.Managers;
+using Stonks.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 

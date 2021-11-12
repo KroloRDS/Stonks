@@ -13,6 +13,7 @@ public class Stock
 	[MaxLength(5)]
 	public string Symbol { get; set; }
 
+	[ConcurrencyCheck]
 	public int PublicallyOfferredAmount { get; set; }
 
 	[Column(TypeName = "decimal(15,9)")]

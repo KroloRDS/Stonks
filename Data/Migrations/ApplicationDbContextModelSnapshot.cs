@@ -246,7 +246,7 @@ namespace Stonks.Data.Migrations
 
                     b.HasIndex("StockId");
 
-                    b.ToTable("HistoricalPrice");
+                    b.ToTable("HistoricalPrice", (string)null);
                 });
 
             modelBuilder.Entity("Stonks.Models.Log", b =>
@@ -269,7 +269,7 @@ namespace Stonks.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Log");
+                    b.ToTable("Log", (string)null);
                 });
 
             modelBuilder.Entity("Stonks.Models.Stock", b =>
@@ -296,7 +296,7 @@ namespace Stonks.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Stock");
+                    b.ToTable("Stock", (string)null);
                 });
 
             modelBuilder.Entity("Stonks.Models.StockOwnership", b =>
@@ -320,7 +320,7 @@ namespace Stonks.Data.Migrations
 
                     b.HasIndex("StockId");
 
-                    b.ToTable("StockOwnership");
+                    b.ToTable("StockOwnership", (string)null);
                 });
 
             modelBuilder.Entity("Stonks.Models.TradeOffer", b =>
@@ -355,7 +355,7 @@ namespace Stonks.Data.Migrations
 
                     b.HasIndex("WriterId");
 
-                    b.ToTable("TradeOffer");
+                    b.ToTable("TradeOffer", (string)null);
                 });
 
             modelBuilder.Entity("Stonks.Models.Transaction", b =>
@@ -387,7 +387,7 @@ namespace Stonks.Data.Migrations
 
                     b.HasIndex("StockId");
 
-                    b.ToTable("Transaction");
+                    b.ToTable("Transaction", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
