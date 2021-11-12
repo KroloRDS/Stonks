@@ -11,7 +11,7 @@ using Stonks.Data;
 
 namespace Stonks.Data.Migrations
 {
-    [DbContext(typeof(ApplicationDbContext))]
+    [DbContext(typeof(AppDbContext))]
     [Migration("20211111143926_Nullable-fields-in-log-table")]
     partial class Nullablefieldsinlogtable
     {
