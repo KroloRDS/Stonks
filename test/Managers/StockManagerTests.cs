@@ -1,28 +1,30 @@
-﻿using NUnit.Framework;
-using Stonks.Managers;
-using Stonks.Helpers;
-using Stonks.DTOs;
-using System;
-using Stonks.Models;
+﻿using System;
+using System.Linq;
+using System.Collections.Generic;
+
+using NUnit.Framework;
 using Microsoft.AspNetCore.Identity;
+
+using Stonks.DTOs;
+using Stonks.Models;
+using Stonks.Managers;
 
 namespace UnitTests.Managers;
 
 [TestFixture]
 public class StockManagerTests : UsingContext
 {
-	private StockManager manager;
+	private readonly StockManager _manager;
 
-	[SetUp]
-	public void SetUp()
+	public StockManagerTests()
 	{
-		manager = new StockManager(ctx);
+		_manager = new StockManager(_ctx);
 	}
 
 	[Test]
 	public void BuyStock_NullParameter_ShouldThrow()
 	{
-		Assert.Throws<ArgumentNullException>(() => manager.BuyStock(null));
+		Assert.Throws<ArgumentNullException>(() => _manager.BuyStock(null));
 	}
 
 	[Test]
@@ -35,7 +37,7 @@ public class StockManagerTests : UsingContext
 			Amount = null
 		};
 
-		Assert.Throws<ArgumentNullException>(() => manager.BuyStock(dto));
+		Assert.Throws<ArgumentNullException>(() => _manager.BuyStock(dto));
 	}
 
 	[Test]
@@ -51,7 +53,190 @@ public class StockManagerTests : UsingContext
 			Amount = amount
 		};
 
-		Assert.Throws<ArgumentOutOfRangeException>(() => manager.BuyStock(dto));
+		Assert.Throws<ArgumentOutOfRangeException>(() => _manager.BuyStock(dto));
+	}
+
+	[Test]
+	public void BuyStock_NullBuyer_ShouldThrow()
+	{
+		var dto = new BuyStockDTO
+		{
+			BuyerId = null,
+			StockId = AddStock().Id,
+			Amount = 5
+		};
+
+		Assert.Throws<ArgumentNullException>(() => _manager.BuyStock(dto));
+	}
+
+	[Test]
+	public void BuyStock_WrongBuyer_ShouldThrow()
+	{
+		var dto = new BuyStockDTO
+		{
+			BuyerId = Guid.NewGuid(),
+			StockId = AddStock().Id,
+			Amount = 5
+		};
+
+		Assert.Throws<KeyNotFoundException>(() => _manager.BuyStock(dto));
+	}
+
+	[Test]
+	public void BuyStock_NullStock_ShouldThrow()
+	{
+		var dto = new BuyStockDTO
+		{
+			BuyerId = GetUserId(AddUser()),
+			StockId = null,
+			Amount = 5
+		};
+
+		Assert.Throws<ArgumentNullException>(() => _manager.BuyStock(dto));
+	}
+
+	[Test]
+	public void BuyStock_WrongStock_ShouldThrow()
+	{
+		var dto = new BuyStockDTO
+		{
+			BuyerId = GetUserId(AddUser()),
+			StockId = Guid.NewGuid(),
+			Amount = 5
+		};
+
+		Assert.Throws<KeyNotFoundException>(() => _manager.BuyStock(dto));
+	}
+
+	[Test]
+	public void BuyStock_BuyNotFromUser_SellerNotNull_ShouldThrow()
+	{
+		var dto = new BuyStockDTO
+		{
+			BuyerId = GetUserId(AddUser()),
+			SellerId = GetUserId(AddUser()),
+			StockId = AddStock().Id,
+			Amount = 5
+		};
+
+		Assert.Throws<ArgumentException>(() => _manager.BuyStock(dto));
+	}
+
+	[Test]
+	public void BuyStock_NotEnoughPublicStocks_ShouldThrow()
+	{
+		var dto = new BuyStockDTO
+		{
+			BuyerId = GetUserId(AddUser()),
+			StockId = AddStock(0).Id,
+			Amount = 5
+		};
+
+		Assert.Throws<InvalidOperationException>(() => _manager.BuyStock(dto));
+	}
+
+	[Test]
+	public void BuyStock_NoStocksOnSeller_ShouldThrow()
+	{
+		//Arrange
+		var sellerId = GetUserId(AddUser());
+		var stockId = AddStock().Id;
+
+		var dto = new BuyStockDTO
+		{
+			BuyerId = GetUserId(AddUser()),
+			SellerId = GetUserId(AddUser()),
+			BuyFromUser = true,
+			StockId = stockId,
+			Amount = 5
+		};
+
+		//Act & Assert
+		Assert.Throws<InvalidOperationException>(() => _manager.BuyStock(dto));
+	}
+
+	[Test]
+	public void BuyStock_NotEnoughStocksOnSeller_ShouldThrow()
+	{
+		//Arrange
+		var sellerInitialStocks = 5;
+		var buyerStocks = 100;
+
+		var sellerId = GetUserId(AddUser());
+		var stockId = AddStock().Id;
+
+		_manager.BuyStock(new BuyStockDTO
+		{
+			BuyerId = sellerId,
+			StockId = stockId,
+			Amount = sellerInitialStocks
+		});
+
+		var dto = new BuyStockDTO
+		{
+			BuyerId = GetUserId(AddUser()),
+			SellerId = sellerId,
+			BuyFromUser = true,
+			StockId = stockId,
+			Amount = buyerStocks
+		};
+
+		//Act & Assert
+		Assert.Greater(buyerStocks, sellerInitialStocks);
+		Assert.Throws<InvalidOperationException>(() => _manager.BuyStock(dto));
+	}
+
+	[Test]
+	public void BuyStock_PositiveTest()
+	{
+		//Part 1 - buy public stocks
+
+		//Arrange
+		var publicStocks = 100;
+		var sellerInitialStocks = 10;
+		var buyerStocks = 5;
+
+		var buyerId = GetUserId(AddUser());
+		var sellerId = GetUserId(AddUser());
+		var stock = AddStock(publicStocks);
+
+		//Act
+		_manager.BuyStock(new BuyStockDTO
+		{
+			BuyerId = sellerId,
+			StockId = stock.Id,
+			Amount = sellerInitialStocks
+		});
+
+		//Assert
+		var sellerActualStocks = GetAmountOfOwnedStocks(sellerId, stock.Id);
+		Assert.Greater(publicStocks, sellerInitialStocks);
+		Assert.AreEqual(sellerInitialStocks, sellerActualStocks);
+		Assert.AreEqual(publicStocks - sellerInitialStocks, stock.PublicallyOfferredAmount);
+		Assert.AreEqual(1, GetTransactionCount(sellerId, null, stock.Id));
+
+		//Part 2 - buy stocks from user
+
+		//Arrange & Act
+		_manager.BuyStock(new BuyStockDTO
+		{
+			BuyerId = buyerId,
+			SellerId = sellerId,
+			BuyFromUser = true,
+			StockId = stock.Id,
+			Amount = buyerStocks
+		});
+
+		//Assert
+		sellerActualStocks = GetAmountOfOwnedStocks(sellerId, stock.Id);
+		var buyerActualStocks = GetAmountOfOwnedStocks(buyerId, stock.Id);
+
+		Assert.Greater(sellerInitialStocks, buyerStocks);
+		Assert.AreEqual(sellerInitialStocks - buyerStocks, sellerActualStocks);
+		Assert.AreEqual(buyerStocks, buyerActualStocks);
+		Assert.AreEqual(publicStocks - sellerInitialStocks, stock.PublicallyOfferredAmount);
+		Assert.AreEqual(1, GetTransactionCount(sellerId, null, stock.Id));
+		Assert.AreEqual(1, GetTransactionCount(buyerId, sellerId, stock.Id));
 	}
 
 	private Stock AddStock(int publicAmount = 100)
@@ -63,21 +248,45 @@ public class StockManagerTests : UsingContext
 			Price = 1M,
 			PublicallyOfferredAmount = publicAmount
 		};
-		ctx.Add(stock);
-		ctx.SaveChanges();
+		_ctx.Add(stock);
+		_ctx.SaveChanges();
 		return stock;
 	}
 
 	private IdentityUser AddUser()
 	{
 		var user = new IdentityUser();
-		ctx.Add(user);
-		ctx.SaveChanges();
+		_ctx.Add(user);
+		_ctx.SaveChanges();
 		return user;
 	}
 
-	private Guid GetUserId(IdentityUser user)
+	private static Guid GetUserId(IdentityUser user)
 	{
 		return Guid.Parse(user.Id);
+	}
+
+	private int GetAmountOfOwnedStocks(Guid userId, Guid stockId)
+	{
+		var ownership = _ctx.StockOwnership.FirstOrDefault(x =>
+			x.Stock.Id == stockId &&
+			x.Owner.Id == userId.ToString());
+
+		return ownership == null ? 0 : ownership.Amount;
+	}
+
+	private int GetTransactionCount(Guid buyerId, Guid? sellerId, Guid stockId)
+	{
+		if (sellerId == null)
+		{
+			return _ctx.Transaction.Where(x =>
+				x.Buyer.Id == buyerId.ToString() && x.Stock.Id == stockId)
+				.Count();
+		}
+
+		return _ctx.Transaction.Where(x =>
+			x.Buyer.Id == buyerId.ToString() && x.Stock.Id == stockId &&
+			x.Seller != null && x.Seller.Id == sellerId.ToString())
+			.Count();
 	}
 }

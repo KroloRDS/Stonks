@@ -1,26 +1,46 @@
+using System.Linq;
 using NUnit.Framework;
 using Microsoft.EntityFrameworkCore;
 using Stonks.Data;
+using Stonks.Models;
 
 namespace UnitTests;
 
 public class UsingContext
 {
-	protected AppDbContext ctx;
+	protected readonly AppDbContext _ctx;
 
-	[SetUp]
-	public void SetUp()
+	public UsingContext()
 	{
 		var options = new DbContextOptionsBuilder<AppDbContext>()
 			.UseInMemoryDatabase(databaseName: "FakeDbContext")
+			.EnableSensitiveDataLogging()
 			.Options;
 
-		ctx = new AppDbContext(options);
+		_ctx = new AppDbContext(options);
 	}
 
 	[TearDown]
 	public void TearDown()
 	{
-		ctx.Database.EnsureDeleted();
+		_ctx.Database.EnsureDeleted();
+		_ctx.ChangeTracker.Clear();
+	}
+
+	[Test]
+	[TestCase(1)]
+	[TestCase(2)]
+	[TestCase(4)]
+	public void TestFakeContext(int count)
+	{
+		Assert.AreEqual(0, _ctx.Log.Count());
+
+		for (int i = 0; i < count; i++)
+		{
+			_ctx.Add(new Log());
+		}
+		_ctx.SaveChanges();
+
+		Assert.AreEqual(count, _ctx.Log.Count());
 	}
 }

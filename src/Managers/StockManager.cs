@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Stonks.Data;
 using Stonks.DTOs;
-using Stonks.Helpers;
 using Stonks.Models;
 
 namespace Stonks.Managers;
@@ -15,7 +14,7 @@ public class StockManager : IStockManager
 		_ctx = ctx;
 	}
 
-	public void BuyStock(BuyStockDTO buyStockDTO)
+	public void BuyStock(BuyStockDTO? buyStockDTO)
 	{
 		(var stock, var user, var amount) = ValidateDTO(buyStockDTO);
 
@@ -39,10 +38,13 @@ public class StockManager : IStockManager
 		_ctx.SaveChanges();
 	}
 
-	private (Stock, IdentityUser, int) ValidateDTO(BuyStockDTO buyStockDTO)
+	private (Stock, IdentityUser, int) ValidateDTO(BuyStockDTO? buyStockDTO)
 	{
-		if (buyStockDTO == null)
+		if (buyStockDTO is null)
 			throw new ArgumentNullException(nameof(buyStockDTO));
+
+		if (buyStockDTO.BuyFromUser != true && buyStockDTO.SellerId is not null)
+			throw new ArgumentException("Reference to seller is not necessary when not buying from user", nameof(buyStockDTO));
 
 		return (FindStock(buyStockDTO.StockId),
 			FindUser(buyStockDTO.BuyerId),
@@ -51,7 +53,7 @@ public class StockManager : IStockManager
 
 	private static int CheckBuyAmount(int? amount)
 	{
-		if (amount == null)
+		if (amount is null)
 			throw new ArgumentNullException(nameof(amount));
 
 		if (amount < 1)
@@ -62,11 +64,11 @@ public class StockManager : IStockManager
 
 	private Stock FindStock(Guid? stockId)
 	{
-		if (stockId == null)
+		if (stockId is null)
 			throw new ArgumentNullException(nameof(stockId));
 
 		var stock = _ctx.Stock.FirstOrDefault(x => x.Id == stockId);
-		if (stock == null)
+		if (stock is null)
 			throw new KeyNotFoundException(nameof(stockId));
 
 		return stock;
@@ -74,11 +76,11 @@ public class StockManager : IStockManager
 
 	private IdentityUser FindUser(Guid? userId)
 	{
-		if (userId == null)
+		if (userId is null)
 			throw new ArgumentNullException(nameof(userId));
 
 		var user = _ctx.Users.FirstOrDefault(x => x.Id == userId.ToString());
-		if (user == null)
+		if (user is null)
 			throw new KeyNotFoundException(nameof(userId));
 
 		return user;
@@ -90,7 +92,7 @@ public class StockManager : IStockManager
 			x.Stock.Id == stock.Id &&
 			x.Owner.Id == user.Id);
 
-		if (ownership == null)
+		if (ownership is null)
 		{
 			_ctx.StockOwnership.Add(new StockOwnership
 			{
@@ -111,7 +113,7 @@ public class StockManager : IStockManager
 			x.Stock.Id == stock.Id &&
 			x.Owner.Id == user.Id);
 
-		if (ownership == null || ownership.Amount < amount)
+		if (ownership is null || ownership.Amount < amount)
 			throw new InvalidOperationException("Seller does not have enough stocks");
 
 		ownership.Amount -= amount;

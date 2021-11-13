@@ -13,22 +13,48 @@ public class LogManager : ILogManager
 
 	public void Log(string message)
 	{
+		SaveLog(message, null, null);
+	}
+
+	public void Log(string message, object obj)
+	{
+		SaveLog(message, null, GetObjectDump(obj));
+	}
+
+	public void Log(Exception exception)
+	{
+		SaveLog(exception.Message, exception.ToString(), null);
+	}
+
+	public void Log(Exception exception, object obj)
+	{
+		SaveLog(exception.Message, exception.ToString(), GetObjectDump(obj));
+	}
+
+	public void Log(string message, Exception exception, object obj)
+	{
+		SaveLog(message, exception.ToString(), GetObjectDump(obj));
+	}
+
+	private void SaveLog(string message, string? exception, string? objectDump)
+	{
 		_ctx.Add(new Log
 		{
 			Message = message,
+			ObjectDump = objectDump,
+			Exception = exception,
 			Timestamp = DateTime.Now
 		});
 		_ctx.SaveChanges();
 	}
 
-	public void Log(Exception exception)
+	private static string GetObjectDump(object obj)
 	{
-		_ctx.Add(new Log
-		{
-			Message = exception.Message,
-			Details = exception.ToString(),
-			Timestamp = DateTime.Now
-		});
-		_ctx.SaveChanges();
+		if (obj == null) return "Object was null.";
+
+		var properties = obj.GetType().GetProperties()
+			.Select(x => $"{x.Name} was {x.GetValue(obj)}");
+
+		return string.Join(", ", properties);
 	}
 }
