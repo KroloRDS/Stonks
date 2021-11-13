@@ -1,4 +1,0 @@
-pool:
-  vmImage: 'ubuntu-latest'
-steps:
-- bash: echo "Hello world"

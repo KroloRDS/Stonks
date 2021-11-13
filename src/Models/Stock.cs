@@ -1,8 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Stonks.Models;
 
+[Index(nameof(Symbol), IsUnique = true)]
 public class Stock
 {
 	public Guid Id { get; set; }

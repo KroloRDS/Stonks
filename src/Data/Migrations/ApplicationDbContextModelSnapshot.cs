@@ -246,7 +246,7 @@ namespace Stonks.Data.Migrations
 
                     b.HasIndex("StockId");
 
-                    b.ToTable("HistoricalPrice", (string)null);
+                    b.ToTable("HistoricalPrice");
                 });
 
             modelBuilder.Entity("Stonks.Models.Log", b =>
@@ -269,7 +269,7 @@ namespace Stonks.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Log", (string)null);
+                    b.ToTable("Log");
                 });
 
             modelBuilder.Entity("Stonks.Models.Stock", b =>
@@ -287,6 +287,7 @@ namespace Stonks.Data.Migrations
                         .HasColumnType("decimal(15,9)");
 
                     b.Property<int>("PublicallyOfferredAmount")
+                        .IsConcurrencyToken()
                         .HasColumnType("int");
 
                     b.Property<string>("Symbol")
@@ -296,7 +297,10 @@ namespace Stonks.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Stock", (string)null);
+                    b.HasIndex("Symbol")
+                        .IsUnique();
+
+                    b.ToTable("Stock");
                 });
 
             modelBuilder.Entity("Stonks.Models.StockOwnership", b =>
@@ -306,6 +310,7 @@ namespace Stonks.Data.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Amount")
+                        .IsConcurrencyToken()
                         .HasColumnType("int");
 
                     b.Property<string>("OwnerId")
@@ -320,7 +325,7 @@ namespace Stonks.Data.Migrations
 
                     b.HasIndex("StockId");
 
-                    b.ToTable("StockOwnership", (string)null);
+                    b.ToTable("StockOwnership");
                 });
 
             modelBuilder.Entity("Stonks.Models.TradeOffer", b =>
@@ -355,7 +360,7 @@ namespace Stonks.Data.Migrations
 
                     b.HasIndex("WriterId");
 
-                    b.ToTable("TradeOffer", (string)null);
+                    b.ToTable("TradeOffer");
                 });
 
             modelBuilder.Entity("Stonks.Models.Transaction", b =>
@@ -387,7 +392,7 @@ namespace Stonks.Data.Migrations
 
                     b.HasIndex("StockId");
 
-                    b.ToTable("Transaction", (string)null);
+                    b.ToTable("Transaction");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
