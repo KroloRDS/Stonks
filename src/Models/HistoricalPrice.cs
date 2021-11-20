@@ -2,9 +2,8 @@
 
 namespace Stonks.Models;
 
-public class HistoricalPrice
+public class HistoricalPrice : HasId
 {
-	public Guid Id { get; set; }
 	public DateTime DateTime { get; set; }
 	public Stock Stock { get; set; }
 

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Stonks.Data;
 
@@ -11,9 +12,10 @@ using Stonks.Data;
 namespace Stonks.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20211114110948_Temp-remove-trade-offer-writer-fk")]
+    partial class Tempremovetradeofferwriterfk
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -334,17 +336,19 @@ namespace Stonks.Data.Migrations
 
             modelBuilder.Entity("Stonks.Models.TradeOffer", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<int>("Amount")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("BuyPrice")
+                    b.Property<decimal>("MaxPrice")
                         .HasColumnType("decimal(15,9)");
 
-                    b.Property<decimal>("SellPrice")
+                    b.Property<decimal>("MinPrice")
                         .HasColumnType("decimal(15,9)");
 
                     b.Property<Guid>("StockId")
@@ -353,15 +357,9 @@ namespace Stonks.Data.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("int");
 
-                    b.Property<string>("WriterId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("StockId");
-
-                    b.HasIndex("WriterId");
 
                     b.ToTable("TradeOffer");
                 });
@@ -485,15 +483,7 @@ namespace Stonks.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Writer")
-                        .WithMany()
-                        .HasForeignKey("WriterId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Stock");
-
-                    b.Navigation("Writer");
                 });
 
             modelBuilder.Entity("Stonks.Models.Transaction", b =>

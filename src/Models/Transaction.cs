@@ -3,9 +3,8 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Stonks.Models;
 
-public class Transaction
+public class Transaction : HasId
 {
-	public Guid Id { get; set; }
 	public Stock Stock { get; set; }
 	public int Amount { get; set; }
 	public IdentityUser Buyer { get; set; }

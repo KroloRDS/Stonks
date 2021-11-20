@@ -3,24 +3,27 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Stonks.Models;
 
-public class TradeOffer
+public class TradeOffer : HasId
 {
-	public int Id { get; set; }
+	public Guid StockId { get; set; }
 	public Stock Stock { get; set; }
+	
+	public string WriterId { get; set; }
 	public IdentityUser Writer { get; set; }
+
 	public OfferType Type { get; set; }
 	public int Amount { get; set; }
 
 	[Column(TypeName = "decimal(15,9)")]
-	public decimal MaxPrice { get; set; }
+	public decimal BuyPrice { get; set; }
 
 	[Column(TypeName = "decimal(15,9)")]
-	public decimal MinPrice { get; set; }
+	public decimal SellPrice { get; set; }
 }
 
 public enum OfferType
 {
-	Buy = 0,
-	Sell = 1,
-	PublicOfferring = 2
+	Buy,
+	Sell,
+	PublicOfferring
 }

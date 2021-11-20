@@ -1,6 +1,6 @@
 ﻿namespace Stonks.DTOs;
 
-public class BuyStockDTO
+public class BuyStockCommand
 {
 	public Guid? StockId { get; set; }
 	public Guid? BuyerId { get; set; }

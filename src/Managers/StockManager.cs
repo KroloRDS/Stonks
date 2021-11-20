@@ -2,6 +2,7 @@
 using Stonks.Data;
 using Stonks.DTOs;
 using Stonks.Models;
+using Stonks.Helpers;
 
 namespace Stonks.Managers;
 
@@ -14,11 +15,11 @@ public class StockManager : IStockManager
 		_ctx = ctx;
 	}
 
-	public void BuyStock(BuyStockDTO? buyStockDTO)
+	public void BuyStock(BuyStockCommand? command)
 	{
-		(var stock, var user, var amount) = ValidateDTO(buyStockDTO);
+		(var stock, var user, var amount) = ValidateCommand(command);
 
-		if (buyStockDTO.BuyFromUser != true)
+		if (command.BuyFromUser != true)
 		{
 			if (stock.PublicallyOfferredAmount < amount)
 				throw new InvalidOperationException("Not enough publically offered stocks");
@@ -28,7 +29,7 @@ public class StockManager : IStockManager
 		}
 		else
 		{
-			var seller = FindUser(buyStockDTO.SellerId);
+			var seller = _ctx.GetUser(command.SellerId);
 			TakeStocksFromUser(stock, seller, amount);
 			AddTransactionLog(stock, user, seller, amount);
 		}
@@ -38,63 +39,26 @@ public class StockManager : IStockManager
 		_ctx.SaveChanges();
 	}
 
-	private (Stock, IdentityUser, int) ValidateDTO(BuyStockDTO? buyStockDTO)
+	private (Stock, IdentityUser, int) ValidateCommand(BuyStockCommand? command)
 	{
-		if (buyStockDTO is null)
-			throw new ArgumentNullException(nameof(buyStockDTO));
+		if (command is null)
+			throw new ArgumentNullException(nameof(command));
 
-		if (buyStockDTO.BuyFromUser != true && buyStockDTO.SellerId is not null)
-			throw new ArgumentException("Reference to seller is not necessary when not buying from user", nameof(buyStockDTO));
+		if (command.BuyFromUser != true && command.SellerId is not null)
+			throw new ArgumentException("Reference to seller is not necessary when not buying from user", nameof(command));
 
-		return (FindStock(buyStockDTO.StockId),
-			FindUser(buyStockDTO.BuyerId),
-			CheckBuyAmount(buyStockDTO.Amount));
-	}
-
-	private static int CheckBuyAmount(int? amount)
-	{
-		if (amount is null)
-			throw new ArgumentNullException(nameof(amount));
-
-		if (amount < 1)
-			throw new ArgumentOutOfRangeException(nameof(amount));
-
-		return amount.Value;
-	}
-
-	private Stock FindStock(Guid? stockId)
-	{
-		if (stockId is null)
-			throw new ArgumentNullException(nameof(stockId));
-
-		var stock = _ctx.Stock.FirstOrDefault(x => x.Id == stockId);
-		if (stock is null)
-			throw new KeyNotFoundException(nameof(stockId));
-
-		return stock;
-	}
-
-	private IdentityUser FindUser(Guid? userId)
-	{
-		if (userId is null)
-			throw new ArgumentNullException(nameof(userId));
-
-		var user = _ctx.Users.FirstOrDefault(x => x.Id == userId.ToString());
-		if (user is null)
-			throw new KeyNotFoundException(nameof(userId));
-
-		return user;
+		return (_ctx.GetById<Stock>(command.StockId),
+			_ctx.GetUser(command.BuyerId),
+			ValidationHelper.PositiveAmount(command.Amount));
 	}
 
 	private void GiveStocksToUser(Stock stock, IdentityUser user, int amount)
 	{
-		var ownership = _ctx.StockOwnership.FirstOrDefault(x =>
-			x.Stock.Id == stock.Id &&
-			x.Owner.Id == user.Id);
+		var ownership = _ctx.GetStockOwnership(user.Id, stock.Id);
 
 		if (ownership is null)
 		{
-			_ctx.StockOwnership.Add(new StockOwnership
+			_ctx.Add(new StockOwnership
 			{
 				Amount = amount,
 				Owner = user,
@@ -109,9 +73,7 @@ public class StockManager : IStockManager
 
 	private void TakeStocksFromUser(Stock stock, IdentityUser user, int amount)
 	{
-		var ownership = _ctx.StockOwnership.FirstOrDefault(x =>
-			x.Stock.Id == stock.Id &&
-			x.Owner.Id == user.Id);
+		var ownership = _ctx.GetStockOwnership(user.Id, stock.Id);
 
 		if (ownership is null || ownership.Amount < amount)
 			throw new InvalidOperationException("Seller does not have enough stocks");
@@ -121,7 +83,7 @@ public class StockManager : IStockManager
 
 	private void AddTransactionLog(Stock stock, IdentityUser buyer, IdentityUser? seller, int amount)
 	{
-		_ctx.Transaction.Add(new Transaction
+		_ctx.Add(new Transaction
 		{
 			Stock = stock,
 			Buyer = buyer,

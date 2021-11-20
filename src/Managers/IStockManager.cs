@@ -4,5 +4,5 @@ namespace Stonks.Managers;
 
 public interface IStockManager
 {
-	void BuyStock(BuyStockDTO? buyStockDTO);
+	void BuyStock(BuyStockCommand? command);
 }

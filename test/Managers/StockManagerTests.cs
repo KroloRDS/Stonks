@@ -30,14 +30,14 @@ public class StockManagerTests : UsingContext
 	[Test]
 	public void BuyStock_NullAmount_ShouldThrow()
 	{
-		var dto = new BuyStockDTO
+		var command = new BuyStockCommand
 		{
 			BuyerId = GetUserId(AddUser()),
 			StockId = AddStock().Id,
 			Amount = null
 		};
 
-		Assert.Throws<ArgumentNullException>(() => _manager.BuyStock(dto));
+		Assert.Throws<ArgumentNullException>(() => _manager.BuyStock(command));
 	}
 
 	[Test]
@@ -46,72 +46,72 @@ public class StockManagerTests : UsingContext
 	[TestCase(-99)]
 	public void BuyStock_WrongAmount_ShouldThrow(int amount)
 	{
-		var dto = new BuyStockDTO
+		var command = new BuyStockCommand
 		{
 			BuyerId = GetUserId(AddUser()),
 			StockId = AddStock().Id,
 			Amount = amount
 		};
 
-		Assert.Throws<ArgumentOutOfRangeException>(() => _manager.BuyStock(dto));
+		Assert.Throws<ArgumentOutOfRangeException>(() => _manager.BuyStock(command));
 	}
 
 	[Test]
 	public void BuyStock_NullBuyer_ShouldThrow()
 	{
-		var dto = new BuyStockDTO
+		var command = new BuyStockCommand
 		{
 			BuyerId = null,
 			StockId = AddStock().Id,
 			Amount = 5
 		};
 
-		Assert.Throws<ArgumentNullException>(() => _manager.BuyStock(dto));
+		Assert.Throws<ArgumentNullException>(() => _manager.BuyStock(command));
 	}
 
 	[Test]
 	public void BuyStock_WrongBuyer_ShouldThrow()
 	{
-		var dto = new BuyStockDTO
+		var command = new BuyStockCommand
 		{
 			BuyerId = Guid.NewGuid(),
 			StockId = AddStock().Id,
 			Amount = 5
 		};
 
-		Assert.Throws<KeyNotFoundException>(() => _manager.BuyStock(dto));
+		Assert.Throws<KeyNotFoundException>(() => _manager.BuyStock(command));
 	}
 
 	[Test]
 	public void BuyStock_NullStock_ShouldThrow()
 	{
-		var dto = new BuyStockDTO
+		var command = new BuyStockCommand
 		{
 			BuyerId = GetUserId(AddUser()),
 			StockId = null,
 			Amount = 5
 		};
 
-		Assert.Throws<ArgumentNullException>(() => _manager.BuyStock(dto));
+		Assert.Throws<ArgumentNullException>(() => _manager.BuyStock(command));
 	}
 
 	[Test]
 	public void BuyStock_WrongStock_ShouldThrow()
 	{
-		var dto = new BuyStockDTO
+		var command = new BuyStockCommand
 		{
 			BuyerId = GetUserId(AddUser()),
 			StockId = Guid.NewGuid(),
 			Amount = 5
 		};
 
-		Assert.Throws<KeyNotFoundException>(() => _manager.BuyStock(dto));
+		Assert.Throws<KeyNotFoundException>(() => _manager.BuyStock(command));
 	}
 
 	[Test]
 	public void BuyStock_BuyNotFromUser_SellerNotNull_ShouldThrow()
 	{
-		var dto = new BuyStockDTO
+		var command = new BuyStockCommand
 		{
 			BuyerId = GetUserId(AddUser()),
 			SellerId = GetUserId(AddUser()),
@@ -119,20 +119,20 @@ public class StockManagerTests : UsingContext
 			Amount = 5
 		};
 
-		Assert.Throws<ArgumentException>(() => _manager.BuyStock(dto));
+		Assert.Throws<ArgumentException>(() => _manager.BuyStock(command));
 	}
 
 	[Test]
 	public void BuyStock_NotEnoughPublicStocks_ShouldThrow()
 	{
-		var dto = new BuyStockDTO
+		var command = new BuyStockCommand
 		{
 			BuyerId = GetUserId(AddUser()),
 			StockId = AddStock(0).Id,
 			Amount = 5
 		};
 
-		Assert.Throws<InvalidOperationException>(() => _manager.BuyStock(dto));
+		Assert.Throws<InvalidOperationException>(() => _manager.BuyStock(command));
 	}
 
 	[Test]
@@ -142,7 +142,7 @@ public class StockManagerTests : UsingContext
 		var sellerId = GetUserId(AddUser());
 		var stockId = AddStock().Id;
 
-		var dto = new BuyStockDTO
+		var command = new BuyStockCommand
 		{
 			BuyerId = GetUserId(AddUser()),
 			SellerId = GetUserId(AddUser()),
@@ -152,7 +152,7 @@ public class StockManagerTests : UsingContext
 		};
 
 		//Act & Assert
-		Assert.Throws<InvalidOperationException>(() => _manager.BuyStock(dto));
+		Assert.Throws<InvalidOperationException>(() => _manager.BuyStock(command));
 	}
 
 	[Test]
@@ -165,14 +165,14 @@ public class StockManagerTests : UsingContext
 		var sellerId = GetUserId(AddUser());
 		var stockId = AddStock().Id;
 
-		_manager.BuyStock(new BuyStockDTO
+		_manager.BuyStock(new BuyStockCommand
 		{
 			BuyerId = sellerId,
 			StockId = stockId,
 			Amount = sellerInitialStocks
 		});
 
-		var dto = new BuyStockDTO
+		var command = new BuyStockCommand
 		{
 			BuyerId = GetUserId(AddUser()),
 			SellerId = sellerId,
@@ -183,7 +183,7 @@ public class StockManagerTests : UsingContext
 
 		//Act & Assert
 		Assert.Greater(buyerStocks, sellerInitialStocks);
-		Assert.Throws<InvalidOperationException>(() => _manager.BuyStock(dto));
+		Assert.Throws<InvalidOperationException>(() => _manager.BuyStock(command));
 	}
 
 	[Test]
@@ -201,7 +201,7 @@ public class StockManagerTests : UsingContext
 		var stock = AddStock(publicStocks);
 
 		//Act
-		_manager.BuyStock(new BuyStockDTO
+		_manager.BuyStock(new BuyStockCommand
 		{
 			BuyerId = sellerId,
 			StockId = stock.Id,
@@ -218,7 +218,7 @@ public class StockManagerTests : UsingContext
 		//Part 2 - buy stocks from user
 
 		//Arrange & Act
-		_manager.BuyStock(new BuyStockDTO
+		_manager.BuyStock(new BuyStockCommand
 		{
 			BuyerId = buyerId,
 			SellerId = sellerId,
@@ -268,11 +268,8 @@ public class StockManagerTests : UsingContext
 
 	private int GetAmountOfOwnedStocks(Guid userId, Guid stockId)
 	{
-		var ownership = _ctx.StockOwnership.FirstOrDefault(x =>
-			x.Stock.Id == stockId &&
-			x.Owner.Id == userId.ToString());
-
-		return ownership == null ? 0 : ownership.Amount;
+		var ownership = _ctx.GetStockOwnership(userId.ToString(), stockId);
+		return ownership is null ? 0 : ownership.Amount;
 	}
 
 	private int GetTransactionCount(Guid buyerId, Guid? sellerId, Guid stockId)
