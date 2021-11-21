@@ -1,16 +1,19 @@
+using System;
 using System.Linq;
 using NUnit.Framework;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+
 using Stonks.Data;
 using Stonks.Models;
 
 namespace UnitTests;
 
-public class UsingContext
+public class ManagerTest
 {
 	protected readonly AppDbContext _ctx;
 
-	public UsingContext()
+	public ManagerTest()
 	{
 		var options = new DbContextOptionsBuilder<AppDbContext>()
 			.UseInMemoryDatabase(databaseName: "FakeDbContext")
@@ -42,5 +45,32 @@ public class UsingContext
 		_ctx.SaveChanges();
 
 		Assert.AreEqual(count, _ctx.Log.Count());
+	}
+
+	protected Stock AddStock(int publicAmount = 100)
+	{
+		var stock = new Stock
+		{
+			Symbol = "TEST",
+			Name = "TestStock",
+			Price = 1M,
+			PublicallyOfferredAmount = publicAmount
+		};
+		_ctx.Add(stock);
+		_ctx.SaveChanges();
+		return stock;
+	}
+
+	protected IdentityUser AddUser()
+	{
+		var user = new IdentityUser();
+		_ctx.Add(user);
+		_ctx.SaveChanges();
+		return user;
+	}
+
+	protected static Guid GetUserId(IdentityUser user)
+	{
+		return Guid.Parse(user.Id);
 	}
 }

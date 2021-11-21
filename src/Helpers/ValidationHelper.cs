@@ -17,7 +17,7 @@ public class ValidationHelper
 		if (price is null)
 			throw new ArgumentNullException(nameof(price));
 
-		if (price < 0M)
+		if (price <= 0M)
 			throw new ArgumentOutOfRangeException(nameof(price));
 
 		return price.Value;

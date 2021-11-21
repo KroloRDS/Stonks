@@ -3,16 +3,14 @@ using System.Linq;
 using System.Collections.Generic;
 
 using NUnit.Framework;
-using Microsoft.AspNetCore.Identity;
 
 using Stonks.DTOs;
-using Stonks.Models;
 using Stonks.Managers;
 
 namespace UnitTests.Managers;
 
 [TestFixture]
-public class StockManagerTests : UsingContext
+public class StockManagerTests : ManagerTest
 {
 	private readonly StockManager _manager;
 
@@ -161,6 +159,7 @@ public class StockManagerTests : UsingContext
 		//Arrange
 		var sellerInitialStocks = 5;
 		var buyerStocks = 100;
+		Assert.Greater(buyerStocks, sellerInitialStocks);
 
 		var sellerId = GetUserId(AddUser());
 		var stockId = AddStock().Id;
@@ -182,7 +181,6 @@ public class StockManagerTests : UsingContext
 		};
 
 		//Act & Assert
-		Assert.Greater(buyerStocks, sellerInitialStocks);
 		Assert.Throws<InvalidOperationException>(() => _manager.BuyStock(command));
 	}
 
@@ -195,6 +193,8 @@ public class StockManagerTests : UsingContext
 		var publicStocks = 100;
 		var sellerInitialStocks = 10;
 		var buyerStocks = 5;
+		Assert.Greater(publicStocks, sellerInitialStocks);
+		Assert.Greater(sellerInitialStocks, buyerStocks);
 
 		var buyerId = GetUserId(AddUser());
 		var sellerId = GetUserId(AddUser());
@@ -210,7 +210,6 @@ public class StockManagerTests : UsingContext
 
 		//Assert
 		var sellerActualStocks = GetAmountOfOwnedStocks(sellerId, stock.Id);
-		Assert.Greater(publicStocks, sellerInitialStocks);
 		Assert.AreEqual(sellerInitialStocks, sellerActualStocks);
 		Assert.AreEqual(publicStocks - sellerInitialStocks, stock.PublicallyOfferredAmount);
 		Assert.AreEqual(1, GetTransactionCount(sellerId, null, stock.Id));
@@ -231,39 +230,11 @@ public class StockManagerTests : UsingContext
 		sellerActualStocks = GetAmountOfOwnedStocks(sellerId, stock.Id);
 		var buyerActualStocks = GetAmountOfOwnedStocks(buyerId, stock.Id);
 
-		Assert.Greater(sellerInitialStocks, buyerStocks);
 		Assert.AreEqual(sellerInitialStocks - buyerStocks, sellerActualStocks);
 		Assert.AreEqual(buyerStocks, buyerActualStocks);
 		Assert.AreEqual(publicStocks - sellerInitialStocks, stock.PublicallyOfferredAmount);
 		Assert.AreEqual(1, GetTransactionCount(sellerId, null, stock.Id));
 		Assert.AreEqual(1, GetTransactionCount(buyerId, sellerId, stock.Id));
-	}
-
-	private Stock AddStock(int publicAmount = 100)
-	{
-		var stock = new Stock
-		{
-			Symbol = "TEST",
-			Name = "TestStock",
-			Price = 1M,
-			PublicallyOfferredAmount = publicAmount
-		};
-		_ctx.Add(stock);
-		_ctx.SaveChanges();
-		return stock;
-	}
-
-	private IdentityUser AddUser()
-	{
-		var user = new IdentityUser();
-		_ctx.Add(user);
-		_ctx.SaveChanges();
-		return user;
-	}
-
-	private static Guid GetUserId(IdentityUser user)
-	{
-		return Guid.Parse(user.Id);
 	}
 
 	private int GetAmountOfOwnedStocks(Guid userId, Guid stockId)

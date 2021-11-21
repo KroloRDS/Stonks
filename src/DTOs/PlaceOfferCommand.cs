@@ -8,6 +8,5 @@ public class PlaceOfferCommand
 	public Guid? WriterId { get; set; }
 	public int? Amount { get; set; }
 	public OfferType? Type { get; set; }
-	public decimal? BuyPrice { get; set; }
-	public decimal? SellPrice { get; set; }
+	public decimal? Price { get; set; }
 }

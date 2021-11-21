@@ -10,6 +10,7 @@ public class StockManager : IStockManager
 {
 	private readonly AppDbContext _ctx;
 
+	//TODO: Ensure availability & safty for multiple threads
 	public StockManager(AppDbContext ctx)
 	{
 		_ctx = ctx;
