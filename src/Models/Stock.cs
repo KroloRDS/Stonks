@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Stonks.Models;
 
@@ -15,7 +14,4 @@ public class Stock : HasId
 
 	[ConcurrencyCheck]
 	public int PublicallyOfferredAmount { get; set; }
-
-	[Column(TypeName = "decimal(15,9)")]
-	public decimal Price { get; set; }
 }

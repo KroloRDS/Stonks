@@ -53,7 +53,6 @@ public class ManagerTest
 		{
 			Symbol = "TEST",
 			Name = "TestStock",
-			Price = 1M,
 			PublicallyOfferredAmount = publicAmount
 		};
 		_ctx.Add(stock);

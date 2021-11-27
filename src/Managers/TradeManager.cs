@@ -26,6 +26,7 @@ public class TradeManager : ITradeManager
 		if (type == OfferType.Sell && (ownedAmount is null || ownedAmount < amount))
 			throw new ArgumentException("Not enough owned stock", nameof(amount));
 
+		// Try to match with existin offers first
 		var offers = type == OfferType.Buy ?
 			FindSellOffers(stockId, price) :
 			FindBuyOffers(stockId, price);
@@ -44,6 +45,7 @@ public class TradeManager : ITradeManager
 			}
 		}
 
+		// If there are still stocks to sell / buy
 		var newOffer = new TradeOffer
 		{
 			Amount = amount,
