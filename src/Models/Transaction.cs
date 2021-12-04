@@ -1,9 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Stonks.Models;
 
+[Index(nameof(Timestamp))]
 public class Transaction : HasId
 {
 	[Required]
@@ -20,6 +22,7 @@ public class Transaction : HasId
 	public IdentityUser? Seller { get; set; }
 
 	public int Amount { get; set; }
+	public DateTime Timestamp { get; set; }
 
 	[Column(TypeName = "decimal(15,9)")]
 	public decimal Price { get; set; }

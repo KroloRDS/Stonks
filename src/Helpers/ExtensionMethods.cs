@@ -1,7 +1,7 @@
 ﻿namespace Stonks.Helpers;
-public class ValidationHelper
+public static class ExtensionMethods
 {
-	public static int PositiveAmount(int? amount)
+	public static int ToPositive(this int? amount)
 	{
 		if (amount is null)
 			throw new ArgumentNullException(nameof(amount));
@@ -12,12 +12,12 @@ public class ValidationHelper
 		return amount.Value;
 	}
 
-	public static decimal PositivePrice(decimal? price)
+	public static decimal ToPositive(this decimal? price)
 	{
 		if (price is null)
 			throw new ArgumentNullException(nameof(price));
 
-		if (price <= 0M)
+		if (price <= decimal.Zero)
 			throw new ArgumentOutOfRangeException(nameof(price));
 
 		return price.Value;

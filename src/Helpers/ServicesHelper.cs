@@ -8,7 +8,9 @@ public class ServicesHelper
 	{
 		var services = builder.Services;
 
+		services.AddScoped<IHistoricalPriceManager, HistoricalPriceManager>();
 		services.AddScoped<ILogManager, LogManager>();
-		services.AddScoped<IStockManager, StockManager>();
+		services.AddScoped<IStockOwnershipManager, StockOwnershipManager>();
+		services.AddScoped<ITradeManager, TradeManager>();
 	}
 }

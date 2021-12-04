@@ -2,7 +2,7 @@
 
 namespace Stonks.Managers;
 
-public interface IStockManager
+public interface IStockOwnershipManager
 {
 	void BuyStock(BuyStockCommand? command);
 }

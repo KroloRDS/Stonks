@@ -72,4 +72,35 @@ public class ManagerTest
 	{
 		return Guid.Parse(user.Id);
 	}
+
+	protected Guid AddHistoricalPrice(Guid stockId, ulong amountTraded, decimal averagePrice)
+	{
+		var price = new HistoricalPrice
+		{
+			StockId = stockId,
+			DateTime = DateTime.Now,
+			IsCurrent = true,
+			TotalAmountTraded = amountTraded,
+			AveragePrice = averagePrice,
+			PriceNormalised = averagePrice
+		};
+		_ctx.Add(price);
+		_ctx.SaveChanges();
+		return price.Id;
+	}
+
+	protected Guid AddTransaction(Guid stockId, int amount, decimal price)
+	{
+		var transaction = new Transaction
+		{
+			StockId = stockId,
+			Amount = amount,
+			Price = price,
+			Timestamp = DateTime.Now,
+			BuyerId = AddUser().Id
+		};
+		_ctx.Add(transaction);
+		_ctx.SaveChanges();
+		return transaction.Id;
+	}
 }

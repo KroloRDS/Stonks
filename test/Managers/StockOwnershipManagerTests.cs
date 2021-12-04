@@ -10,13 +10,13 @@ using Stonks.Managers;
 namespace UnitTests.Managers;
 
 [TestFixture]
-public class StockManagerTests : ManagerTest
+public class StockOwnershipManagerTests : ManagerTest
 {
-	private readonly StockManager _manager;
+	private readonly StockOwnershipManager _manager;
 
-	public StockManagerTests()
+	public StockOwnershipManagerTests()
 	{
-		_manager = new StockManager(_ctx);
+		_manager = new StockOwnershipManager(_ctx);
 	}
 
 	[Test]

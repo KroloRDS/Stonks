@@ -19,7 +19,7 @@ public class TradeManagerTests : ManagerTest
 
 	public TradeManagerTests()
 	{
-		var mockStockManager = new Mock<IStockManager>();
+		var mockStockManager = new Mock<IStockOwnershipManager>();
 		_manager = new TradeManager(mockStockManager.Object, _ctx);
 	}
 

@@ -31,6 +31,17 @@ public class AppDbContext : IdentityDbContext
 		return entity;
 	}
 
+	public Guid EnsureExist<T>(Guid? id) where T : HasId
+	{
+		if (id is null)
+			throw new ArgumentNullException(nameof(id));
+
+		if (!Set<T>().Any(x => x.Id == id))
+			throw new KeyNotFoundException(nameof(id));
+
+		return id.Value;
+	}
+
 	public IdentityUser GetUser(Guid? userId)
 	{
 		if (userId is null)
@@ -43,6 +54,17 @@ public class AppDbContext : IdentityDbContext
 		return user;
 	}
 
+	public string EnsureUserExist(Guid? userId)
+	{
+		if (userId is null)
+			throw new ArgumentNullException(nameof(userId));
+
+		if (!Users.Any(x => x.Id == userId.ToString()))
+			throw new KeyNotFoundException(nameof(userId));
+
+		return userId.Value.ToString();
+	}
+
 	public StockOwnership? GetStockOwnership(string? userId, Guid? stockId)
 	{
 		if (userId is null)
@@ -52,7 +74,7 @@ public class AppDbContext : IdentityDbContext
 			throw new ArgumentNullException(nameof(stockId));
 
 		return StockOwnership.FirstOrDefault(x =>
-			x.Stock.Id == stockId &&
-			x.Owner.Id == userId);
+			x.StockId == stockId &&
+			x.OwnerId == userId);
 	}
 }

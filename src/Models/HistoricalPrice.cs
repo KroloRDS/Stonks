@@ -17,7 +17,7 @@ public class HistoricalPrice : HasId
 	public ulong TotalAmountTraded { get; set; }
 
 	[Column(TypeName = "decimal(15,9)")]
-	public decimal Price { get; set; }
+	public decimal AveragePrice { get; set; }
 
 	[Column(TypeName = "decimal(15,9)")]
 	public decimal PriceNormalised { get; set; }

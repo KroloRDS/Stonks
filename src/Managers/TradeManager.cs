@@ -7,11 +7,11 @@ namespace Stonks.Managers;
 
 public class TradeManager : ITradeManager
 {
-	private readonly IStockManager _stockManager;
+	private readonly IStockOwnershipManager _stockManager;
 	private readonly AppDbContext _ctx;
 
 	//TODO: Ensure availability & safty for multiple threads
-	public TradeManager(IStockManager stockManager, AppDbContext ctx)
+	public TradeManager(IStockOwnershipManager stockManager, AppDbContext ctx)
 	{
 		_stockManager = stockManager;
 		_ctx = ctx;
@@ -19,10 +19,9 @@ public class TradeManager : ITradeManager
 
 	public void PlaceOffer(PlaceOfferCommand? command)
 	{
-		(var type, var amount, var stockId, var price) = ValidateCommand(command);
-		var writerId = command.WriterId.ToString();
-
+		(var type, var amount, var stockId, var price, var writerId) = ValidateCommand(command);
 		var ownedAmount = _ctx.GetStockOwnership(writerId, stockId)?.Amount;
+
 		if (type == OfferType.Sell && (ownedAmount is null || ownedAmount < amount))
 			throw new ArgumentException("Not enough owned stock", nameof(amount));
 
@@ -35,12 +34,12 @@ public class TradeManager : ITradeManager
 		{
 			if (offer.Amount < amount)
 			{
-				AcceptOffer(command.WriterId, offer.Id);
+				AcceptOffer(command?.WriterId, offer.Id);
 				amount -= offer.Amount;
 			}
 			else
 			{
-				AcceptOffer(command.WriterId, offer.Id, amount);
+				AcceptOffer(command?.WriterId, offer.Id, amount);
 				return;
 			}
 		}
@@ -65,17 +64,17 @@ public class TradeManager : ITradeManager
 
 	public void AcceptOffer(Guid? userId, Guid? offerId)
 	{
-		_ = _ctx.GetUser(userId);
+		var validatedUserId = _ctx.EnsureUserExist(userId);
 		var offer = _ctx.GetById<TradeOffer>(offerId);
-		BuyStock(offer, userId, offer.Amount);
+		BuyStock(offer, validatedUserId, offer.Amount);
 		RemoveOffer(offerId);
 	}
 
 	public void AcceptOffer(Guid? userId, Guid? offerId, int? amount)
 	{
-		_ = _ctx.GetUser(userId);
+		var validatedUserId = _ctx.EnsureUserExist(userId);
 		var offer = _ctx.GetById<TradeOffer>(offerId);
-		amount = ValidationHelper.PositiveAmount(amount);
+		amount = amount.ToPositive();
 
 		if (offer.Amount <= amount)
 		{
@@ -83,7 +82,7 @@ public class TradeManager : ITradeManager
 			return;
 		}
 
-		BuyStock(offer, userId, amount);
+		BuyStock(offer, validatedUserId, amount);
 		offer.Amount -= amount.Value;
 		_ctx.SaveChanges();
 	}
@@ -99,7 +98,7 @@ public class TradeManager : ITradeManager
 		_ctx.SaveChanges();
 	}
 
-	private (OfferType, int, Guid, decimal) ValidateCommand(PlaceOfferCommand command)
+	private (OfferType, int, Guid, decimal, string) ValidateCommand(PlaceOfferCommand? command)
 	{
 		if (command is null)
 			throw new ArgumentNullException(nameof(command));
@@ -111,20 +110,15 @@ public class TradeManager : ITradeManager
 		if (type == OfferType.PublicOfferring)
 			throw new ArgumentException("'Public offering' offer can only be placed by the broker", nameof(type));
 
-		if (command.StockId is null)
-			throw new ArgumentNullException(nameof(command.StockId));
-		var stockId = command.StockId.Value;
-		_ = _ctx.GetById<Stock>(stockId);
+		var amount = command.Amount.ToPositive();
+		var price = command.Price.ToPositive();
+		var stockId = _ctx.EnsureExist<Stock>(command.StockId);
+		var wrtiterId = _ctx.EnsureUserExist(command.WriterId);
 
-		var amount = ValidationHelper.PositiveAmount(command.Amount);
-		_ = _ctx.GetUser(command.WriterId);
-
-		var price = ValidationHelper.PositivePrice(command.Price);
-
-		return (type, amount, stockId, price);
+		return (type, amount, stockId, price, wrtiterId);
 	}
 
-	private void BuyStock(TradeOffer offer, Guid? userId, int? amount)
+	private void BuyStock(TradeOffer offer, string userId, int? amount)
 	{
 		Guid? buyerId;
 		Guid? sellerId = null;
@@ -132,19 +126,19 @@ public class TradeManager : ITradeManager
 
 		if (offer.Type == OfferType.Buy)
 		{
-			buyerId = Guid.Parse(offer.Writer.Id);
-			sellerId = userId;
+			buyerId = Guid.Parse(offer.WriterId);
+			sellerId = Guid.Parse(userId);
 		}
 		else
 		{
-			buyerId = userId;
+			buyerId = Guid.Parse(userId);
 			if (offer.Type == OfferType.PublicOfferring)
 			{
 				buyFromUser = false;
 			}
 			else
 			{
-				sellerId = Guid.Parse(offer.Writer.Id);
+				sellerId = Guid.Parse(offer.WriterId);
 			}
 		}
 
@@ -154,7 +148,7 @@ public class TradeManager : ITradeManager
 			BuyerId = buyerId,
 			SellerId = sellerId,
 			BuyFromUser = buyFromUser,
-			StockId = offer.Stock.Id
+			StockId = offer.StockId
 		});
 	}
 
@@ -162,7 +156,7 @@ public class TradeManager : ITradeManager
 	{
 		return _ctx.TradeOffer. Where(x =>
 			x.Type == OfferType.Buy &&
-			x.Stock.Id == stockId &&
+			x.StockId == stockId &&
 			x.BuyPrice >= price)
 			.OrderByDescending(x => x.BuyPrice)
 			.ToList();
@@ -172,7 +166,7 @@ public class TradeManager : ITradeManager
 	{
 		return _ctx.TradeOffer.Where(x =>
 			x.Type != OfferType.Buy &&
-			x.Stock.Id == stockId &&
+			x.StockId == stockId &&
 			x.SellPrice <= price)
 			.OrderBy(x => x.SellPrice)
 			.ToList();
