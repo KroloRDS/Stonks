@@ -14,8 +14,17 @@ public class HistoricalPriceManager : IHistoricalPriceManager
 
 	public HistoricalPrice GetCurrentPrice(Guid? stockId)
 	{
-		var validStockId = _ctx.EnsureExist<Stock>(stockId);
-		return GetCurrentPriceForValidStock(validStockId);
+		var stock = _ctx.GetById<Stock>(stockId);
+		if (stock.Bankrupt)
+			throw new InvalidOperationException("Cannot get current price for bankrupt stock");
+
+		return GetCurrentPriceForValidStock(stock.Id);
+	}
+
+	public List<HistoricalPrice> GetHistoricalPrices(Guid? stockId, DateTime? fromDate, DateTime? toDate)
+	{
+		//TODO: Implement
+		throw new NotImplementedException();
 	}
 
 	private HistoricalPrice GetCurrentPriceForValidStock(Guid stockId)
@@ -38,14 +47,26 @@ public class HistoricalPriceManager : IHistoricalPriceManager
 
 	public void UpdateAveragePrices()
 	{
-		var ids = _ctx.Stock.Select(x => x.Id);
+		var ids = _ctx.Stock
+			.Where(x => !x.Bankrupt)
+			.Select(x => x.Id);
+
 		foreach (var id in ids)
 		{
-			UpdateAveragePriceForOneStock(id);
+			UpdateAveragePriceForValidStock(id);
 		}
 	}
 
-	public void UpdateAveragePriceForOneStock(Guid stockId)
+	public void UpdateAveragePriceForOneStock(Guid? stockId)
+	{
+		var stock = _ctx.GetById<Stock>(stockId);
+		if (stock.Bankrupt)
+			throw new InvalidOperationException("Cannot update price for bankrupt stock");
+
+		UpdateAveragePriceForValidStock(stock.Id);
+	}
+
+	public void UpdateAveragePriceForValidStock(Guid stockId)
 	{
 		var previousTransactions = GetCurrentPriceForValidStock(stockId);
 		var transactions = GetNewTransactions(stockId, previousTransactions.DateTime);

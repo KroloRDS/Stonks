@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 
+using Moq;
 using NUnit.Framework;
 
 using Stonks.DTOs;
@@ -16,7 +17,8 @@ public class StockOwnershipManagerTests : ManagerTest
 
 	public StockOwnershipManagerTests()
 	{
-		_manager = new StockOwnershipManager(_ctx);
+		var mockLogManager = new Mock<ILogManager>();
+		_manager = new StockOwnershipManager(_ctx, mockLogManager.Object);
 	}
 
 	[Test]
@@ -127,6 +129,19 @@ public class StockOwnershipManagerTests : ManagerTest
 		{
 			BuyerId = GetUserId(AddUser()),
 			StockId = AddStock(0).Id,
+			Amount = 5
+		};
+
+		Assert.Throws<InvalidOperationException>(() => _manager.BuyStock(command));
+	}
+
+	[Test]
+	public void BuyStock_BankruptStock_ShouldThrow()
+	{
+		var command = new BuyStockCommand
+		{
+			BuyerId = GetUserId(AddUser()),
+			StockId = AddBankruptStock().Id,
 			Amount = 5
 		};
 

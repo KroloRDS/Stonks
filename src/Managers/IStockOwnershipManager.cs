@@ -5,4 +5,5 @@ namespace Stonks.Managers;
 public interface IStockOwnershipManager
 {
 	void BuyStock(BuyStockCommand? command);
+	void RemoveAllOwnershipForStock(Guid? stockId);
 }

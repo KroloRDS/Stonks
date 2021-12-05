@@ -60,6 +60,19 @@ public class ManagerTest
 		return stock;
 	}
 
+	protected Stock AddBankruptStock()
+	{
+		var stock = new Stock
+		{
+			Symbol = "TEST",
+			Name = "TestStock",
+			Bankrupt = true
+		};
+		_ctx.Add(stock);
+		_ctx.SaveChanges();
+		return stock;
+	}
+
 	protected IdentityUser AddUser()
 	{
 		var user = new IdentityUser();

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using NUnit.Framework;
 
@@ -15,6 +16,29 @@ public class HistoricalPriceManagerTests : ManagerTest
 	public HistoricalPriceManagerTests()
 	{
 		_manager = new HistoricalPriceManager(_ctx);
+	}
+
+	[Test]
+	public void GetAndUpdateAveragePrice_NullStock_ShouldThrow()
+	{
+		Assert.Throws<ArgumentNullException>(() => _manager.GetCurrentPrice(null));
+		Assert.Throws<ArgumentNullException>(() => _manager.UpdateAveragePriceForOneStock(null));
+	}
+
+	[Test]
+	public void GetAndUpdateAveragePrice_WrongStock_ShouldThrow()
+	{
+		var stockId = Guid.NewGuid();
+		Assert.Throws<KeyNotFoundException>(() => _manager.GetCurrentPrice(stockId));
+		Assert.Throws<KeyNotFoundException>(() => _manager.UpdateAveragePriceForOneStock(stockId));
+	}
+
+	[Test]
+	public void GetAndUpdateAveragePrice_BankruptStock_ShouldThrow()
+	{
+		var stockId = AddBankruptStock().Id;
+		Assert.Throws<InvalidOperationException>(() => _manager.GetCurrentPrice(stockId));
+		Assert.Throws<InvalidOperationException>(() => _manager.UpdateAveragePriceForOneStock(stockId));
 	}
 
 	[Test]

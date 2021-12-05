@@ -7,23 +7,22 @@ namespace Stonks.Managers;
 
 public class TradeManager : ITradeManager
 {
+	private readonly ILogManager _logManager;
 	private readonly IStockOwnershipManager _stockManager;
 	private readonly AppDbContext _ctx;
 
 	//TODO: Ensure availability & safty for multiple threads
-	public TradeManager(IStockOwnershipManager stockManager, AppDbContext ctx)
+	public TradeManager(AppDbContext ctx, ILogManager logManager,
+		IStockOwnershipManager stockManager)
 	{
-		_stockManager = stockManager;
 		_ctx = ctx;
+		_logManager = logManager;
+		_stockManager = stockManager;
 	}
 
 	public void PlaceOffer(PlaceOfferCommand? command)
 	{
 		(var type, var amount, var stockId, var price, var writerId) = ValidateCommand(command);
-		var ownedAmount = _ctx.GetStockOwnership(writerId, stockId)?.Amount;
-
-		if (type == OfferType.Sell && (ownedAmount is null || ownedAmount < amount))
-			throw new ArgumentException("Not enough owned stock", nameof(amount));
 
 		// Try to match with existin offers first
 		var offers = type == OfferType.Buy ?
@@ -98,6 +97,17 @@ public class TradeManager : ITradeManager
 		_ctx.SaveChanges();
 	}
 
+	public void RemoveAllOffersForStock(Guid? stockId)
+	{
+		if (stockId is null)
+		{
+			_logManager.Log($"{nameof(TradeManager)}.{nameof(RemoveAllOffersForStock)} " +
+				$"was called, but {nameof(stockId)} was null");
+			return;
+		}
+		_ctx.RemoveRange(_ctx.TradeOffer.Where(x => x.StockId == stockId));
+	}
+
 	private (OfferType, int, Guid, decimal, string) ValidateCommand(PlaceOfferCommand? command)
 	{
 		if (command is null)
@@ -110,12 +120,25 @@ public class TradeManager : ITradeManager
 		if (type == OfferType.PublicOfferring)
 			throw new ArgumentException("'Public offering' offer can only be placed by the broker", nameof(type));
 
+		var stock = _ctx.GetById<Stock>(command.StockId);
+		if (stock.Bankrupt)
+			throw new InvalidOperationException("Cannot buy bankrupt stock");
+
 		var amount = command.Amount.ToPositive();
 		var price = command.Price.ToPositive();
-		var stockId = _ctx.EnsureExist<Stock>(command.StockId);
-		var wrtiterId = _ctx.EnsureUserExist(command.WriterId);
+		var writerId = _ctx.EnsureUserExist(command.WriterId);
 
-		return (type, amount, stockId, price, wrtiterId);
+		if (type == OfferType.Sell)
+			ValidateOwnedAmount(writerId, stock.Id, amount);
+
+		return (type, amount, stock.Id, price, writerId);
+	}
+
+	private void ValidateOwnedAmount(string writerId, Guid stockId, int amount)
+	{
+		var ownedAmount = _ctx.GetStockOwnership(writerId, stockId)?.Amount;
+		if (ownedAmount is null || ownedAmount < amount)
+			throw new ArgumentException("Not enough owned stock", nameof(amount));
 	}
 
 	private void BuyStock(TradeOffer offer, string userId, int? amount)

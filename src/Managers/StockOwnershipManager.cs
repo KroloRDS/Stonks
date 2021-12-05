@@ -8,11 +8,13 @@ namespace Stonks.Managers;
 public class StockOwnershipManager : IStockOwnershipManager
 {
 	private readonly AppDbContext _ctx;
+	private readonly ILogManager _logManager;
 
 	//TODO: Ensure availability & safty for multiple threads
-	public StockOwnershipManager(AppDbContext ctx)
+	public StockOwnershipManager(AppDbContext ctx, ILogManager logManager)
 	{
 		_ctx = ctx;
+		_logManager = logManager;
 	}
 
 	public void BuyStock(BuyStockCommand? command)
@@ -48,8 +50,11 @@ public class StockOwnershipManager : IStockOwnershipManager
 		if (command.BuyFromUser != true && command.SellerId is not null)
 			throw new ArgumentException("Reference to seller is not necessary when not buying from user", nameof(command));
 
-		return (_ctx.EnsureExist<Stock>(command.StockId),
-			_ctx.EnsureUserExist(command.BuyerId),
+		var stock = _ctx.GetById<Stock>(command.StockId);
+		if (stock.Bankrupt)
+			throw new InvalidOperationException("Cannot buy bankrupt stock");
+
+		return (stock.Id, _ctx.EnsureUserExist(command.BuyerId),
 			command.Amount.ToPositive());
 	}
 
@@ -92,5 +97,16 @@ public class StockOwnershipManager : IStockOwnershipManager
 			Amount = amount,
 			Timestamp = DateTime.Now
 		});
+	}
+
+	public void RemoveAllOwnershipForStock(Guid? stockId)
+	{
+		if (stockId is null)
+		{
+			_logManager.Log($"{nameof(StockOwnershipManager)}.{nameof(RemoveAllOwnershipForStock)} " +
+				$"was called, but {nameof(stockId)} was null");
+			return;
+		}
+		_ctx.RemoveRange(_ctx.StockOwnership.Where(x => x.StockId == stockId));
 	}
 }

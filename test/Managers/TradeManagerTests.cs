@@ -4,7 +4,6 @@ using System.Collections.Generic;
 
 using Moq;
 using NUnit.Framework;
-using Microsoft.AspNetCore.Identity;
 
 using Stonks.DTOs;
 using Stonks.Models;
@@ -19,8 +18,9 @@ public class TradeManagerTests : ManagerTest
 
 	public TradeManagerTests()
 	{
+		var mockLogManager = new Mock<ILogManager>();
 		var mockStockManager = new Mock<IStockOwnershipManager>();
-		_manager = new TradeManager(mockStockManager.Object, _ctx);
+		_manager = new TradeManager(_ctx, mockLogManager.Object, mockStockManager.Object);
 	}
 
 	[Test]
@@ -189,6 +189,21 @@ public class TradeManagerTests : ManagerTest
 		};
 
 		Assert.Throws<KeyNotFoundException>(() => _manager.PlaceOffer(command));
+	}
+
+	[Test]
+	public void PlaceOffer_BankruptStock_ShouldThrow()
+	{
+		var command = new PlaceOfferCommand
+		{
+			WriterId = GetUserId(AddUser()),
+			StockId = AddBankruptStock().Id,
+			Price = 1M,
+			Type = OfferType.Buy,
+			Amount = 1
+		};
+
+		Assert.Throws<InvalidOperationException>(() => _manager.PlaceOffer(command));
 	}
 
 	[Test]

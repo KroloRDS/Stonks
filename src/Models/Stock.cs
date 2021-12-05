@@ -14,4 +14,6 @@ public class Stock : HasId
 
 	[ConcurrencyCheck]
 	public int PublicallyOfferredAmount { get; set; }
+
+	public bool Bankrupt { get; set; }
 }
