@@ -16,4 +16,5 @@ public class Stock : HasId
 	public int PublicallyOfferredAmount { get; set; }
 
 	public bool Bankrupt { get; set; }
+	public DateTime? BankruptDate { get; set; }
 }

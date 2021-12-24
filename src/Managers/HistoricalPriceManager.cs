@@ -21,10 +21,23 @@ public class HistoricalPriceManager : IHistoricalPriceManager
 		return GetCurrentPriceForValidStock(stock.Id);
 	}
 
-	public List<HistoricalPrice> GetHistoricalPrices(Guid? stockId, DateTime? fromDate, DateTime? toDate)
+	public List<HistoricalPrice> GetHistoricalPrices(
+		Guid? stockId, DateTime? fromDate, DateTime? toDate = null)
 	{
-		//TODO: Implement
-		throw new NotImplementedException();
+		if (stockId is null)
+			throw new ArgumentNullException(nameof(stockId));
+		if (fromDate is null)
+			throw new ArgumentNullException(nameof(fromDate));
+
+		var predicate = new Func<HistoricalPrice, bool>(
+			x => x.StockId == stockId && x.DateTime >= fromDate);
+
+		if (toDate is not null)
+		{
+			predicate = x => predicate(x) && x.DateTime <= toDate;
+		}
+
+		return _ctx.HistoricalPrice.Where(x => predicate(x)).ToList();
 	}
 
 	private HistoricalPrice GetCurrentPriceForValidStock(Guid stockId)

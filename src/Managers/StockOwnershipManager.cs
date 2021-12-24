@@ -21,7 +21,7 @@ public class StockOwnershipManager : IStockOwnershipManager
 	{
 		(var stockId, var userId, var amount) = ValidateCommand(command);
 
-		if (command?.BuyFromUser != true)
+		if (command!.BuyFromUser != true)
 		{
 			var stock = _ctx.GetById<Stock>(stockId);
 			if (stock.PublicallyOfferredAmount < amount)
@@ -47,7 +47,7 @@ public class StockOwnershipManager : IStockOwnershipManager
 		if (command is null)
 			throw new ArgumentNullException(nameof(command));
 
-		if (command.BuyFromUser != true && command.SellerId is not null)
+		if (command.BuyFromUser is not true && command.SellerId is not null)
 			throw new ArgumentException("Reference to seller is not necessary when not buying from user", nameof(command));
 
 		var stock = _ctx.GetById<Stock>(command.StockId);
@@ -108,5 +108,14 @@ public class StockOwnershipManager : IStockOwnershipManager
 			return;
 		}
 		_ctx.RemoveRange(_ctx.StockOwnership.Where(x => x.StockId == stockId));
+	}
+
+	public int GetAllOwnedStocksAmount(Guid? stockId)
+	{
+		if (stockId is null)
+		{
+			throw new ArgumentNullException(nameof(stockId));
+		}
+		return _ctx.StockOwnership.Where(x => x.Id == stockId).Sum(x => x.Amount);
 	}
 }
