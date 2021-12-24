@@ -55,7 +55,7 @@ public class StockOwnershipManager : IStockOwnershipManager
 			throw new InvalidOperationException("Cannot buy bankrupt stock");
 
 		return (stock.Id, _ctx.EnsureUserExist(command.BuyerId),
-			command.Amount.ToPositive());
+			command.Amount.AssertPositive());
 	}
 
 	private void GiveStocksToUser(Guid stockId, string userId, int amount)
@@ -116,6 +116,10 @@ public class StockOwnershipManager : IStockOwnershipManager
 		{
 			throw new ArgumentNullException(nameof(stockId));
 		}
-		return _ctx.StockOwnership.Where(x => x.Id == stockId).Sum(x => x.Amount);
+
+		var amounts = _ctx.StockOwnership.Where(x => x.StockId == stockId)
+			.Select(x => x.Amount);
+
+		return amounts.Any() ? amounts.Sum() : 0;
 	}
 }

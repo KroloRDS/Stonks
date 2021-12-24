@@ -28,16 +28,19 @@ public class HistoricalPriceManager : IHistoricalPriceManager
 			throw new ArgumentNullException(nameof(stockId));
 		if (fromDate is null)
 			throw new ArgumentNullException(nameof(fromDate));
+		else if (toDate < fromDate)
+			throw new ArgumentOutOfRangeException(nameof(toDate));
 
-		var predicate = new Func<HistoricalPrice, bool>(
-			x => x.StockId == stockId && x.DateTime >= fromDate);
-
-		if (toDate is not null)
+		if (toDate is null)
 		{
-			predicate = x => predicate(x) && x.DateTime <= toDate;
+			return _ctx.HistoricalPrice
+				.Where(x => x.StockId == stockId && x.DateTime >= fromDate)
+				.ToList();
 		}
 
-		return _ctx.HistoricalPrice.Where(x => predicate(x)).ToList();
+		return _ctx.HistoricalPrice
+			.Where(x => x.StockId == stockId && x.DateTime >= fromDate && x.DateTime <= toDate)
+			.ToList();
 	}
 
 	private HistoricalPrice GetCurrentPriceForValidStock(Guid stockId)

@@ -73,7 +73,7 @@ public class TradeManager : ITradeManager
 	{
 		var validatedUserId = _ctx.EnsureUserExist(userId);
 		var offer = _ctx.GetById<TradeOffer>(offerId);
-		amount = amount.ToPositive();
+		amount = amount.AssertPositive();
 
 		if (offer.Amount <= amount)
 		{
@@ -124,8 +124,8 @@ public class TradeManager : ITradeManager
 		if (stock.Bankrupt)
 			throw new InvalidOperationException("Cannot buy bankrupt stock");
 
-		var amount = command.Amount.ToPositive();
-		var price = command.Price.ToPositive();
+		var amount = command.Amount.AssertPositive();
+		var price = command.Price.AssertPositive();
 		var writerId = _ctx.EnsureUserExist(command.WriterId);
 
 		if (type == OfferType.Sell)

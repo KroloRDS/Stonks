@@ -6,6 +6,7 @@ using Moq;
 using NUnit.Framework;
 
 using Stonks.DTOs;
+using Stonks.Models;
 using Stonks.Managers;
 
 namespace UnitTests.Managers;
@@ -271,5 +272,52 @@ public class StockOwnershipManagerTests : ManagerTest
 			x.Buyer.Id == buyerId.ToString() && x.Stock.Id == stockId &&
 			x.Seller != null && x.Seller.Id == sellerId.ToString())
 			.Count();
+	}
+
+	[Test]
+	public void GetAllOwnedStocksAmount_NullStock_ShouldThrow()
+	{
+		Assert.Throws<ArgumentNullException>(() => _manager.GetAllOwnedStocksAmount(null));
+	}
+
+	[Test]
+	public void GetAllOwnedStocksAmount_WrongStock_ShouldThrow()
+	{
+		Assert.Zero(_manager.GetAllOwnedStocksAmount(Guid.NewGuid()));
+	}
+
+	[Test]
+	public void GetAllOwnedStocksAmount_PositiveTest()
+	{
+		//Arrange
+		var amount1 = 5;
+		var amount2 = 10;
+		Assert.Positive(amount1);
+		Assert.Positive(amount2);
+
+		var stock = AddStock();
+		var user1 = AddUser();
+		var user2 = AddUser();
+
+		_ctx.Add(new StockOwnership
+		{
+			Amount = amount1,
+			Owner = user1,
+			Stock = stock
+		});
+
+		_ctx.Add(new StockOwnership
+		{
+			Amount = amount2,
+			Owner = user2,
+			Stock = stock
+		});
+		_ctx.SaveChanges();
+
+		//Act
+		var actual = _manager.GetAllOwnedStocksAmount(stock.Id);
+
+		//Assert
+		Assert.AreEqual(amount1 + amount2, actual);
 	}
 }
