@@ -21,15 +21,37 @@ public class StockManager : IStockManager
 		var stock = _ctx.GetById<Stock>(stockId);
 		stock.Bankrupt = true;
 		stock.BankruptDate = DateTime.Now;
+		stock.PublicallyOfferredAmount = 0;
 		_ctx.SaveChanges();
 
 		_tradeManager.RemoveAllOffersForStock(stockId);
 		_ownershipManager.RemoveAllOwnershipForStock(stockId);
 	}
 
-	public DateTime GetLastBankruptDate()
+	public DateTime? GetLastBankruptDate()
 	{
-		return _ctx.Stock.Where(x => x.BankruptDate.HasValue)
-			.Select(x => x.BankruptDate!.Value).Max();
+		var bankrupted = _ctx.Stock.Where(x => x.BankruptDate.HasValue)
+			.Select(x => x.BankruptDate!.Value);
+
+		return bankrupted.Any() ? bankrupted.Max() : null;
+	}
+
+	public int GetPublicStocksAmount(Guid? stockId)
+	{
+		var stock = _ctx.GetById<Stock>(stockId);
+		return stock.PublicallyOfferredAmount;
+	}
+
+	public void EmitNewStocks(int amount)
+	{
+		var stocks = _ctx.Stock.Where(x => !x.Bankrupt);
+		foreach (var stock in stocks)
+		{
+			if (stock.PublicallyOfferredAmount < amount)
+				stock.PublicallyOfferredAmount = amount;
+		}
+		_ctx.SaveChanges();
+
+		_tradeManager.AddPublicOffers(amount);
 	}
 }

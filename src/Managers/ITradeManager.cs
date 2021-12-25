@@ -9,4 +9,5 @@ public interface ITradeManager
 	void AcceptOffer(Guid? userId, Guid? offerId, int? amount);
 	void RemoveOffer(Guid? offerId);
 	void RemoveAllOffersForStock(Guid? stockId);
+	void AddPublicOffers(int amount);
 }

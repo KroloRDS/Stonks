@@ -8,8 +8,8 @@ public class TradeOffer : HasId
 	public Guid StockId { get; set; }
 	public Stock Stock { get; set; }
 	
-	public string WriterId { get; set; }
-	public IdentityUser Writer { get; set; }
+	public string? WriterId { get; set; }
+	public IdentityUser? Writer { get; set; }
 
 	public OfferType Type { get; set; }
 	public int Amount { get; set; }

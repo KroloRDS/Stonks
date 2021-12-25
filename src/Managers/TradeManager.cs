@@ -9,15 +9,17 @@ public class TradeManager : ITradeManager
 {
 	private readonly ILogManager _logManager;
 	private readonly IStockOwnershipManager _stockManager;
+	private readonly IHistoricalPriceManager _historicalPriceManager;
 	private readonly AppDbContext _ctx;
 
 	//TODO: Ensure availability & safty for multiple threads
 	public TradeManager(AppDbContext ctx, ILogManager logManager,
-		IStockOwnershipManager stockManager)
+		IStockOwnershipManager stockManager, IHistoricalPriceManager historicalPrice)
 	{
 		_ctx = ctx;
 		_logManager = logManager;
 		_stockManager = stockManager;
+		_historicalPriceManager = historicalPrice;
 	}
 
 	public void PlaceOffer(PlaceOfferCommand? command)
@@ -193,5 +195,41 @@ public class TradeManager : ITradeManager
 			x.SellPrice <= price)
 			.OrderBy(x => x.SellPrice)
 			.ToList();
+	}
+
+	public void AddPublicOffers(int amount)
+	{
+		var stockIds = _ctx.Stock
+			.Where(x => !x.Bankrupt).Select(x => x.Id);
+
+		foreach (var id in stockIds)
+		{
+			AddPublicOffer(id, amount);
+		}
+		_ctx.SaveChanges();
+	}
+
+	private void AddPublicOffer(Guid stockId, int amount)
+	{
+		var offer = _ctx.TradeOffer.Where(x =>
+			x.Type == OfferType.PublicOfferring &&
+			x.StockId == stockId)
+			.FirstOrDefault();
+
+		if (offer is not null && offer.Amount < amount)
+		{
+			offer.Amount = amount;
+			_ctx.SaveChanges();
+			return;
+		}
+
+		var avgPrice = _historicalPriceManager.GetCurrentPrice(stockId).AveragePrice;
+		_ctx.Add(new TradeOffer
+		{
+			Amount = amount,
+			SellPrice = avgPrice,
+			StockId = stockId,
+			Type = OfferType.PublicOfferring
+		});
 	}
 }

@@ -6,6 +6,7 @@ namespace Stonks.Managers;
 public class HistoricalPriceManager : IHistoricalPriceManager
 {
 	private readonly AppDbContext _ctx;
+	public const decimal DEFAULT_PRICE = 1M;
 
 	public HistoricalPriceManager(AppDbContext ctx)
 	{
@@ -53,8 +54,8 @@ public class HistoricalPriceManager : IHistoricalPriceManager
 				DateTime = DateTime.MinValue,
 				IsCurrent = true,
 				TotalAmountTraded = 0UL,
-				AveragePrice = 0M,
-				PriceNormalised = 0M
+				AveragePrice = DEFAULT_PRICE,
+				PriceNormalised = DEFAULT_PRICE
 			});
 			_ctx.SaveChanges();
 		}

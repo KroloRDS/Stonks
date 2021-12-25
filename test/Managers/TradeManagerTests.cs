@@ -20,7 +20,16 @@ public class TradeManagerTests : ManagerTest
 	{
 		var mockLogManager = new Mock<ILogManager>();
 		var mockStockManager = new Mock<IStockOwnershipManager>();
-		_manager = new TradeManager(_ctx, mockLogManager.Object, mockStockManager.Object);
+		
+		var mockhistoryManager = new Mock<IHistoricalPriceManager>();
+		mockhistoryManager.Setup(x => x.GetCurrentPrice(It.IsAny<Guid?>()))
+			.Returns(new HistoricalPrice
+			{
+				AveragePrice = HistoricalPriceManager.DEFAULT_PRICE
+			});
+
+		_manager = new TradeManager(_ctx, mockLogManager.Object,
+			mockStockManager.Object, mockhistoryManager.Object);
 	}
 
 	[Test]
@@ -504,8 +513,7 @@ public class TradeManagerTests : ManagerTest
 			Amount = sellAmount,
 			SellPrice = price2,
 			StockId = stock.Id,
-			Type = OfferType.Sell,
-			WriterId = AddUser().Id
+			Type = OfferType.PublicOfferring
 		});
 
 		_ctx.SaveChanges();
@@ -526,7 +534,7 @@ public class TradeManagerTests : ManagerTest
 		Assert.AreEqual(1, _ctx.TradeOffer.Count());
 
 		var offer = _ctx.TradeOffer.First();
-		Assert.AreEqual(OfferType.Sell, offer.Type);
+		Assert.AreEqual(OfferType.PublicOfferring, offer.Type);
 		Assert.AreEqual(price2, offer.SellPrice);
 		Assert.AreEqual(sellAmount * 2 - buyAmount, offer.Amount);
 	}
@@ -543,5 +551,56 @@ public class TradeManagerTests : ManagerTest
 		});
 		_ctx.SaveChanges();
 		return entity.Entity;
+	}
+
+	[Test]
+	public void AddPublicOffers()
+	{
+		//Arrange
+		var amount = 100;
+		var smallerAmount = 50;
+		var biggerAmount = 150;
+
+		//Check if test data makes sense
+		Assert.Positive(amount);
+		Assert.Positive(smallerAmount);
+		Assert.Positive(biggerAmount);
+		Assert.Greater(biggerAmount, amount);
+		Assert.Greater(amount, smallerAmount);
+
+		var stock1 = AddStock();
+		var stock2 = AddStock();
+		var stock3 = AddStock();
+		var bankruptStock = AddBankruptStock();
+
+		_ctx.Add(new TradeOffer
+		{
+			Amount = smallerAmount,
+			StockId = stock2.Id,
+			Type = OfferType.PublicOfferring
+		});
+		_ctx.Add(new TradeOffer
+		{
+			Amount = biggerAmount,
+			StockId = stock3.Id,
+			Type = OfferType.PublicOfferring
+		});
+		_ctx.SaveChanges();
+
+		//Act
+		_manager.AddPublicOffers(amount);
+
+		//Assert
+		Assert.AreEqual(amount, GetPublicOffer(stock1.Id)?.Amount);
+		Assert.AreEqual(amount, GetPublicOffer(stock2.Id)?.Amount);
+		Assert.AreEqual(biggerAmount, GetPublicOffer(stock3.Id)?.Amount);
+		Assert.Null(GetPublicOffer(bankruptStock.Id));
+	}
+
+	private TradeOffer? GetPublicOffer(Guid stockId)
+	{
+		return _ctx.TradeOffer
+			.Where(x => x.Type == OfferType.PublicOfferring && x.StockId == stockId)
+			.FirstOrDefault();
 	}
 }
