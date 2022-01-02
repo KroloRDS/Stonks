@@ -12,7 +12,6 @@ public class HomeController : Controller
 
 	public IActionResult Index()
 	{
-		Console.WriteLine(Environment.GetEnvironmentVariable("APPSETTING_BATTLEROYALE_FUN")); 
 		return View();
 	}
 

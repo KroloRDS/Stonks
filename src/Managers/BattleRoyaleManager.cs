@@ -8,15 +8,18 @@ public class BattleRoyaleManager : IBattleRoyaleManager
 	private readonly IHistoricalPriceManager _historicalPriceManager;
 	private readonly IStockOwnershipManager _ownershipManager;
 	private readonly IStockManager _stockManager;
+	private readonly IConfigurationManager _config;
 	private readonly AppDbContext _ctx;
 
 	public BattleRoyaleManager(AppDbContext ctx, IHistoricalPriceManager historicalPriceManager,
-		IStockOwnershipManager ownershipManager, IStockManager stockManager)
+		IStockOwnershipManager ownershipManager, IStockManager stockManager,
+		IConfigurationManager config)
 	{
 		_ctx = ctx;
 		_historicalPriceManager = historicalPriceManager;
 		_ownershipManager = ownershipManager;
 		_stockManager = stockManager;
+		_config = config;
 	}
 
 	private class StockIndicator
@@ -33,8 +36,8 @@ public class BattleRoyaleManager : IBattleRoyaleManager
 	public void BattleRoyaleRound()
 	{
 		Eliminate();
-		//TODO: Get amount from azure
-		_stockManager.EmitNewStocks(1000);
+		var amount = _config.NewStocksAfterRound();
+		_stockManager.EmitNewStocks(amount);
 	}
 
 	private void Eliminate()
@@ -94,8 +97,9 @@ public class BattleRoyaleManager : IBattleRoyaleManager
 
 	private double GetScore(StockIndicator indicator)
 	{
-		//TODO: Add weights
-		return indicator.MarketCapNormalised + indicator.StocksAmountNormalised +
-			indicator.Volatility + indicator.Fun;
+		return _config.MarketCapWeight() * indicator.MarketCapNormalised +
+			_config.StockAmountWeight() * indicator.StocksAmountNormalised +
+			_config.VolatilityWeight() * indicator.Volatility +
+			_config.FunWeight() * indicator.Fun;
 	}
 }
