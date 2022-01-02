@@ -1,4 +1,6 @@
-﻿using Stonks.Data;
+﻿using System.Text.Json;
+
+using Stonks.Data;
 using Stonks.Models;
 
 namespace Stonks.Managers;
@@ -50,11 +52,6 @@ public class LogManager : ILogManager
 
 	private static string GetObjectDump(object obj)
 	{
-		if (obj == null) return "Object was null.";
-
-		var properties = obj.GetType().GetProperties()
-			.Select(x => $"{x.Name} was {x.GetValue(obj)}");
-
-		return string.Join(", ", properties);
+		return JsonSerializer.Serialize(obj);
 	}
 }
