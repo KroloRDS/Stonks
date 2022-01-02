@@ -204,12 +204,12 @@ public class TradeManager : ITradeManager
 
 		foreach (var id in stockIds)
 		{
-			AddPublicOffer(id, amount);
+			AddPublicOffers(id, amount);
 		}
 		_ctx.SaveChanges();
 	}
 
-	private void AddPublicOffer(Guid stockId, int amount)
+	private void AddPublicOffers(Guid stockId, int amount)
 	{
 		var offer = _ctx.TradeOffer.Where(x =>
 			x.Type == OfferType.PublicOfferring &&

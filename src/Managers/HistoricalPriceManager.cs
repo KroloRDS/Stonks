@@ -83,7 +83,7 @@ public class HistoricalPriceManager : IHistoricalPriceManager
 		UpdateAveragePriceForValidStock(stock.Id);
 	}
 
-	public void UpdateAveragePriceForValidStock(Guid stockId)
+	private void UpdateAveragePriceForValidStock(Guid stockId)
 	{
 		var previousTransactions = GetCurrentPriceForValidStock(stockId);
 		var transactions = GetNewTransactions(stockId, previousTransactions.DateTime);
