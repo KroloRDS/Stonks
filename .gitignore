@@ -361,3 +361,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# PayPal - Integration test data
+/test/IntegrationTests/PayPalTests.json

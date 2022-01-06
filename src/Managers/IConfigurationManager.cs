@@ -6,4 +6,5 @@ public interface IConfigurationManager
 	double VolatilityWeight();
 	double MarketCapWeight();
 	int NewStocksAfterRound();
+	Dictionary<string, string> PayPalConfig();
 }

@@ -5,9 +5,9 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stonks", "src\Stonks.csproj", "{4830EA54-E028-49AD-97D1-4365089C7CD8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "test\UnitTests.csproj", "{596E9BEE-38DC-4D64-A454-BBCBEF5D586C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "test\UnitTests\UnitTests.csproj", "{596E9BEE-38DC-4D64-A454-BBCBEF5D586C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTests", "IntegrationTests\IntegrationTests.csproj", "{03F7F4FD-1423-484A-A411-ECEE8D35E31B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTests", "test\IntegrationTests\IntegrationTests.csproj", "{03F7F4FD-1423-484A-A411-ECEE8D35E31B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Stonks", "Stonks", "{9E16BE38-2F69-4DB1-8EA3-19BD98CD517B}"
 EndProject
