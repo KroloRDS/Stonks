@@ -18,8 +18,7 @@ public class StockOwnershipManagerTests : ManagerTest
 
 	public StockOwnershipManagerTests()
 	{
-		var mockLogManager = new Mock<ILogManager>();
-		_manager = new StockOwnershipManager(_ctx, mockLogManager.Object);
+		_manager = new StockOwnershipManager(_ctx);
 	}
 
 	[Test]
@@ -319,5 +318,44 @@ public class StockOwnershipManagerTests : ManagerTest
 
 		//Assert
 		Assert.AreEqual(amount1 + amount2, actual);
+	}
+
+	[Test]
+	public void RemoveAllOwnershipForStock_NullStock_ShouldThrow()
+	{
+		Assert.Throws<ArgumentNullException>(
+			() => _manager.RemoveAllOwnershipForStock(null));
+	}
+
+	[Test]
+	public void RemoveAllOwnershipForStock_WrongStock_ShouldThrow()
+	{
+		Assert.Throws<KeyNotFoundException>(
+			() => _manager.RemoveAllOwnershipForStock(Guid.NewGuid()));
+	}
+
+	[Test]
+	[TestCase(0)]
+	[TestCase(1)]
+	[TestCase(2)]
+	[TestCase(14)]
+	public void RemoveAllOwnershipForStock_PositiveTest(int ownerships)
+	{
+		//Arange
+		var stockId = AddStock().Id;
+		for (int i = 0; i < ownerships; i++)
+		{
+			_ctx.Add(new StockOwnership
+			{
+				StockId = stockId,
+				OwnerId = AddUser().Id
+			});
+		}
+		_ctx.SaveChanges();
+		Assert.AreEqual(ownerships > 0, _ctx.StockOwnership.Any());
+
+		//Act & Assert
+		_manager.RemoveAllOwnershipForStock(stockId);
+		Assert.False(_ctx.StockOwnership.Any());
 	}
 }

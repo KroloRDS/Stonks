@@ -8,13 +8,11 @@ namespace Stonks.Managers;
 public class StockOwnershipManager : IStockOwnershipManager
 {
 	private readonly AppDbContext _ctx;
-	private readonly ILogManager _logManager;
 
 	//TODO: Ensure availability & safty for multiple threads
-	public StockOwnershipManager(AppDbContext ctx, ILogManager logManager)
+	public StockOwnershipManager(AppDbContext ctx)
 	{
 		_ctx = ctx;
-		_logManager = logManager;
 	}
 
 	public void BuyStock(BuyStockCommand? command)
@@ -101,13 +99,9 @@ public class StockOwnershipManager : IStockOwnershipManager
 
 	public void RemoveAllOwnershipForStock(Guid? stockId)
 	{
-		if (stockId is null)
-		{
-			_logManager.Log($"{nameof(StockOwnershipManager)}.{nameof(RemoveAllOwnershipForStock)} " +
-				$"was called, but {nameof(stockId)} was null");
-			return;
-		}
+		_ctx.EnsureExist<Stock>(stockId);
 		_ctx.RemoveRange(_ctx.StockOwnership.Where(x => x.StockId == stockId));
+		_ctx.SaveChanges();
 	}
 
 	public int GetAllOwnedStocksAmount(Guid? stockId)

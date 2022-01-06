@@ -7,17 +7,15 @@ namespace Stonks.Managers;
 
 public class TradeManager : ITradeManager
 {
-	private readonly ILogManager _logManager;
 	private readonly IStockOwnershipManager _stockManager;
 	private readonly IHistoricalPriceManager _historicalPriceManager;
 	private readonly AppDbContext _ctx;
 
 	//TODO: Ensure availability & safty for multiple threads
-	public TradeManager(AppDbContext ctx, ILogManager logManager,
-		IStockOwnershipManager stockManager, IHistoricalPriceManager historicalPrice)
+	public TradeManager(AppDbContext ctx, IStockOwnershipManager stockManager,
+		IHistoricalPriceManager historicalPrice)
 	{
 		_ctx = ctx;
-		_logManager = logManager;
 		_stockManager = stockManager;
 		_historicalPriceManager = historicalPrice;
 	}
@@ -101,13 +99,9 @@ public class TradeManager : ITradeManager
 
 	public void RemoveAllOffersForStock(Guid? stockId)
 	{
-		if (stockId is null)
-		{
-			_logManager.Log($"{nameof(TradeManager)}.{nameof(RemoveAllOffersForStock)} " +
-				$"was called, but {nameof(stockId)} was null");
-			return;
-		}
+		_ctx.EnsureExist<Stock>(stockId);
 		_ctx.RemoveRange(_ctx.TradeOffer.Where(x => x.StockId == stockId));
+		_ctx.SaveChanges();
 	}
 
 	private (OfferType, int, Guid, decimal, string) ValidateCommand(PlaceOfferCommand? command)
@@ -151,7 +145,7 @@ public class TradeManager : ITradeManager
 
 		if (offer.Type == OfferType.Buy)
 		{
-			buyerId = Guid.Parse(offer.WriterId);
+			buyerId = Guid.Parse(offer.WriterId!);
 			sellerId = Guid.Parse(userId);
 		}
 		else
@@ -163,7 +157,7 @@ public class TradeManager : ITradeManager
 			}
 			else
 			{
-				sellerId = Guid.Parse(offer.WriterId);
+				sellerId = Guid.Parse(offer.WriterId!);
 			}
 		}
 

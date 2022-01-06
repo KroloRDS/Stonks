@@ -36,7 +36,7 @@ public class ManagerTest
 	[TestCase(4)]
 	public void TestFakeContext(int count)
 	{
-		Assert.AreEqual(0, _ctx.Log.Count());
+		Assert.False(_ctx.Log.Any());
 
 		for (int i = 0; i < count; i++)
 		{

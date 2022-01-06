@@ -18,9 +18,8 @@ public class TradeManagerTests : ManagerTest
 
 	public TradeManagerTests()
 	{
-		var mockLogManager = new Mock<ILogManager>();
 		var mockStockManager = new Mock<IStockOwnershipManager>();
-		
+
 		var mockhistoryManager = new Mock<IHistoricalPriceManager>();
 		mockhistoryManager.Setup(x => x.GetCurrentPrice(It.IsAny<Guid?>()))
 			.Returns(new HistoricalPrice
@@ -28,8 +27,8 @@ public class TradeManagerTests : ManagerTest
 				AveragePrice = HistoricalPriceManager.DEFAULT_PRICE
 			});
 
-		_manager = new TradeManager(_ctx, mockLogManager.Object,
-			mockStockManager.Object, mockhistoryManager.Object);
+		_manager = new TradeManager(_ctx, mockStockManager.Object,
+			mockhistoryManager.Object);
 	}
 
 	[Test]
@@ -602,5 +601,43 @@ public class TradeManagerTests : ManagerTest
 		return _ctx.TradeOffer
 			.Where(x => x.Type == OfferType.PublicOfferring && x.StockId == stockId)
 			.FirstOrDefault();
+	}
+
+	[Test]
+	public void RemoveAllOffersForStock_NullStock_ShouldThrow()
+	{
+		Assert.Throws<ArgumentNullException>(
+			() => _manager.RemoveAllOffersForStock(null));
+	}
+
+	[Test]
+	public void RemoveAllOffersForStock_WrongStock_ShouldThrow()
+	{
+		Assert.Throws<KeyNotFoundException>(
+			() => _manager.RemoveAllOffersForStock(Guid.NewGuid()));
+	}
+
+	[Test]
+	[TestCase(0)]
+	[TestCase(1)]
+	[TestCase(2)]
+	[TestCase(14)]
+	public void RemoveAllOffersForStock_PositiveTest(int ownerships)
+	{
+		//Arange
+		var stockId = AddStock().Id;
+		for (int i = 0; i < ownerships; i++)
+		{
+			_ctx.Add(new TradeOffer
+			{
+				StockId = stockId
+			});
+		}
+		_ctx.SaveChanges();
+		Assert.AreEqual(ownerships > 0, _ctx.TradeOffer.Any());
+
+		//Act & Assert
+		_manager.RemoveAllOffersForStock(stockId);
+		Assert.False(_ctx.TradeOffer.Any());
 	}
 }

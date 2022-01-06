@@ -1,4 +1,5 @@
 ﻿using Stonks.Data;
+using Stonks.DTOs;
 using Stonks.Helpers;
 
 namespace Stonks.Managers;
@@ -22,34 +23,25 @@ public class BattleRoyaleManager : IBattleRoyaleManager
 		_config = config;
 	}
 
-	private class StockIndicator
-	{
-		public Guid StockId { get; set; }
-		public decimal MarketCap { get; set; }
-		public double MarketCapNormalised { get; set; }
-		public int StocksAmount { get; set; }
-		public double StocksAmountNormalised { get; set; }
-		public double Volatility { get; set; }
-		public double Fun { get; set; }
-	}
-
 	public void BattleRoyaleRound()
 	{
-		Eliminate();
+		var toEliminate = GetWeakestStockId();
 		var amount = _config.NewStocksAfterRound();
+		_stockManager.Bankrupt(toEliminate);
 		_stockManager.EmitNewStocks(amount);
 	}
 
-	private void Eliminate()
+	public Guid GetWeakestStockId()
 	{
-		var stocks = _ctx.Stock.Where(x => !x.Bankrupt).
-			Select(x => GetStockIndicator(x.Id)).ToList();
+		var stocks = _ctx.Stock.Where(x => !x.Bankrupt);
+		if (!stocks.Any())
+			throw new Exception("No stocks to bankrupt");
 
-		NormaliseIndicators(ref stocks);
-		var stockToEliminate = stocks.OrderBy(x => GetScore(x))
+		return stocks.Select(x => GetStockIndicator(x.Id))
+			.ToList()
+			.Normalise()
+			.OrderBy(x => GetScore(x))
 			.First().StockId;
-
-		_stockManager.Bankrupt(stockToEliminate);
 	}
 
 	private StockIndicator GetStockIndicator(Guid stockId)
@@ -77,28 +69,10 @@ public class BattleRoyaleManager : IBattleRoyaleManager
 			.Select(x => x.AveragePrice).StandardDev();
 	}
 
-	private static void NormaliseIndicators(ref List<StockIndicator> indicators)
+	private double GetScore(StockIndicatorNormalised indicator)
 	{
-		var minMarketCap = indicators.Min(x => x.MarketCap);
-		var marketCapMaxDiff = indicators.Max(x => x.MarketCap) - minMarketCap;
-
-		var minVolatility = indicators.Min(x => x.Volatility);
-		var volatilityMaxDiff = indicators.Max(x => x.Volatility) - minVolatility;
-
-		var mostStocksAvailable = indicators.Max(x => x.StocksAmount);
-
-		foreach (var indicator in indicators)
-		{
-			indicator.MarketCapNormalised = (double)((indicator.MarketCap - minMarketCap) / marketCapMaxDiff);
-			indicator.StocksAmountNormalised = (mostStocksAvailable - indicator.StocksAmount) / mostStocksAvailable;
-			indicator.Volatility = (indicator.Volatility - minVolatility) / volatilityMaxDiff;
-		}
-	}
-
-	private double GetScore(StockIndicator indicator)
-	{
-		return _config.MarketCapWeight() * indicator.MarketCapNormalised +
-			_config.StockAmountWeight() * indicator.StocksAmountNormalised +
+		return _config.MarketCapWeight() * indicator.MarketCap +
+			_config.StockAmountWeight() * indicator.StocksAmount +
 			_config.VolatilityWeight() * indicator.Volatility +
 			_config.FunWeight() * indicator.Fun;
 	}

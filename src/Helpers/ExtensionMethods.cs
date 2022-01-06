@@ -1,4 +1,7 @@
-﻿namespace Stonks.Helpers;
+﻿using Stonks.DTOs;
+
+namespace Stonks.Helpers;
+
 public static class ExtensionMethods
 {
 	public static int AssertPositive(this int? amount)
@@ -32,5 +35,36 @@ public static class ExtensionMethods
 		sequence = sequence!.Select(x => x - average);
 		var sum = (double)sequence.Sum(x => x * x);
 		return Math.Sqrt(sum / count);
+	}
+
+	public static IEnumerable<StockIndicatorNormalised> Normalise(this IEnumerable<StockIndicator>? indicators)
+	{
+		if (indicators is null || !indicators.Any())
+			return Enumerable.Empty<StockIndicatorNormalised>();
+
+		var minMarketCap = indicators.Min(x => x.MarketCap);
+		var marketCapMaxDiff = indicators.Max(x => x.MarketCap) - minMarketCap;
+
+		var minVolatility = indicators.Min(x => x.Volatility);
+		var volatilityMaxDiff = indicators.Max(x => x.Volatility) - minVolatility;
+
+		var minStocksAvailable = indicators.Min(x => x.StocksAmount);
+		var stocksAvailableMaxDiff = indicators.Max(x => x.StocksAmount) - minStocksAvailable;
+
+		var test = 1 - (Normalise(5, 5, 0) ?? 0);
+		return indicators.Select(x => new StockIndicatorNormalised
+		{
+			StockId = x.StockId,
+			Fun = x.Fun,
+			MarketCap = Normalise((double)x.MarketCap, (double)minMarketCap, (double)marketCapMaxDiff) ?? 1,
+			StocksAmount = 1 - (Normalise(x.StocksAmount, minStocksAvailable, stocksAvailableMaxDiff) ?? 0),
+			Volatility = 1 - (Normalise(x.Volatility, minVolatility, volatilityMaxDiff) ?? 0)
+		});
+	}
+
+	private static double? Normalise(double x, double min, double maxDiff)
+	{
+		if (maxDiff == 0) return null;
+		return (x - min) / maxDiff;
 	}
 }
