@@ -16,10 +16,10 @@ public class Transaction : HasId
 	[Required]
 	public string BuyerId { get; set; }
 	[Required]
-	public IdentityUser Buyer { get; set; }
+	public User Buyer { get; set; }
 
 	public string? SellerId { get; set; }
-	public IdentityUser? Seller { get; set; }
+	public User? Seller { get; set; }
 
 	public int Amount { get; set; }
 	public DateTime Timestamp { get; set; }

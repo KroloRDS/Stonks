@@ -1,10 +1,9 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Stonks.Models;
 
 namespace Stonks.Data;
-public class AppDbContext : IdentityDbContext
+public class AppDbContext : IdentityDbContext<User>
 {
 	public AppDbContext(DbContextOptions<AppDbContext> options)
 		: base(options)
@@ -42,7 +41,7 @@ public class AppDbContext : IdentityDbContext
 		return id.Value;
 	}
 
-	public IdentityUser GetUser(Guid? userId)
+	public User GetUser(Guid? userId)
 	{
 		if (userId is null)
 			throw new ArgumentNullException(nameof(userId));

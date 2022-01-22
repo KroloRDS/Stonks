@@ -73,15 +73,15 @@ public class ManagerTest
 		return stock;
 	}
 
-	protected IdentityUser AddUser()
+	protected User AddUser()
 	{
-		var user = new IdentityUser();
+		var user = new User();
 		_ctx.Add(user);
 		_ctx.SaveChanges();
 		return user;
 	}
 
-	protected static Guid GetUserId(IdentityUser user)
+	protected static Guid GetUserId(User user)
 	{
 		return Guid.Parse(user.Id);
 	}

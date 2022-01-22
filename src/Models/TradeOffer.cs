@@ -9,7 +9,7 @@ public class TradeOffer : HasId
 	public Stock Stock { get; set; }
 	
 	public string? WriterId { get; set; }
-	public IdentityUser? Writer { get; set; }
+	public User? Writer { get; set; }
 
 	public OfferType Type { get; set; }
 	public int Amount { get; set; }

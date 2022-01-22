@@ -1,6 +1,6 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Stonks.Data;
+using Stonks.Models;
 using Stonks.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,7 +16,7 @@ ServicesHelper.AddServices(builder);
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddDefaultIdentity<IdentityUser>(options =>
+builder.Services.AddDefaultIdentity<User>(options =>
 	options.SignIn.RequireConfirmedAccount = true)
 	.AddEntityFrameworkStores<AppDbContext>();
 

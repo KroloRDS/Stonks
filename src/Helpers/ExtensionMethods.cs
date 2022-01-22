@@ -26,6 +26,13 @@ public static class ExtensionMethods
 		return price.Value;
 	}
 
+	public static string AssertNotEmpty(this string? str)
+	{
+		if (string.IsNullOrEmpty(str))
+			throw new ArgumentException("Argument cannot be empty");
+		return str;
+	}
+
 	public static double StandardDev(this IEnumerable<decimal>? sequence)
 	{
 		var count = sequence is null ? 0 : sequence.Count();

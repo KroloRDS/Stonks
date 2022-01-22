@@ -8,7 +8,7 @@ public class StockOwnership : HasId
 	[Required]
 	public string OwnerId { get; set; }
 	[Required]
-	public IdentityUser Owner { get; set; }
+	public User Owner { get; set; }
 
 	[Required]
 	public Guid StockId { get; set; }

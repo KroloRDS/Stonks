@@ -7,11 +7,12 @@ using NUnit.Framework;
 
 namespace IntegrationTests;
 
+#if !DEBUG
+[Ignore("These tests are to be run only in debug mode")] 
+#endif
+[TestFixture]
 public class PayPalTests
 {
-#if !DEBUG
-    [Ignore("This test runs only in debug")] 
-#endif
 	[Test]
 	public void CreatePayment()
 	{
