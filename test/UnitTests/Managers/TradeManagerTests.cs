@@ -7,6 +7,7 @@ using NUnit.Framework;
 
 using Stonks.DTOs;
 using Stonks.Models;
+using Stonks.Helpers;
 using Stonks.Managers;
 
 namespace UnitTests.Managers;
@@ -211,7 +212,7 @@ public class TradeManagerTests : ManagerTest
 			Amount = 1
 		};
 
-		Assert.Throws<InvalidOperationException>(() => _manager.PlaceOffer(command));
+		Assert.Throws<BankruptStockException>(() => _manager.PlaceOffer(command));
 	}
 
 	[Test]
@@ -274,7 +275,7 @@ public class TradeManagerTests : ManagerTest
 			Amount = 1
 		};
 
-		Assert.Throws<ArgumentException>(() => _manager.PlaceOffer(command));
+		Assert.Throws<PlacingPublicOfferingException>(() => _manager.PlaceOffer(command));
 	}
 
 	[Test]
@@ -343,7 +344,7 @@ public class TradeManagerTests : ManagerTest
 			Amount = offerAmount
 		};
 
-		Assert.Throws<ArgumentException>(() => _manager.PlaceOffer(command));
+		Assert.Throws<NoStocksOnSellerException>(() => _manager.PlaceOffer(command));
 	}
 
 	[Test]

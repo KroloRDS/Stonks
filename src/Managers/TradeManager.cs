@@ -114,11 +114,11 @@ public class TradeManager : ITradeManager
 		var type = command.Type.Value;
 		
 		if (type == OfferType.PublicOfferring)
-			throw new ArgumentException("'Public offering' offer can only be placed by the broker", nameof(type));
+			throw new PlacingPublicOfferingException();
 
 		var stock = _ctx.GetById<Stock>(command.StockId);
 		if (stock.Bankrupt)
-			throw new InvalidOperationException("Cannot buy bankrupt stock");
+			throw new BankruptStockException();
 
 		var amount = command.Amount.AssertPositive();
 		var price = command.Price.AssertPositive();
@@ -134,7 +134,7 @@ public class TradeManager : ITradeManager
 	{
 		var ownedAmount = _ctx.GetStockOwnership(writerId, stockId)?.Amount;
 		if (ownedAmount is null || ownedAmount < amount)
-			throw new ArgumentException("Not enough owned stock", nameof(amount));
+			throw new NoStocksOnSellerException();
 	}
 
 	private void BuyStock(TradeOffer offer, string userId, int? amount)

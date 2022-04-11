@@ -1,7 +1,6 @@
-﻿using System;
-using Moq;
+﻿using Moq;
 using NUnit.Framework;
-
+using Stonks.Helpers;
 using Stonks.Managers;
 
 namespace UnitTests.Managers;
@@ -26,8 +25,12 @@ public class BattleRoyaleManagerTests : ManagerTest
 	[Test]
 	public void GetWeakestStockId_NoStocks_ShouldThrow()
 	{
-		Assert.Throws<Exception>(() => _manager.GetWeakestStockId());
+		Assert.Throws<NoStocksToBankruptException>(
+			() => _manager.GetWeakestStockId());
+
 		AddBankruptStock();
-		Assert.Throws<Exception>(() => _manager.GetWeakestStockId());
+
+		Assert.Throws<NoStocksToBankruptException>(
+			() => _manager.GetWeakestStockId());
 	}
 }

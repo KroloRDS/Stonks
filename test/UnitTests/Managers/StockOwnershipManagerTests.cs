@@ -2,11 +2,11 @@
 using System.Linq;
 using System.Collections.Generic;
 
-using Moq;
 using NUnit.Framework;
 
 using Stonks.DTOs;
 using Stonks.Models;
+using Stonks.Helpers;
 using Stonks.Managers;
 
 namespace UnitTests.Managers;
@@ -119,7 +119,7 @@ public class StockOwnershipManagerTests : ManagerTest
 			Amount = 5
 		};
 
-		Assert.Throws<ArgumentException>(() => _manager.BuyStock(command));
+		Assert.Throws<ExtraRefToSellerException>(() => _manager.BuyStock(command));
 	}
 
 	[Test]
@@ -132,7 +132,7 @@ public class StockOwnershipManagerTests : ManagerTest
 			Amount = 5
 		};
 
-		Assert.Throws<InvalidOperationException>(() => _manager.BuyStock(command));
+		Assert.Throws<NoPublicStocksException>(() => _manager.BuyStock(command));
 	}
 
 	[Test]
@@ -145,7 +145,7 @@ public class StockOwnershipManagerTests : ManagerTest
 			Amount = 5
 		};
 
-		Assert.Throws<InvalidOperationException>(() => _manager.BuyStock(command));
+		Assert.Throws<BankruptStockException>(() => _manager.BuyStock(command));
 	}
 
 	[Test]
@@ -165,7 +165,7 @@ public class StockOwnershipManagerTests : ManagerTest
 		};
 
 		//Act & Assert
-		Assert.Throws<InvalidOperationException>(() => _manager.BuyStock(command));
+		Assert.Throws<NoStocksOnSellerException>(() => _manager.BuyStock(command));
 	}
 
 	[Test]
@@ -196,7 +196,7 @@ public class StockOwnershipManagerTests : ManagerTest
 		};
 
 		//Act & Assert
-		Assert.Throws<InvalidOperationException>(() => _manager.BuyStock(command));
+		Assert.Throws<NoStocksOnSellerException>(() => _manager.BuyStock(command));
 	}
 
 	[Test]

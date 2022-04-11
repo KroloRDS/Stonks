@@ -1,5 +1,6 @@
 ﻿using Stonks.Data;
 using Stonks.Models;
+using Stonks.Helpers;
 
 namespace Stonks.Managers;
 
@@ -17,7 +18,7 @@ public class HistoricalPriceManager : IHistoricalPriceManager
 	{
 		var stock = _ctx.GetById<Stock>(stockId);
 		if (stock.Bankrupt)
-			throw new InvalidOperationException("Cannot get current price for bankrupt stock");
+			throw new BankruptStockException();
 
 		return GetCurrentPriceForValidStock(stock.Id);
 	}
@@ -78,7 +79,7 @@ public class HistoricalPriceManager : IHistoricalPriceManager
 	{
 		var stock = _ctx.GetById<Stock>(stockId);
 		if (stock.Bankrupt)
-			throw new InvalidOperationException("Cannot update price for bankrupt stock");
+			throw new BankruptStockException();
 
 		UpdateAveragePriceForValidStock(stock.Id);
 	}

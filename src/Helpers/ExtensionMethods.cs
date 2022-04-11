@@ -26,11 +26,10 @@ public static class ExtensionMethods
 		return price.Value;
 	}
 
-	public static string AssertNotEmpty(this string? str)
+	public static void AssertNotEmpty(this string? str)
 	{
 		if (string.IsNullOrEmpty(str))
-			throw new ArgumentException("Argument cannot be empty");
-		return str;
+			throw new ArgumentNullException(nameof(str));
 	}
 
 	public static double StandardDev(this IEnumerable<decimal>? sequence)
@@ -73,5 +72,10 @@ public static class ExtensionMethods
 	{
 		if (maxDiff == 0) return null;
 		return (x - min) / maxDiff;
+	}
+
+	public static bool IsAlphaNum(this char c)
+	{
+		return char.IsLetterOrDigit(c);
 	}
 }

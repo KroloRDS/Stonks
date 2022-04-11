@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 
 using Stonks.Models;
+using Stonks.Helpers;
 using Stonks.Managers;
 
 namespace UnitTests.Managers;
@@ -37,8 +38,8 @@ public class HistoricalPriceManagerTests : ManagerTest
 	public void GetAndUpdateAveragePrice_BankruptStock_ShouldThrow()
 	{
 		var stockId = AddBankruptStock().Id;
-		Assert.Throws<InvalidOperationException>(() => _manager.GetCurrentPrice(stockId));
-		Assert.Throws<InvalidOperationException>(() => _manager.UpdateAveragePriceForOneStock(stockId));
+		Assert.Throws<BankruptStockException>(() => _manager.GetCurrentPrice(stockId));
+		Assert.Throws<BankruptStockException>(() => _manager.UpdateAveragePriceForOneStock(stockId));
 	}
 
 	[Test]
@@ -224,12 +225,17 @@ public class HistoricalPriceManagerTests : ManagerTest
 		_ctx.SaveChanges();
 
 		//Act & Assert
-		Assert.AreEqual(2, _manager.GetHistoricalPrices(stock.Id, new DateTime(2020, 6, 6)).Count());
-		Assert.AreEqual(1, _manager.GetHistoricalPrices(stock.Id, new DateTime(2022, 1, 1)).Count());
-		Assert.AreEqual(1, _manager.GetHistoricalPrices(stock.Id, new DateTime(2019, 6, 6), new DateTime(2020, 6, 6)).Count());
-		Assert.AreEqual(2, _manager.GetHistoricalPrices(stock.Id, new DateTime(2019, 6, 6), new DateTime(2021, 1, 1)).Count());
-		Assert.AreEqual(0, _manager.GetHistoricalPrices(stock.Id, new DateTime(2021, 6, 6), new DateTime(2021, 7, 7)).Count());
-		Assert.AreEqual(0, _manager.GetHistoricalPrices(stock.Id, new DateTime(2001, 6, 6), new DateTime(2019, 7, 7)).Count());
-		Assert.AreEqual(0, _manager.GetHistoricalPrices(stock.Id, new DateTime(2025, 1, 1)).Count());
+		Assert.AreEqual(2, GetPricesCount(stock.Id, new DateTime(2020, 6, 6)));
+		Assert.AreEqual(1, GetPricesCount(stock.Id, new DateTime(2022, 1, 1)));
+		Assert.AreEqual(1, GetPricesCount(stock.Id, new DateTime(2019, 6, 6), new DateTime(2020, 6, 6)));
+		Assert.AreEqual(2, GetPricesCount(stock.Id, new DateTime(2019, 6, 6), new DateTime(2021, 1, 1)));
+		Assert.AreEqual(0, GetPricesCount(stock.Id, new DateTime(2021, 6, 6), new DateTime(2021, 7, 7)));
+		Assert.AreEqual(0, GetPricesCount(stock.Id, new DateTime(2001, 6, 6), new DateTime(2019, 7, 7)));
+		Assert.AreEqual(0, GetPricesCount(stock.Id, new DateTime(2025, 1, 1)));
+	}
+
+	private int GetPricesCount(Guid stockId, DateTime from, DateTime? to = null)
+	{
+		return _manager.GetHistoricalPrices(stockId, from, to).Count;
 	}
 }

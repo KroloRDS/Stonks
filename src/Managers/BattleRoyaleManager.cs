@@ -35,7 +35,7 @@ public class BattleRoyaleManager : IBattleRoyaleManager
 	{
 		var stocks = _ctx.Stock.Where(x => !x.Bankrupt);
 		if (!stocks.Any())
-			throw new Exception("No stocks to bankrupt");
+			throw new NoStocksToBankruptException();
 
 		return stocks.Select(x => GetStockIndicator(x.Id))
 			.ToList()

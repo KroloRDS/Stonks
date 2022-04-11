@@ -19,11 +19,11 @@ public class StockOwnershipManager : IStockOwnershipManager
 	{
 		(var stockId, var userId, var amount) = ValidateCommand(command);
 
-		if (command!.BuyFromUser != true)
+		if (command!.BuyFromUser is not true)
 		{
 			var stock = _ctx.GetById<Stock>(stockId);
 			if (stock.PublicallyOfferredAmount < amount)
-				throw new InvalidOperationException("Not enough publically offered stocks");
+				throw new NoPublicStocksException();
 
 			stock.PublicallyOfferredAmount -= amount;
 			AddTransactionLog(stockId, userId, null, amount);
@@ -46,11 +46,11 @@ public class StockOwnershipManager : IStockOwnershipManager
 			throw new ArgumentNullException(nameof(command));
 
 		if (command.BuyFromUser is not true && command.SellerId is not null)
-			throw new ArgumentException("Reference to seller is not necessary when not buying from user", nameof(command));
+			throw new ExtraRefToSellerException();
 
 		var stock = _ctx.GetById<Stock>(command.StockId);
 		if (stock.Bankrupt)
-			throw new InvalidOperationException("Cannot buy bankrupt stock");
+			throw new BankruptStockException();
 
 		return (stock.Id, _ctx.EnsureUserExist(command.BuyerId),
 			command.Amount.AssertPositive());
@@ -80,7 +80,7 @@ public class StockOwnershipManager : IStockOwnershipManager
 		var ownership = _ctx.GetStockOwnership(userId, stockId);
 
 		if (ownership is null || ownership.Amount < amount)
-			throw new InvalidOperationException("Seller does not have enough stocks");
+			throw new NoStocksOnSellerException();
 
 		ownership.Amount -= amount;
 	}

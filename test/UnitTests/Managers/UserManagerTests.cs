@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-
+using Stonks.Helpers;
 using Stonks.Managers;
 
 namespace UnitTests.Managers;
@@ -34,14 +34,14 @@ public class UserManagerTests : ManagerTest
 	[Test]
 	public void ChangePayPalEmail_NullEmail_ShouldThrow()
 	{
-		Assert.Throws<ArgumentException>(
+		Assert.Throws<ArgumentNullException>(
 			() => _manager.ChangePayPalEmail(GetUserId(AddUser()), null));
 	}
 
 	[Test]
 	public void ChangePayPalEmail_EmptyEmail_ShouldThrow()
 	{
-		Assert.Throws<ArgumentException>(
+		Assert.Throws<ArgumentNullException>(
 			() => _manager.ChangePayPalEmail(GetUserId(AddUser()), string.Empty));
 	}
 
@@ -61,17 +61,19 @@ public class UserManagerTests : ManagerTest
 			"Abc.example.com",
 			"A@b@c@example.com",
 			"a\"b(c)d,e:f; g<h> i[j\\k]l @example.com",
-			"1234567890123456789012345678901234567890123456789012345678901234x@example.com",
 			"i_like_underscore@but_its_not_allowed_in_this_part.example.com",
 			"💩@test.com"
 		};
+		var longEmail = "1234567890123456789012345678901234567890123456789012345678901234x@example.com";
 
 		//Act & Assert
 		foreach (var email in wrongEmails)
 		{
-			Assert.Throws<ArgumentException>(
+			Assert.Throws<InvalidEmailException>(
 				() => _manager.ChangePayPalEmail(userId, email));
 		}
+		Assert.Throws<EmailTooLongException>(
+			() => _manager.ChangePayPalEmail(userId, longEmail));
 	}
 
 	[Test]

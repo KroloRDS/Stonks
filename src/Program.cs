@@ -57,7 +57,7 @@ static void UpdateSchema(IApplicationBuilder app)
 		.CreateScope();
 	using var context = serviceScope.ServiceProvider.GetService<AppDbContext>();
 	
-	if (context == null) return;
+	if (context is null) return;
 	
 	context.Database.Migrate();
 }
