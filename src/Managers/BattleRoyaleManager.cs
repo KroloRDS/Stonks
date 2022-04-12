@@ -29,6 +29,7 @@ public class BattleRoyaleManager : IBattleRoyaleManager
 		var amount = _config.NewStocksAfterRound();
 		_stockManager.Bankrupt(toEliminate);
 		_stockManager.EmitNewStocks(amount);
+		_ctx.SaveChanges();
 	}
 
 	public Guid GetWeakestStockId()

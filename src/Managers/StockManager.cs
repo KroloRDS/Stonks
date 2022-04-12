@@ -22,7 +22,6 @@ public class StockManager : IStockManager
 		stock.Bankrupt = true;
 		stock.BankruptDate = DateTime.Now;
 		stock.PublicallyOfferredAmount = 0;
-		_ctx.SaveChanges();
 
 		_tradeManager.RemoveAllOffersForStock(stockId);
 		_ownershipManager.RemoveAllOwnershipForStock(stockId);
@@ -50,7 +49,6 @@ public class StockManager : IStockManager
 			if (stock.PublicallyOfferredAmount < amount)
 				stock.PublicallyOfferredAmount = amount;
 		}
-		_ctx.SaveChanges();
 
 		_tradeManager.AddPublicOffers(amount);
 	}

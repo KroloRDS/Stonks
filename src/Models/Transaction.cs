@@ -24,6 +24,6 @@ public class Transaction : HasId
 	public int Amount { get; set; }
 	public DateTime Timestamp { get; set; }
 
-	[Column(TypeName = "decimal(15,9)")]
+	[Column(TypeName = "decimal(8,2)")]
 	public decimal Price { get; set; }
 }

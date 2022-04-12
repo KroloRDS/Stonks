@@ -7,15 +7,18 @@ namespace Stonks.Managers;
 
 public class TradeManager : ITradeManager
 {
+	private readonly IUserManager _userManager;
 	private readonly IStockOwnershipManager _stockManager;
 	private readonly IHistoricalPriceManager _historicalPriceManager;
 	private readonly AppDbContext _ctx;
 
 	//TODO: Ensure availability & safty for multiple threads
-	public TradeManager(AppDbContext ctx, IStockOwnershipManager stockManager,
+	public TradeManager(AppDbContext ctx, IUserManager userManager,
+		IStockOwnershipManager stockManager,
 		IHistoricalPriceManager historicalPrice)
 	{
 		_ctx = ctx;
+		_userManager = userManager;
 		_stockManager = stockManager;
 		_historicalPriceManager = historicalPrice;
 	}
@@ -101,7 +104,6 @@ public class TradeManager : ITradeManager
 	{
 		_ctx.EnsureExist<Stock>(stockId);
 		_ctx.RemoveRange(_ctx.TradeOffer.Where(x => x.StockId == stockId));
-		_ctx.SaveChanges();
 	}
 
 	private (OfferType, int, Guid, decimal, string) ValidateCommand(PlaceOfferCommand? command)
@@ -200,7 +202,6 @@ public class TradeManager : ITradeManager
 		{
 			AddPublicOffers(id, amount);
 		}
-		_ctx.SaveChanges();
 	}
 
 	private void AddPublicOffers(Guid stockId, int amount)
@@ -213,7 +214,6 @@ public class TradeManager : ITradeManager
 		if (offer is not null && offer.Amount < amount)
 		{
 			offer.Amount = amount;
-			_ctx.SaveChanges();
 			return;
 		}
 

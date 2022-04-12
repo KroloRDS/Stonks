@@ -36,8 +36,6 @@ public class StockOwnershipManager : IStockOwnershipManager
 		}
 		
 		GiveStocksToUser(stockId, userId, amount);
-
-		_ctx.SaveChanges();
 	}
 
 	private (Guid, string, int) ValidateCommand(BuyStockCommand? command)
@@ -101,7 +99,6 @@ public class StockOwnershipManager : IStockOwnershipManager
 	{
 		_ctx.EnsureExist<Stock>(stockId);
 		_ctx.RemoveRange(_ctx.StockOwnership.Where(x => x.StockId == stockId));
-		_ctx.SaveChanges();
 	}
 
 	public int GetAllOwnedStocksAmount(Guid? stockId)

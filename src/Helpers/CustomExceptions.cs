@@ -24,6 +24,12 @@
 		public BankruptStockException() : base(Desc) { }
 	}
 
+	public class InsufficientFundsException : InvalidOperationException
+	{
+		private const string Desc = "User does not have sufficient funds";
+		public InsufficientFundsException() : base(Desc) { }
+	}
+
 	public class ExtraRefToSellerException : ArgumentException
 	{
 		private const string Desc = "Reference to seller is not necessary when not buying from user";

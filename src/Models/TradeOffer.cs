@@ -14,10 +14,10 @@ public class TradeOffer : HasId
 	public OfferType Type { get; set; }
 	public int Amount { get; set; }
 
-	[Column(TypeName = "decimal(15,9)")]
+	[Column(TypeName = "decimal(8,2)")]
 	public decimal BuyPrice { get; set; }
 
-	[Column(TypeName = "decimal(15,9)")]
+	[Column(TypeName = "decimal(8,2)")]
 	public decimal SellPrice { get; set; }
 }
 

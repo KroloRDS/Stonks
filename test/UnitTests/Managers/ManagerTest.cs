@@ -81,6 +81,14 @@ public class ManagerTest
 		return user;
 	}
 
+	protected User AddUserWithFunds(decimal funds)
+	{
+		var user = new User { Funds = funds };
+		_ctx.Add(user);
+		_ctx.SaveChanges();
+		return user;
+	}
+
 	protected static Guid GetUserId(User user)
 	{
 		return Guid.Parse(user.Id);
