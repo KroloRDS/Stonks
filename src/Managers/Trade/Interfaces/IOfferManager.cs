@@ -1,0 +1,11 @@
+﻿using Stonks.DTOs;
+
+namespace Stonks.Managers.Trade;
+
+public interface IOfferManager
+{
+	void PlaceOffer(PlaceOfferCommand? command);
+	void AcceptOffer(Guid? userId, Guid? offerId);
+	void AcceptOffer(Guid? userId, Guid? offerId, int? amount);
+	void RemoveOffer(Guid? offerId);
+}

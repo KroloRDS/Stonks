@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Stonks.Data;
 
@@ -11,13 +12,14 @@ using Stonks.Data;
 namespace Stonks.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220412132721_Add-required-fields")]
+    partial class Addrequiredfields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.4")
+                .HasAnnotation("ProductVersion", "6.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
@@ -217,25 +219,6 @@ namespace Stonks.Data.Migrations
                     b.ToTable("Log");
                 });
 
-            modelBuilder.Entity("Stonks.Models.Share", b =>
-                {
-                    b.Property<string>("OwnerId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<Guid>("StockId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Amount")
-                        .IsConcurrencyToken()
-                        .HasColumnType("int");
-
-                    b.HasKey("OwnerId", "StockId");
-
-                    b.HasIndex("StockId");
-
-                    b.ToTable("Share");
-                });
-
             modelBuilder.Entity("Stonks.Models.Stock", b =>
                 {
                     b.Property<Guid>("Id")
@@ -268,6 +251,32 @@ namespace Stonks.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("Stock");
+                });
+
+            modelBuilder.Entity("Stonks.Models.StockOwnership", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Amount")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
+                    b.Property<string>("OwnerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<Guid>("StockId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerId");
+
+                    b.HasIndex("StockId");
+
+                    b.ToTable("StockOwnership");
                 });
 
             modelBuilder.Entity("Stonks.Models.TradeOffer", b =>
@@ -475,7 +484,7 @@ namespace Stonks.Data.Migrations
                     b.Navigation("Stock");
                 });
 
-            modelBuilder.Entity("Stonks.Models.Share", b =>
+            modelBuilder.Entity("Stonks.Models.StockOwnership", b =>
                 {
                     b.HasOne("Stonks.Models.User", "Owner")
                         .WithMany()

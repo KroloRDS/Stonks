@@ -21,9 +21,11 @@ public class Transaction : HasId
 	public string? SellerId { get; set; }
 	public User? Seller { get; set; }
 
+	[Required]
 	public int Amount { get; set; }
+	[Required]
 	public DateTime Timestamp { get; set; }
-
+	[Required]
 	[Column(TypeName = "decimal(8,2)")]
 	public decimal Price { get; set; }
 }

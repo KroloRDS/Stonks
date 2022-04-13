@@ -10,10 +10,17 @@ public class AppDbContext : IdentityDbContext<User>
 	{
 	}
 
-	public DbSet<HistoricalPrice> HistoricalPrice { get; set; }
+	protected override void OnModelCreating(ModelBuilder modelBuilder)
+	{
+		base.OnModelCreating(modelBuilder);
+		modelBuilder.Entity<Share>()
+			.HasKey(x => new { x.OwnerId, x.StockId });
+	}
+
+	public DbSet<AvgPrice> AvgPrice { get; set; }
 	public DbSet<Log> Log { get; set; }
 	public DbSet<Stock> Stock { get; set; }
-	public DbSet<StockOwnership> StockOwnership { get; set; }
+	public DbSet<Share> Share { get; set; }
 	public DbSet<TradeOffer> TradeOffer { get; set; }
 	public DbSet<Transaction> Transaction { get; set; }
 
@@ -64,7 +71,7 @@ public class AppDbContext : IdentityDbContext<User>
 		return userId.Value.ToString();
 	}
 
-	public StockOwnership? GetStockOwnership(string? userId, Guid? stockId)
+	public Share? GetShares(string? userId, Guid? stockId)
 	{
 		if (userId is null)
 			throw new ArgumentNullException(nameof(userId));
@@ -72,7 +79,7 @@ public class AppDbContext : IdentityDbContext<User>
 		if (stockId is null)
 			throw new ArgumentNullException(nameof(stockId));
 
-		return StockOwnership.FirstOrDefault(x =>
+		return Share.FirstOrDefault(x =>
 			x.StockId == stockId &&
 			x.OwnerId == userId);
 	}

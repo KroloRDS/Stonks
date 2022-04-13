@@ -1,4 +1,6 @@
-﻿using Stonks.Managers;
+﻿using Stonks.Managers.Trade;
+using Stonks.Managers.Common;
+using Stonks.Managers.Bankruptcy;
 
 namespace Stonks.Helpers;
 
@@ -8,9 +10,11 @@ public class ServicesHelper
 	{
 		var services = builder.Services;
 
-		services.AddScoped<IHistoricalPriceManager, HistoricalPriceManager>();
 		services.AddScoped<ILogManager, LogManager>();
-		services.AddScoped<IStockOwnershipManager, StockOwnershipManager>();
-		services.AddScoped<ITradeManager, TradeManager>();
+		services.AddScoped<IOfferManager, OfferManager>();
+		services.AddScoped<IPriceManager, PriceManager>();
+		services.AddScoped<IUserBalanceManager, UserBalanceManager>();
+		services.AddScoped<ITransferSharesManager, TransferSharesManager>();
+		services.AddScoped<IBankruptSharesManager, BankruptSharesManager>();
 	}
 }
