@@ -30,6 +30,12 @@
 		public InsufficientFundsException() : base(Desc) { }
 	}
 
+	public class NoCurrentPriceException : InvalidOperationException
+	{
+		private const string Desc = "No current price for given stock in the database";
+		public NoCurrentPriceException() : base(Desc) { }
+	}
+
 	public class ExtraRefToSellerException : ArgumentException
 	{
 		private const string Desc = "Reference to seller is not necessary when not buying from user";

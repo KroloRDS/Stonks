@@ -7,10 +7,10 @@ namespace Stonks.Managers.Bankruptcy;
 public class BankruptTradeOfferManager : IBankruptTradeOfferManager
 {
 	private readonly AppDbContext _ctx;
-	private readonly IPriceManager _priceManager;
+	private readonly IGetPriceManager _priceManager;
 
 	public BankruptTradeOfferManager(AppDbContext ctx,
-		IPriceManager historicalPriceManager)
+		IGetPriceManager historicalPriceManager)
 	{
 		_ctx = ctx;
 		_priceManager = historicalPriceManager;

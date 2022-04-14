@@ -18,11 +18,11 @@ public class BankruptTradeOfferManagerTests : ManagerTest
 
 	public BankruptTradeOfferManagerTests()
 	{
-		var mockPriceManager = new Mock<IPriceManager>();
+		var mockPriceManager = new Mock<IGetPriceManager>();
 		mockPriceManager.Setup(x => x.GetCurrentPrice(It.IsAny<Guid?>()))
-			.Returns(new AvgPrice
+			.Returns(new AvgPriceCurrent
 			{
-				Amount = PriceManager.DEFAULT_PRICE
+				Amount = IUpdatePriceManager.DEFAULT_PRICE
 			});
 
 		_manager = new BankruptTradeOfferManager(_ctx, mockPriceManager.Object);
@@ -64,6 +64,7 @@ public class BankruptTradeOfferManagerTests : ManagerTest
 
 		//Act
 		_manager.AddPublicOffers(amount);
+		_ctx.SaveChanges();
 
 		//Assert
 		Assert.AreEqual(amount, GetPublicOffer(stock1.Id)?.Amount);
@@ -112,8 +113,11 @@ public class BankruptTradeOfferManagerTests : ManagerTest
 		_ctx.SaveChanges();
 		Assert.AreEqual(ownerships > 0, _ctx.TradeOffer.Any());
 
-		//Act & Assert
+		//Act
 		_manager.RemoveAllOffersForStock(stockId);
+		_ctx.SaveChanges();
+
+		//Assert
 		Assert.False(_ctx.TradeOffer.Any());
 	}
 }

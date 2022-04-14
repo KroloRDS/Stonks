@@ -7,13 +7,13 @@ namespace Stonks.Managers.Bankruptcy;
 
 public class BattleRoyaleManager : IBattleRoyaleManager
 {
-	private readonly IPriceManager _priceManager;
+	private readonly IGetPriceManager _priceManager;
 	private readonly IBankruptSharesManager _shareManager;
 	private readonly IBankruptStockManager _stockManager;
 	private readonly IConfigurationManager _config;
 	private readonly AppDbContext _ctx;
 
-	public BattleRoyaleManager(AppDbContext ctx, IPriceManager historicalPriceManager,
+	public BattleRoyaleManager(AppDbContext ctx, IGetPriceManager historicalPriceManager,
 		IBankruptSharesManager ownershipManager, IBankruptStockManager stockManager,
 		IConfigurationManager config)
 	{

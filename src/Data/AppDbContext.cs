@@ -18,6 +18,7 @@ public class AppDbContext : IdentityDbContext<User>
 	}
 
 	public DbSet<AvgPrice> AvgPrice { get; set; }
+	public DbSet<AvgPriceCurrent> AvgPriceCurrent { get; set; }
 	public DbSet<Log> Log { get; set; }
 	public DbSet<Stock> Stock { get; set; }
 	public DbSet<Share> Share { get; set; }

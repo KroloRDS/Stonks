@@ -12,7 +12,7 @@ public class ServicesHelper
 
 		services.AddScoped<ILogManager, LogManager>();
 		services.AddScoped<IOfferManager, OfferManager>();
-		services.AddScoped<IPriceManager, PriceManager>();
+		services.AddScoped<IGetPriceManager, GetPriceManager>();
 		services.AddScoped<IUserBalanceManager, UserBalanceManager>();
 		services.AddScoped<ITransferSharesManager, TransferSharesManager>();
 		services.AddScoped<IBankruptSharesManager, BankruptSharesManager>();

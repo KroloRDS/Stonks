@@ -9,10 +9,10 @@ public class AvgPriceCurrent : HasId
 	public Guid StockId { get; set; }
 	[Required]
 	public Stock Stock { get; set; }
-	[Required]
-	public DateTime DateTime { get; set; }
 
-	public ulong TotalAmountTraded { get; set; }
+	public ulong SharesTraded { get; set; }
+	[Required]
+	public DateTime Created { get; set; }
 
 	[Column(TypeName = "decimal(8,2)")]
 	public decimal Amount { get; set; }

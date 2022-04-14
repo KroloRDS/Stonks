@@ -221,6 +221,7 @@ public class BuyStockManagerTests : ManagerTest
 			StockId = stock.Id,
 			Amount = sellerInitialStocks
 		});
+		_ctx.SaveChanges();
 
 		//Assert
 		var sellerActualStocks = GetAmountOfOwnedStocks(sellerId, stock.Id);
@@ -239,6 +240,7 @@ public class BuyStockManagerTests : ManagerTest
 			StockId = stock.Id,
 			Amount = buyerStocks
 		});
+		_ctx.SaveChanges();
 
 		//Assert
 		sellerActualStocks = GetAmountOfOwnedStocks(sellerId, stock.Id);

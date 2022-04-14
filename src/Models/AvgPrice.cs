@@ -13,7 +13,7 @@ public class AvgPrice : HasId
 	public DateTime DateTime { get; set; }
 
 	public bool IsCurrent { get; set; }
-	public ulong TotalAmountTraded { get; set; }
+	public ulong SharesTraded { get; set; }
 
 	[Column(TypeName = "decimal(8,2)")]
 	public decimal Amount { get; set; }

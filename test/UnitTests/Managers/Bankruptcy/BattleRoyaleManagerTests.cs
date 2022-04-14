@@ -14,7 +14,7 @@ public class BattleRoyaleManagerTests : ManagerTest
 
 	public BattleRoyaleManagerTests()
 	{
-		var mockPriceManager = new Mock<IPriceManager>();
+		var mockPriceManager = new Mock<IGetPriceManager>();
 		var mockOwnershipManager = new Mock<IBankruptSharesManager>();
 		var mockStockManager = new Mock<IBankruptStockManager>();
 		var mockConfigManager = new Mock<IConfigurationManager>();

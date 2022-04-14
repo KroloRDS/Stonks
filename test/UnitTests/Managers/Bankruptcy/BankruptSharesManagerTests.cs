@@ -10,29 +10,29 @@ using Stonks.Managers.Bankruptcy;
 namespace UnitTests.Managers.BattleRoyale;
 
 [TestFixture]
-public class StockOwnershipManagerTests : ManagerTest
+public class BankruptSharesManagerTests : ManagerTest
 {
 	private readonly BankruptSharesManager _manager;
 
-	public StockOwnershipManagerTests()
+	public BankruptSharesManagerTests()
 	{
 		_manager = new BankruptSharesManager(_ctx);
 	}
 
 	[Test]
-	public void GetAllOwnedStocksAmount_NullStock_ShouldThrow()
+	public void GetAllSharesAmount_NullStock_ShouldThrow()
 	{
 		Assert.Throws<ArgumentNullException>(() => _manager.GetAllSharesAmount(null));
 	}
 
 	[Test]
-	public void GetAllOwnedStocksAmount_WrongStock_ShouldThrow()
+	public void GetAllSharesAmount_WrongStock_ShouldThrow()
 	{
 		Assert.Zero(_manager.GetAllSharesAmount(Guid.NewGuid()));
 	}
 
 	[Test]
-	public void GetAllOwnedStocksAmount_PositiveTest()
+	public void GetAllSharesAmount_PositiveTest()
 	{
 		//Arrange
 		var amount1 = 5;
@@ -67,14 +67,14 @@ public class StockOwnershipManagerTests : ManagerTest
 	}
 
 	[Test]
-	public void RemoveAllOwnershipForStock_NullStock_ShouldThrow()
+	public void RemoveAllShares_NullStock_ShouldThrow()
 	{
 		Assert.Throws<ArgumentNullException>(
 			() => _manager.RemoveAllShares(null));
 	}
 
 	[Test]
-	public void RemoveAllOwnershipForStock_WrongStock_ShouldThrow()
+	public void RemoveAllShares_WrongStock_ShouldThrow()
 	{
 		Assert.Throws<KeyNotFoundException>(
 			() => _manager.RemoveAllShares(Guid.NewGuid()));
@@ -85,7 +85,7 @@ public class StockOwnershipManagerTests : ManagerTest
 	[TestCase(1)]
 	[TestCase(2)]
 	[TestCase(14)]
-	public void RemoveAllOwnershipForStock_PositiveTest(int ownerships)
+	public void RemoveAllShares_PositiveTest(int ownerships)
 	{
 		//Arange
 		var stockId = AddStock().Id;
@@ -100,8 +100,11 @@ public class StockOwnershipManagerTests : ManagerTest
 		_ctx.SaveChanges();
 		Assert.AreEqual(ownerships > 0, _ctx.Share.Any());
 
-		//Act & Assert
+		//Act
 		_manager.RemoveAllShares(stockId);
+		_ctx.SaveChanges();
+
+		//Assert
 		Assert.False(_ctx.Share.Any());
 	}
 }
