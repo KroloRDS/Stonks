@@ -92,7 +92,7 @@ public class UpdatePriceManagerTests : ManagerTest
 		//Arrange
 		var stockId = AddStock().Id;
 
-		var prices = new List<(int Amount, decimal Price)>
+		var prices = new (int Amount, decimal Price)[]
 		{
 			new (10, 10M),
 			new (20, 20M),
@@ -132,7 +132,7 @@ public class UpdatePriceManagerTests : ManagerTest
 		AddTransaction(stockId, amountTraded, averagePrice);
 		_manager.UpdateAveragePriceForOneStock(stockId);
 
-		var prices = new List<(int Amount, decimal Price)>
+		var prices = new (int Amount, decimal Price)[]
 		{
 			new (10, 10M),
 			new (20, 20M),

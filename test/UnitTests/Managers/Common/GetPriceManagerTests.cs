@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 
 using NUnit.Framework;
@@ -101,6 +102,6 @@ public class GetPriceManagerTests : ManagerTest
 
 	private int GetPricesCount(Guid stockId, DateTime from, DateTime? to = null)
 	{
-		return _manager.GetHistoricalPrices(stockId, from, to).Count;
+		return _manager.GetHistoricalPrices(stockId, from, to).Count();
 	}
 }

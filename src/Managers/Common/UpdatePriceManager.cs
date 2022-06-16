@@ -93,7 +93,7 @@ public class UpdatePriceManager : IUpdatePriceManager
 	}
 
 	private static (decimal, ulong) CalculateNewAverage(
-		AvgPriceCurrent currentPrice, List<Transaction> transactions)
+		AvgPriceCurrent currentPrice, IEnumerable<Transaction> transactions)
 	{
 		var sharesTraded = currentPrice.SharesTraded;
 		var priceSum = currentPrice.Amount * sharesTraded;

@@ -12,7 +12,7 @@ public class TransactionManager : ITransactionManager
 		_ctx = ctx;
 	}
 
-	public List<Transaction> GetTransactions(
+	public IEnumerable<Transaction> GetTransactions(
 		Guid stockId, DateTime? dateTime = null)
 	{
 		var query = _ctx.Transaction

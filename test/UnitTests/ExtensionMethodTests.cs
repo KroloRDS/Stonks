@@ -143,7 +143,7 @@ public class ExtensionMethodTests
 		var amount = 89;
 		var volatility = 1.64;
 
-		var stocks = new List<StockIndicator>
+		var stocks = new StockIndicator[]
 		{
 			new StockIndicator
 			{
@@ -197,7 +197,7 @@ public class ExtensionMethodTests
 		//Arrange
 		var fun = 0.12;
 
-		var stocks = new List<StockIndicator>
+		var stocks = new StockIndicator[]
 		{
 			new StockIndicator
 			{

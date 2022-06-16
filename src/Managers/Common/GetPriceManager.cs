@@ -26,7 +26,7 @@ public class GetPriceManager : IGetPriceManager
 		return price;
 	}
 
-	public List<AvgPrice> GetHistoricalPrices(
+	public IEnumerable<AvgPrice> GetHistoricalPrices(
 		Guid? stockId, DateTime? fromDate, DateTime? toDate = null)
 	{
 		if (stockId is null)

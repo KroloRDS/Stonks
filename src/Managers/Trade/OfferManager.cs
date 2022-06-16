@@ -96,7 +96,7 @@ public class OfferManager : IOfferManager
 			throw new NoStocksOnSellerException();
 	}
 
-	private List<TradeOffer> FindBuyOffers(Guid stockId, decimal price)
+	private IEnumerable<TradeOffer> FindBuyOffers(Guid stockId, decimal price)
 	{
 		return _ctx.TradeOffer.Where(x =>
 		   x.Type == OfferType.Buy &&
@@ -106,7 +106,7 @@ public class OfferManager : IOfferManager
 			.ToList();
 	}
 
-	private List<TradeOffer> FindSellOffers(Guid stockId, decimal price)
+	private IEnumerable<TradeOffer> FindSellOffers(Guid stockId, decimal price)
 	{
 		return _ctx.TradeOffer.Where(x =>
 			x.Type != OfferType.Buy &&
