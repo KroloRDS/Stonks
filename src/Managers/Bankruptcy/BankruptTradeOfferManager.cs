@@ -34,9 +34,9 @@ public class BankruptTradeOfferManager : IBankruptTradeOfferManager
 			x.StockId == stockId)
 			.FirstOrDefault();
 
-		if (offer is not null && offer.Amount < amount)
+		if (offer is not null)
 		{
-			offer.Amount = amount;
+			if (offer.Amount < amount) offer.Amount = amount;
 			return;
 		}
 

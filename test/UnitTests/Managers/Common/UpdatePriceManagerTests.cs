@@ -6,9 +6,9 @@ using NUnit.Framework;
 
 using Stonks.Models;
 using Stonks.Helpers;
-using Stonks.Managers.Bankruptcy;
+using Stonks.Managers.Common;
 
-namespace UnitTests.Managers.Bankruptcy;
+namespace UnitTests.Managers.Common;
 
 [TestFixture]
 public class UpdatePriceManagerTests : ManagerTest
@@ -17,7 +17,7 @@ public class UpdatePriceManagerTests : ManagerTest
 
 	public UpdatePriceManagerTests()
 	{
-		_manager = new UpdatePriceManager(_ctx);
+		_manager = new UpdatePriceManager(_ctx, new TransactionManager(_ctx));
 	}
 
 	[Test]
@@ -182,21 +182,6 @@ public class UpdatePriceManagerTests : ManagerTest
 		_ctx.Add(transaction);
 		_ctx.SaveChanges();
 		return transaction.Id;
-	}
-
-	private Guid AddHistoricalPrice(Guid stockId, ulong sharesTraded, decimal averagePrice)
-	{
-		var price = new AvgPrice
-		{
-			StockId = stockId,
-			DateTime = DateTime.Now,
-			SharesTraded = sharesTraded,
-			Amount = averagePrice,
-			AmountNormalised = averagePrice
-		};
-		_ctx.Add(price);
-		_ctx.SaveChanges();
-		return price.Id;
 	}
 
 	private void AddCurrentPrice(Guid stockId, ulong sharesTraded, decimal averagePrice)

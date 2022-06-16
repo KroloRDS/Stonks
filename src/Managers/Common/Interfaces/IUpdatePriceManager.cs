@@ -1,4 +1,4 @@
-﻿namespace Stonks.Managers.Bankruptcy;
+﻿namespace Stonks.Managers.Common;
 
 public interface IUpdatePriceManager
 {

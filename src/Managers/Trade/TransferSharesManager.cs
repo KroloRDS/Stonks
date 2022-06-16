@@ -37,7 +37,7 @@ public class TransferSharesManager : ITransferSharesManager
 		GiveStocksToUser(stockId, userId, amount);
 	}
 
-	private (Guid, string, int) ValidateCommand(TransferSharesCommand? command)
+	private (Guid, Guid, int) ValidateCommand(TransferSharesCommand? command)
 	{
 		if (command is null)
 			throw new ArgumentNullException(nameof(command));
@@ -53,7 +53,7 @@ public class TransferSharesManager : ITransferSharesManager
 			command.Amount.AssertPositive());
 	}
 
-	private void GiveStocksToUser(Guid stockId, string userId, int amount)
+	private void GiveStocksToUser(Guid stockId, Guid userId, int amount)
 	{
 		var ownership = _ctx.GetShares(userId, stockId);
 
@@ -62,7 +62,7 @@ public class TransferSharesManager : ITransferSharesManager
 			_ctx.Add(new Share
 			{
 				Amount = amount,
-				OwnerId = userId,
+				OwnerId = userId.ToString(),
 				StockId = stockId
 			});
 		}
@@ -72,7 +72,7 @@ public class TransferSharesManager : ITransferSharesManager
 		}
 	}
 
-	private void TakeStocksFromUser(Guid stockId, string userId, int amount)
+	private void TakeStocksFromUser(Guid stockId, Guid userId, int amount)
 	{
 		var ownership = _ctx.GetShares(userId, stockId);
 
@@ -82,13 +82,13 @@ public class TransferSharesManager : ITransferSharesManager
 		ownership.Amount -= amount;
 	}
 
-	private void AddTransactionLog(Guid stockId, string buyerId, string? sellerId, int amount)
+	private void AddTransactionLog(Guid stockId, Guid buyerId, Guid? sellerId, int amount)
 	{
 		_ctx.Add(new Transaction
 		{
 			StockId = stockId,
-			BuyerId = buyerId,
-			SellerId = sellerId,
+			BuyerId = buyerId.ToString(),
+			SellerId = sellerId.ToString(),
 			Amount = amount,
 			Timestamp = DateTime.Now
 		});

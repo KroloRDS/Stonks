@@ -255,7 +255,7 @@ public class BuyStockManagerTests : ManagerTest
 
 	private int GetAmountOfOwnedStocks(Guid userId, Guid stockId)
 	{
-		var ownership = _ctx.GetShares(userId.ToString(), stockId);
+		var ownership = _ctx.GetShares(userId, stockId);
 		return ownership is null ? 0 : ownership.Amount;
 	}
 

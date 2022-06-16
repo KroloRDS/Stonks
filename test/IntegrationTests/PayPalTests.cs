@@ -18,6 +18,13 @@ public class PayPalTests
 	{
 		var apiContext = new APIContext(GetToken());
 		var payment = Payment.Create(apiContext, GetSamplePayment());
+		
+		//TODO fix this
+		Payment.Execute(apiContext, payment.id, new PaymentExecution
+		{
+			payer_id = payment.payer.payer_info.payer_id,
+			transactions = payment.transactions
+		});
 		Assert.AreEqual("created", payment.state);
 	}
 
@@ -28,7 +35,11 @@ public class PayPalTests
 			intent = "sale",
 			payer = new Payer
 			{
-				payment_method = "paypal"
+				payment_method = "paypal",
+				payer_info = new PayerInfo
+				{
+					payer_id = "00001"
+				}
 			},
 			transactions = new List<Transaction>
 			{
@@ -38,7 +49,7 @@ public class PayPalTests
 					invoice_number = "001",
 					amount = new Amount
 					{
-						currency = "USD",
+						currency = "GBP",
 						total = "100.00",
 						details = new Details
 						{
@@ -54,7 +65,7 @@ public class PayPalTests
 							new Item
 							{
 								name = "Item Name",
-								currency = "USD",
+								currency = "GBP",
 								price = "15",
 								quantity = "5",
 								sku = "sku"

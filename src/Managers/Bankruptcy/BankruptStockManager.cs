@@ -43,6 +43,9 @@ public class BankruptStockManager : IBankruptStockManager
 
 	public void EmitNewStocks(int amount)
 	{
+		if (amount <= 0)
+			throw new ArgumentOutOfRangeException(nameof(amount));
+
 		var stocks = _ctx.Stock.Where(x => !x.Bankrupt);
 		foreach (var stock in stocks)
 		{

@@ -15,17 +15,17 @@ namespace UnitTests.Managers.BattleRoyale;
 public class BankruptTradeOfferManagerTests : ManagerTest
 {
 	private readonly BankruptTradeOfferManager _manager;
+	private readonly Mock<IGetPriceManager> _mockPriceManager = new();
 
 	public BankruptTradeOfferManagerTests()
 	{
-		var mockPriceManager = new Mock<IGetPriceManager>();
-		mockPriceManager.Setup(x => x.GetCurrentPrice(It.IsAny<Guid?>()))
+		_mockPriceManager.Setup(x => x.GetCurrentPrice(It.IsAny<Guid?>()))
 			.Returns(new AvgPriceCurrent
 			{
 				Amount = IUpdatePriceManager.DEFAULT_PRICE
 			});
 
-		_manager = new BankruptTradeOfferManager(_ctx, mockPriceManager.Object);
+		_manager = new BankruptTradeOfferManager(_ctx, _mockPriceManager.Object);
 	}
 
 	[Test]
@@ -67,6 +67,12 @@ public class BankruptTradeOfferManagerTests : ManagerTest
 		_ctx.SaveChanges();
 
 		//Assert
+		_mockPriceManager.Verify(x => x.GetCurrentPrice(stock1.Id), Times.Once);
+		_mockPriceManager.Verify(x => x.GetCurrentPrice(stock2.Id), Times.Never);
+		_mockPriceManager.Verify(x => x.GetCurrentPrice(stock3.Id), Times.Never);
+		_mockPriceManager.Verify(x => 
+			x.GetCurrentPrice(bankruptStock.Id), Times.Never);
+
 		Assert.AreEqual(amount, GetPublicOffer(stock1.Id)?.Amount);
 		Assert.AreEqual(amount, GetPublicOffer(stock2.Id)?.Amount);
 		Assert.AreEqual(biggerAmount, GetPublicOffer(stock3.Id)?.Amount);

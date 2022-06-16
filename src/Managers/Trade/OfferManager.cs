@@ -33,22 +33,24 @@ public class OfferManager : IOfferManager
 		{
 			if (offer.Amount < amount)
 			{
-				AcceptOffer(command?.WriterId, offer.Id);
+				AcceptValidatedOffer(writerId, offer);
 				amount -= offer.Amount;
 			}
 			else
 			{
-				AcceptOffer(command?.WriterId, offer.Id, amount);
+				AcceptValidatedOffer(writerId, offer, amount);
+				_ctx.SaveChanges();
 				return;
 			}
 		}
 
 		// If there are still stocks to sell / buy
+		TakeMoneyUpFront(type, writerId, price * amount);
 		var newOffer = new TradeOffer
 		{
 			Amount = amount,
 			StockId = stockId,
-			WriterId = writerId,
+			WriterId = writerId.ToString(),
 			Type = type
 		};
 
@@ -61,43 +63,7 @@ public class OfferManager : IOfferManager
 		_ctx.SaveChanges();
 	}
 
-	public void AcceptOffer(Guid? userId, Guid? offerId)
-	{
-		var validatedUserId = _ctx.EnsureUserExist(userId);
-		var offer = _ctx.GetById<TradeOffer>(offerId);
-		BuyStock(offer, validatedUserId, offer.Amount);
-		RemoveOffer(offerId);
-	}
-
-	public void AcceptOffer(Guid? userId, Guid? offerId, int? amount)
-	{
-		var validatedUserId = _ctx.EnsureUserExist(userId);
-		var offer = _ctx.GetById<TradeOffer>(offerId);
-		amount = amount.AssertPositive();
-
-		if (offer.Amount <= amount)
-		{
-			AcceptOffer(userId, offerId);
-			return;
-		}
-
-		BuyStock(offer, validatedUserId, amount);
-		offer.Amount -= amount.Value;
-		_ctx.SaveChanges();
-	}
-
-	public void RemoveOffer(Guid? offerId)
-	{
-		if (offerId is null)
-			throw new ArgumentNullException(nameof(offerId));
-
-		//TODO: User auth
-		var offer = _ctx.GetById<TradeOffer>(offerId);
-		_ctx.TradeOffer.Remove(offer);
-		_ctx.SaveChanges();
-	}
-
-	private (OfferType, int, Guid, decimal, string) ValidateCommand(PlaceOfferCommand? command)
+	private (OfferType, int, Guid, decimal, Guid) ValidateCommand(PlaceOfferCommand? command)
 	{
 		if (command is null)
 			throw new ArgumentNullException(nameof(command));
@@ -105,9 +71,9 @@ public class OfferManager : IOfferManager
 		if (command.Type is null)
 			throw new ArgumentNullException(nameof(command.Type));
 		var type = command.Type.Value;
-		
+
 		if (type == OfferType.PublicOfferring)
-			throw new PlacingPublicOfferingException();
+			throw new PublicOfferingException();
 
 		var stock = _ctx.GetById<Stock>(command.StockId);
 		if (stock.Bankrupt)
@@ -123,14 +89,91 @@ public class OfferManager : IOfferManager
 		return (type, amount, stock.Id, price, writerId);
 	}
 
-	private void ValidateOwnedAmount(string writerId, Guid stockId, int amount)
+	private void ValidateOwnedAmount(Guid writerId, Guid stockId, int amount)
 	{
 		var ownedAmount = _ctx.GetShares(writerId, stockId)?.Amount;
 		if (ownedAmount is null || ownedAmount < amount)
 			throw new NoStocksOnSellerException();
 	}
 
-	private void BuyStock(TradeOffer offer, string userId, int? amount)
+	private List<TradeOffer> FindBuyOffers(Guid stockId, decimal price)
+	{
+		return _ctx.TradeOffer.Where(x =>
+		   x.Type == OfferType.Buy &&
+		   x.StockId == stockId &&
+		   x.BuyPrice >= price)
+			.OrderByDescending(x => x.BuyPrice)
+			.ToList();
+	}
+
+	private List<TradeOffer> FindSellOffers(Guid stockId, decimal price)
+	{
+		return _ctx.TradeOffer.Where(x =>
+			x.Type != OfferType.Buy &&
+			x.StockId == stockId &&
+			x.SellPrice <= price)
+			.OrderBy(x => x.SellPrice)
+			.ToList();
+	}
+
+	public void AcceptOffer(Guid? userId, Guid? offerId)
+	{
+		var validatedUserId = _ctx.EnsureUserExist(userId);
+		var offer = _ctx.GetById<TradeOffer>(offerId);
+		AcceptValidatedOffer(validatedUserId, offer);
+		_ctx.SaveChanges();
+	}
+
+	public void AcceptOffer(Guid? userId, Guid? offerId, int? amount)
+	{
+		var validatedUserId = _ctx.EnsureUserExist(userId);
+		var offer = _ctx.GetById<TradeOffer>(offerId);
+		AcceptValidatedOffer(validatedUserId, offer, amount.AssertPositive());
+		_ctx.SaveChanges();
+	}
+
+	private void AcceptValidatedOffer(Guid userId, TradeOffer offer)
+	{
+		BuyShares(userId, offer, offer.Amount);
+		SettleMoney(userId, offer, offer.Amount);
+		_ctx.TradeOffer.Remove(offer);
+	}
+
+	private void AcceptValidatedOffer(Guid userId, TradeOffer offer, int amount)
+	{
+		if (offer.Amount <= amount)
+		{
+			AcceptValidatedOffer(userId, offer);
+			return;
+		}
+
+		BuyShares(userId, offer, amount);
+		SettleMoney(userId, offer, amount);
+		offer.Amount -= amount;
+	}
+
+	private void SettleMoney(Guid clientId, TradeOffer offer, int amount)
+	{
+		var offerValue = offer.Type == OfferType.Buy ?
+			offer.BuyPrice * amount :
+			offer.SellPrice * amount;
+
+		switch (offer.Type)
+		{
+			case OfferType.Sell:
+				var writerId = _ctx.EnsureUserExist(offer.WriterId);
+				_userManager.TransferMoney(clientId, writerId, offerValue);
+				break;
+			case OfferType.Buy:
+				_userManager.GiveMoney(clientId, offerValue);
+				break;
+			case OfferType.PublicOfferring:
+				_userManager.TakeMoney(clientId, offerValue);
+				break;
+		}
+	}
+
+	private void BuyShares(Guid userId, TradeOffer offer, int? amount)
 	{
 		Guid? buyerId;
 		Guid? sellerId = null;
@@ -139,11 +182,11 @@ public class OfferManager : IOfferManager
 		if (offer.Type == OfferType.Buy)
 		{
 			buyerId = Guid.Parse(offer.WriterId!);
-			sellerId = Guid.Parse(userId);
+			sellerId = userId;
 		}
 		else
 		{
-			buyerId = Guid.Parse(userId);
+			buyerId = userId;
 			if (offer.Type == OfferType.PublicOfferring)
 			{
 				buyFromUser = false;
@@ -164,23 +207,34 @@ public class OfferManager : IOfferManager
 		});
 	}
 
-	private List<TradeOffer> FindBuyOffers(Guid stockId, decimal price)
+	public void CancelOffer(Guid? offerId)
 	{
-		return _ctx.TradeOffer. Where(x =>
-			x.Type == OfferType.Buy &&
-			x.StockId == stockId &&
-			x.BuyPrice >= price)
-			.OrderByDescending(x => x.BuyPrice)
-			.ToList();
+		if (offerId is null)
+			throw new ArgumentNullException(nameof(offerId));
+
+		//TODO: User auth
+		var offer = _ctx.GetById<TradeOffer>(offerId);
+
+		if (offer.Type is OfferType.PublicOfferring)
+			throw new PublicOfferingException();
+
+		Refund(offer);
+		_ctx.TradeOffer.Remove(offer);
+
+		_ctx.SaveChanges();
 	}
 
-	private List<TradeOffer> FindSellOffers(Guid stockId, decimal price)
+	private void Refund(TradeOffer offer)
 	{
-		return _ctx.TradeOffer.Where(x =>
-			x.Type != OfferType.Buy &&
-			x.StockId == stockId &&
-			x.SellPrice <= price)
-			.OrderBy(x => x.SellPrice)
-			.ToList();
+		if (offer.Type != OfferType.Buy) return;
+		_userManager.GiveMoney(_ctx.EnsureUserExist(offer.WriterId),
+			offer.BuyPrice * offer.Amount);
+	}
+
+	private void TakeMoneyUpFront(OfferType type,
+		Guid userId, decimal offerValue)
+	{
+		if (type != OfferType.Buy) return;
+		_userManager.TakeMoney(userId, offerValue);
 	}
 }

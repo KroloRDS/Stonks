@@ -61,7 +61,18 @@ public class AppDbContext : IdentityDbContext<User>
 		return user;
 	}
 
-	public string EnsureUserExist(Guid? userId)
+	public Guid EnsureUserExist(string? userId)
+	{
+		if (userId is null)
+			throw new ArgumentNullException(nameof(userId));
+
+		if (!Users.Any(x => x.Id == userId))
+			throw new KeyNotFoundException(nameof(userId));
+
+		return Guid.Parse(userId);
+	}
+
+	public Guid EnsureUserExist(Guid? userId)
 	{
 		if (userId is null)
 			throw new ArgumentNullException(nameof(userId));
@@ -69,10 +80,10 @@ public class AppDbContext : IdentityDbContext<User>
 		if (!Users.Any(x => x.Id == userId.ToString()))
 			throw new KeyNotFoundException(nameof(userId));
 
-		return userId.Value.ToString();
+		return userId.Value;
 	}
 
-	public Share? GetShares(string? userId, Guid? stockId)
+	public Share? GetShares(Guid? userId, Guid? stockId)
 	{
 		if (userId is null)
 			throw new ArgumentNullException(nameof(userId));
@@ -82,6 +93,6 @@ public class AppDbContext : IdentityDbContext<User>
 
 		return Share.FirstOrDefault(x =>
 			x.StockId == stockId &&
-			x.OwnerId == userId);
+			x.OwnerId == userId.ToString());
 	}
 }

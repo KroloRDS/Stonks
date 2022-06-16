@@ -9,72 +9,112 @@ using Stonks.DTOs;
 using Stonks.Models;
 using Stonks.Helpers;
 using Stonks.Managers.Trade;
+using System.Linq.Expressions;
 
-namespace UnitTests.Managers;
+namespace UnitTests.Managers.Trade;
 
 [TestFixture]
-public class TradeManagerTests : ManagerTest
+public class OfferManagerTests : ManagerTest
 {
 	private readonly OfferManager _manager;
+	private readonly Mock<ITransferSharesManager> _mockStockManager = new();
+	private readonly Mock<IUserBalanceManager> _mockUserManager = new();
 
-	public TradeManagerTests()
+	public OfferManagerTests()
 	{
-		var mockStockManager = new Mock<ITransferSharesManager>();
-		var mockUserManager = new Mock<IUserBalanceManager>();
-		_manager = new OfferManager(
-			_ctx, mockUserManager.Object, mockStockManager.Object);
+		_manager = new OfferManager(_ctx, _mockUserManager.Object,
+			_mockStockManager.Object);
 	}
 
 	[Test]
-	public void RemoveOffer_NullOffer_ShouldThrow()
+	public void CancelOffer_NullOffer_ShouldThrow()
 	{
-		Assert.Throws<ArgumentNullException>(() => _manager.RemoveOffer(null));
+		Assert.Throws<ArgumentNullException>(() => _manager.CancelOffer(null));
+		VerifyMocksNotCalled();
 	}
 
 	[Test]
-	public void RemoveOffer_WrongOffer_ShouldThrow()
+	public void CancelOffer_WrongOffer_ShouldThrow()
 	{
-		Assert.Throws<KeyNotFoundException>(() => _manager.RemoveOffer(Guid.NewGuid()));
+		Assert.Throws<KeyNotFoundException>(
+			() => _manager.CancelOffer(Guid.NewGuid()));
+		VerifyMocksNotCalled();
 	}
 
 	[Test]
-	public void RemoveOffer_PositiveTest()
+	public void CancelOffer_PublicOffering_ShouldThrow()
+	{
+		var offer = AddOffer(OfferType.PublicOfferring);
+		Assert.Throws<PublicOfferingException>(
+			() => _manager.CancelOffer(offer.Id));
+		VerifyMocksNotCalled();
+	}
+
+	[Test]
+	public void CancelOffer_SellOffer_ShouldRemove()
+	{
+		var offer = AddOffer(OfferType.Sell);
+		_manager.CancelOffer(offer.Id);
+		Assert.False(_ctx.TradeOffer.Any());
+		VerifyMocksNotCalled();
+	}
+
+	[Test]
+	public void CancelOffer_BuyOffer_ShouldRemoveAndRefund()
 	{
 		var offer = AddOffer(OfferType.Buy);
-		_manager.RemoveOffer(offer.Id);
-		Assert.Zero(_ctx.TradeOffer.Count());
+		_manager.CancelOffer(offer.Id);
+
+		Assert.False(_ctx.TradeOffer.Any());
+		VerifyTakeMoneyNotCalled();
+		VerifyTransferMoneyNotCalled();
+		VerifyTransferSharesMockNotCalled();
+		VerifyGiveMoneyCalled(Guid.Parse(offer.WriterId!),
+			offer.BuyPrice * offer.Amount);
 	}
 
 	[Test]
 	public void AcceptOffer_NullOffer_ShouldThrow()
 	{
 		var userId = GetUserId(AddUser());
-		Assert.Throws<ArgumentNullException>(() => _manager.AcceptOffer(userId, null));
-		Assert.Throws<ArgumentNullException>(() => _manager.AcceptOffer(userId, null, 1));
+		Assert.Throws<ArgumentNullException>(
+			() => _manager.AcceptOffer(userId, null));
+		Assert.Throws<ArgumentNullException>(
+			() => _manager.AcceptOffer(userId, null, 1));
+		VerifyMocksNotCalled();
 	}
 
 	[Test]
 	public void AcceptOffer_WrongOffer_ShouldThrow()
 	{
 		var userId = GetUserId(AddUser());
-		Assert.Throws<KeyNotFoundException>(() => _manager.AcceptOffer(userId, Guid.NewGuid()));
-		Assert.Throws<KeyNotFoundException>(() => _manager.AcceptOffer(userId, Guid.NewGuid(), 1));
+		Assert.Throws<KeyNotFoundException>(
+			() => _manager.AcceptOffer(userId, Guid.NewGuid()));
+		Assert.Throws<KeyNotFoundException>(
+			() => _manager.AcceptOffer(userId, Guid.NewGuid(), 1));
+		VerifyMocksNotCalled();
 	}
 
 	[Test]
 	public void AcceptOffer_NullUser_ShouldThrow()
 	{
 		var offer = AddOffer();
-		Assert.Throws<ArgumentNullException>(() => _manager.AcceptOffer(null, offer.Id));
-		Assert.Throws<ArgumentNullException>(() => _manager.AcceptOffer(null, offer.Id, 1));
+		Assert.Throws<ArgumentNullException>(
+			() => _manager.AcceptOffer(null, offer.Id));
+		Assert.Throws<ArgumentNullException>(
+			() => _manager.AcceptOffer(null, offer.Id, 1));
+		VerifyMocksNotCalled();
 	}
 
 	[Test]
 	public void AcceptOffer_WrongUser_ShouldThrow()
 	{
 		var offer = AddOffer();
-		Assert.Throws<KeyNotFoundException>(() => _manager.AcceptOffer(Guid.NewGuid(), offer.Id));
-		Assert.Throws<KeyNotFoundException>(() => _manager.AcceptOffer(Guid.NewGuid(), offer.Id, 1));
+		Assert.Throws<KeyNotFoundException>(
+			() => _manager.AcceptOffer(Guid.NewGuid(), offer.Id));
+		Assert.Throws<KeyNotFoundException>(
+			() => _manager.AcceptOffer(Guid.NewGuid(), offer.Id, 1));
+		VerifyMocksNotCalled();
 	}
 
 	[Test]
@@ -84,7 +124,9 @@ public class TradeManagerTests : ManagerTest
 	public void AcceptOffer_WrongAmount_ShouldThrow(int amount)
 	{
 		var offer = AddOffer();
-		Assert.Throws<ArgumentOutOfRangeException>(() => _manager.AcceptOffer(GetUserId(AddUser()), offer.Id, amount));
+		Assert.Throws<ArgumentOutOfRangeException>(
+			() => _manager.AcceptOffer(GetUserId(AddUser()), offer.Id, amount));
+		VerifyMocksNotCalled();
 	}
 
 	[Test]
@@ -94,17 +136,21 @@ public class TradeManagerTests : ManagerTest
 	public void AcceptOffer_FullAmount_ShouldRemoveOffer(OfferType type)
 	{
 		//Arrange
+		var clientId1 = GetUserId(AddUser());
+		var clientId2 = GetUserId(AddUser());
 		var offer1 = AddOffer(type);
 		var offer2 = AddOffer(type);
 		var amount = 99;
 		Assert.Greater(amount, offer2.Amount);
 
 		//Act
-		_manager.AcceptOffer(GetUserId(AddUser()), offer1.Id);
-		_manager.AcceptOffer(GetUserId(AddUser()), offer2.Id, amount);
+		_manager.AcceptOffer(clientId1, offer1.Id);
+		_manager.AcceptOffer(clientId2, offer2.Id, amount);
 
 		//Assert
-		Assert.Zero(_ctx.TradeOffer.Count());
+		VerifyAcceptSingleOfferMocksCalled(offer1, clientId1, offer1.Amount);
+		VerifyAcceptSingleOfferMocksCalled(offer2, clientId2, offer2.Amount);
+		Assert.False(_ctx.TradeOffer.Any());
 	}
 
 	[Test]
@@ -114,15 +160,17 @@ public class TradeManagerTests : ManagerTest
 	public void AcceptOffer_NotFullAmount_ShouldNotRemoveOffer(OfferType type)
 	{
 		//Arrange
+		var clientId = GetUserId(AddUser());
 		var offer = AddOffer(type);
 		var amount = 5;
 		var initialAmout = offer.Amount;
 		Assert.Greater(initialAmout, amount);
 
 		//Act
-		_manager.AcceptOffer(GetUserId(AddUser()), offer.Id, amount);
+		_manager.AcceptOffer(clientId, offer.Id, amount);
 
 		//Assert
+		VerifyAcceptSingleOfferMocksCalled(offer, clientId, offer.Amount);
 		Assert.AreEqual(1, _ctx.TradeOffer.Count());
 		Assert.AreEqual(initialAmout - amount, offer.Amount);
 	}
@@ -131,6 +179,7 @@ public class TradeManagerTests : ManagerTest
 	public void PlaceOffer_NullParameter_ShouldThrow()
 	{
 		Assert.Throws<ArgumentNullException>(() => _manager.PlaceOffer(null));
+		VerifyMocksNotCalled();
 	}
 
 	[Test]
@@ -146,6 +195,7 @@ public class TradeManagerTests : ManagerTest
 		};
 
 		Assert.Throws<ArgumentNullException>(() => _manager.PlaceOffer(command));
+		VerifyMocksNotCalled();
 	}
 
 	[Test]
@@ -161,6 +211,7 @@ public class TradeManagerTests : ManagerTest
 		};
 
 		Assert.Throws<KeyNotFoundException>(() => _manager.PlaceOffer(command));
+		VerifyMocksNotCalled();
 	}
 
 	[Test]
@@ -176,6 +227,7 @@ public class TradeManagerTests : ManagerTest
 		};
 
 		Assert.Throws<ArgumentNullException>(() => _manager.PlaceOffer(command));
+		VerifyMocksNotCalled();
 	}
 
 	[Test]
@@ -191,6 +243,7 @@ public class TradeManagerTests : ManagerTest
 		};
 
 		Assert.Throws<KeyNotFoundException>(() => _manager.PlaceOffer(command));
+		VerifyMocksNotCalled();
 	}
 
 	[Test]
@@ -206,6 +259,7 @@ public class TradeManagerTests : ManagerTest
 		};
 
 		Assert.Throws<BankruptStockException>(() => _manager.PlaceOffer(command));
+		VerifyMocksNotCalled();
 	}
 
 	[Test]
@@ -221,6 +275,7 @@ public class TradeManagerTests : ManagerTest
 		};
 
 		Assert.Throws<ArgumentNullException>(() => _manager.PlaceOffer(command));
+		VerifyMocksNotCalled();
 	}
 
 	[Test]
@@ -238,7 +293,9 @@ public class TradeManagerTests : ManagerTest
 			Amount = 1
 		};
 
-		Assert.Throws<ArgumentOutOfRangeException>(() => _manager.PlaceOffer(command));
+		Assert.Throws<ArgumentOutOfRangeException>(
+			() => _manager.PlaceOffer(command));
+		VerifyMocksNotCalled();
 	}
 
 	[Test]
@@ -254,6 +311,7 @@ public class TradeManagerTests : ManagerTest
 		};
 
 		Assert.Throws<ArgumentNullException>(() => _manager.PlaceOffer(command));
+		VerifyMocksNotCalled();
 	}
 
 	[Test]
@@ -268,7 +326,9 @@ public class TradeManagerTests : ManagerTest
 			Amount = 1
 		};
 
-		Assert.Throws<PlacingPublicOfferingException>(() => _manager.PlaceOffer(command));
+		Assert.Throws<PublicOfferingException>(
+			() => _manager.PlaceOffer(command));
+		VerifyMocksNotCalled();
 	}
 
 	[Test]
@@ -284,6 +344,7 @@ public class TradeManagerTests : ManagerTest
 		};
 
 		Assert.Throws<ArgumentNullException>(() => _manager.PlaceOffer(command));
+		VerifyMocksNotCalled();
 	}
 
 	[Test]
@@ -301,7 +362,9 @@ public class TradeManagerTests : ManagerTest
 			Amount = amount
 		};
 
-		Assert.Throws<ArgumentOutOfRangeException>(() => _manager.PlaceOffer(command));
+		Assert.Throws<ArgumentOutOfRangeException>(
+			() => _manager.PlaceOffer(command));
+		VerifyMocksNotCalled();
 	}
 
 	[Test]
@@ -337,7 +400,9 @@ public class TradeManagerTests : ManagerTest
 			Amount = offerAmount
 		};
 
-		Assert.Throws<NoStocksOnSellerException>(() => _manager.PlaceOffer(command));
+		Assert.Throws<NoStocksOnSellerException>(
+			() => _manager.PlaceOffer(command));
+		VerifyMocksNotCalled();
 	}
 
 	[Test]
@@ -379,6 +444,7 @@ public class TradeManagerTests : ManagerTest
 		Assert.AreEqual(price, offer.SellPrice);
 		Assert.AreEqual(OfferType.Sell, offer.Type);
 		Assert.AreEqual(offerAmount, offer.Amount);
+		VerifyMocksNotCalled();
 	}
 
 	[Test]
@@ -405,23 +471,25 @@ public class TradeManagerTests : ManagerTest
 			Stock = stock
 		});
 
-		_ctx.Add(new TradeOffer
+		var existingOffer1 = new TradeOffer
 		{
 			Amount = buyAmount,
 			BuyPrice = price1,
 			StockId = stock.Id,
 			Type = OfferType.Buy,
 			WriterId = AddUser().Id
-		});
+		};
+		_ctx.Add(existingOffer1);
 
-		_ctx.Add(new TradeOffer
+		var existingOffer2 = new TradeOffer
 		{
 			Amount = buyAmount,
 			BuyPrice = price2,
 			StockId = stock.Id,
 			Type = OfferType.Buy,
 			WriterId = AddUser().Id
-		});
+		};
+		_ctx.Add(existingOffer2);
 
 		_ctx.SaveChanges();
 
@@ -438,6 +506,18 @@ public class TradeManagerTests : ManagerTest
 		_manager.PlaceOffer(command);
 
 		//Assert
+		VerifyTransferSharesMockCalled(existingOffer1,
+			GetUserId(user), sellAmount - buyAmount);
+		VerifyTransferSharesMockCalled(existingOffer2,
+			GetUserId(user), buyAmount);
+
+		VerifyGiveMoneyCalled(GetUserId(user), buyAmount * price2);
+		VerifyGiveMoneyCalled(GetUserId(user),
+			(sellAmount - buyAmount) * price1);
+
+		VerifyTakeMoneyNotCalled();
+		VerifyTransferMoneyNotCalled();
+
 		Assert.AreEqual(1, _ctx.TradeOffer.Count());
 
 		var offer = _ctx.TradeOffer.First();
@@ -450,6 +530,7 @@ public class TradeManagerTests : ManagerTest
 	public void PlaceBuyOffer_NoOtherOffers_ShouldAddOffer()
 	{
 		//Arrange
+		var userId = GetUserId(AddUser());
 		var price = 1M;
 		var amount = 2;
 		Assert.Positive(amount);
@@ -457,7 +538,7 @@ public class TradeManagerTests : ManagerTest
 
 		var command = new PlaceOfferCommand
 		{
-			WriterId = GetUserId(AddUser()),
+			WriterId = userId,
 			StockId = AddStock().Id,
 			Price = price,
 			Type = OfferType.Buy,
@@ -468,6 +549,13 @@ public class TradeManagerTests : ManagerTest
 		_manager.PlaceOffer(command);
 
 		//Assert
+		VerifyTakeMoneyCalled(userId, price * amount);
+		VerifyGiveMoneyNotCalled();
+		VerifyTransferMoneyNotCalled();
+		VerifyTransferSharesMockNotCalled();
+
+		Assert.AreEqual(1, _ctx.TradeOffer.Count());
+
 		Assert.AreEqual(1, _ctx.TradeOffer.Count());
 
 		var offer = _ctx.TradeOffer.First();
@@ -480,6 +568,7 @@ public class TradeManagerTests : ManagerTest
 	public void PlaceBuyOffer_ExistingOffers_ShouldNotAddOffer()
 	{
 		//Arrange
+		var userId = GetUserId(AddUser());
 		var sellAmount = 5;
 		var buyAmount = 7;
 		Assert.Positive(sellAmount);
@@ -492,28 +581,30 @@ public class TradeManagerTests : ManagerTest
 
 		var stock = AddStock();
 
-		_ctx.Add(new TradeOffer
+		var existingOffer1 = new TradeOffer
 		{
 			Amount = sellAmount,
 			SellPrice = price1,
 			StockId = stock.Id,
 			Type = OfferType.Sell,
 			WriterId = AddUser().Id
-		});
+		};
+		_ctx.Add(existingOffer1);
 
-		_ctx.Add(new TradeOffer
+		var existingOffer2 = new TradeOffer
 		{
 			Amount = sellAmount,
 			SellPrice = price2,
 			StockId = stock.Id,
 			Type = OfferType.PublicOfferring
-		});
+		};
+		_ctx.Add(existingOffer2);
 
 		_ctx.SaveChanges();
 
 		var command = new PlaceOfferCommand
 		{
-			WriterId = GetUserId(AddUser()),
+			WriterId = userId,
 			StockId = stock.Id,
 			Price = price2,
 			Type = OfferType.Buy,
@@ -524,6 +615,15 @@ public class TradeManagerTests : ManagerTest
 		_manager.PlaceOffer(command);
 
 		//Assert
+		VerifyTransferSharesMockCalled(existingOffer1, userId, sellAmount);
+		VerifyTransferSharesMockCalled(existingOffer2, userId,
+			buyAmount - sellAmount);
+
+		VerifyTransferMoneyCalled(userId, Guid.Parse(existingOffer1.WriterId),
+			price1 * sellAmount);
+		VerifyTakeMoneyCalled(userId, price2 * (buyAmount - sellAmount));
+		VerifyGiveMoneyNotCalled();
+
 		Assert.AreEqual(1, _ctx.TradeOffer.Count());
 
 		var offer = _ctx.TradeOffer.First();
@@ -544,5 +644,114 @@ public class TradeManagerTests : ManagerTest
 		});
 		_ctx.SaveChanges();
 		return entity.Entity;
+	}
+
+	private void VerifyMocksNotCalled()
+	{
+		VerifyTransferMoneyNotCalled();
+		VerifyTakeMoneyNotCalled();
+		VerifyGiveMoneyNotCalled();
+		_mockStockManager.Verify(x =>
+			x.TransferShares(It.IsAny<TransferSharesCommand>()), Times.Never);
+	}
+
+	private void VerifyTransferSharesMockNotCalled()
+	{
+		_mockStockManager.Verify(x =>
+			x.TransferShares(It.IsAny<TransferSharesCommand?>()), Times.Never);
+	}
+
+	private void VerifyTransferSharesMockCalled(TradeOffer offer,
+		Guid clientId, int amount)
+	{
+		Guid? writerId = offer.Type == OfferType.PublicOfferring ?
+			null : Guid.Parse(offer.WriterId!);
+		Guid? sellerId = offer.Type switch
+		{
+			OfferType.Buy => clientId,
+			OfferType.Sell => writerId,
+			_ => null,
+		};
+
+		Expression<Func<TransferSharesCommand, bool>> match = (x =>
+			x.Amount == amount &&
+			x.StockId == offer.StockId &&
+			x.BuyFromUser == (offer.Type != OfferType.PublicOfferring) &&
+			x.BuyerId == (offer.Type == OfferType.Buy ? writerId : clientId) &&
+			x.SellerId == sellerId);
+
+		_mockStockManager.Verify(x =>
+			x.TransferShares(It.Is(match)), Times.Once);
+	}
+
+	private void VerifyAcceptSingleOfferMocksCalled(TradeOffer offer,
+		Guid clientId, int amount)
+	{
+		var offerValue = offer.Type == OfferType.Buy ?
+			offer.BuyPrice * amount :
+			offer.SellPrice * amount;
+
+		VerifyTransferSharesMockCalled(offer, clientId, amount);
+		switch (offer.Type)
+		{
+			case OfferType.Sell:
+				var writerId = _ctx.EnsureUserExist(offer.WriterId);
+				VerifyTransferMoneyCalled(clientId, writerId, offerValue);
+				break;
+			case OfferType.Buy:
+				VerifyGiveMoneyCalled(clientId, offerValue);
+				break;
+			case OfferType.PublicOfferring:
+				VerifyTakeMoneyCalled(clientId, offerValue);
+				break;
+		}
+	}
+
+	private void VerifyTransferMoneyCalled(Guid? payerId,
+		Guid? recipientId, decimal? amount)
+	{
+		_mockUserManager.Verify(x => 
+			x.TransferMoney(payerId, recipientId, amount), Times.Once);
+	}
+
+	private void VerifyGiveMoneyCalled(Guid? userId, decimal? amount)
+	{
+		_mockUserManager.Verify(x =>
+			x.GiveMoney(userId, amount), Times.Once);
+	}
+
+	private void VerifyTakeMoneyCalled(Guid? userId, decimal? amount)
+	{
+		_mockUserManager.Verify(x =>
+			x.TakeMoney(userId, amount), Times.Once);
+	}
+
+	private void VerifyTransferMoneyNotCalled()
+	{
+		_mockUserManager.Verify(x =>
+			x.TransferMoney(
+				It.IsAny<Guid?>(),
+				It.IsAny<Guid?>(),
+				It.IsAny<decimal?>()),
+			Times.Never);
+	}
+
+	private void VerifyGiveMoneyNotCalled()
+	{
+		_mockUserManager.Verify(x =>
+			x.GiveMoney(It.IsAny<Guid?>(), It.IsAny<decimal?>()), Times.Never);
+	}
+
+	private void VerifyTakeMoneyNotCalled()
+	{
+		_mockUserManager.Verify(x =>
+			x.TakeMoney(It.IsAny<Guid?>(), It.IsAny<decimal?>()), Times.Never);
+	}
+
+	[TearDown]
+	public void ResetMocks()
+	{
+		_mockUserManager.Reset();
+		_mockStockManager.Reset();
 	}
 }

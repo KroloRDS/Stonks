@@ -7,7 +7,7 @@ using Stonks.Models;
 using Stonks.Helpers;
 using Stonks.Managers.Common;
 
-namespace UnitTests.Managers;
+namespace UnitTests.Managers.Common;
 
 [TestFixture]
 public class GetPriceManagerTests : ManagerTest

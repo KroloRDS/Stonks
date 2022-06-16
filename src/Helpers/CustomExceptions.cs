@@ -36,16 +36,16 @@
 		public NoCurrentPriceException() : base(Desc) { }
 	}
 
+	public class PublicOfferingException : InvalidOperationException
+	{
+		private const string Desc = "Invalid operation for 'Public Offering' trade offer";
+		public PublicOfferingException() : base(Desc) { }
+	}
+
 	public class ExtraRefToSellerException : ArgumentException
 	{
 		private const string Desc = "Reference to seller is not necessary when not buying from user";
 		public ExtraRefToSellerException() : base(Desc) { }
-	}
-
-	public class PlacingPublicOfferingException : ArgumentException
-	{
-		private const string Desc = "'Public offering' offer can only be placed by the broker";
-		public PlacingPublicOfferingException() : base(Desc) { }
 	}
 
 	public class EmailTooLongException : ArgumentException

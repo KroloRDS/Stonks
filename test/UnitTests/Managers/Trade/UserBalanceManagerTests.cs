@@ -9,11 +9,11 @@ using Stonks.Managers.Trade;
 namespace UnitTests.Managers.Trade;
 
 [TestFixture]
-public class UserManagerTests : ManagerTest
+public class UserBalanceManagerTests : ManagerTest
 {
 	private readonly UserBalanceManager _manager;
 
-	public UserManagerTests()
+	public UserBalanceManagerTests()
 	{
 		_manager = new UserBalanceManager(_ctx);
 	}
@@ -22,45 +22,60 @@ public class UserManagerTests : ManagerTest
 	public void ChangeBalance_NullUser_ShouldThrow()
 	{
 		Assert.Throws<ArgumentNullException>(
-			() => _manager.ChangeBalance(null, 1M));
+			() => _manager.GiveMoney(null, 1M));
+		Assert.Throws<ArgumentNullException>(
+			() => _manager.TakeMoney(null, 1M));
 	}
 
 	[Test]
 	public void ChangeBalance_WrongUser_ShouldThrow()
 	{
 		Assert.Throws<KeyNotFoundException>(
-			() => _manager.ChangeBalance(Guid.NewGuid(), 1M));
+			() => _manager.GiveMoney(Guid.NewGuid(), 1M));
+		Assert.Throws<KeyNotFoundException>(
+			() => _manager.TakeMoney(Guid.NewGuid(), 1M));
 	}
 
 	[Test]
 	public void ChangeBalance_NullAmount_ShouldThrow()
 	{
 		Assert.Throws<ArgumentNullException>(
-			() => _manager.ChangeBalance(GetUserId(AddUser()), null));
+			() => _manager.GiveMoney(GetUserId(AddUser()), null));
+		Assert.Throws<ArgumentNullException>(
+			() => _manager.TakeMoney(GetUserId(AddUser()), null));
 	}
 
 	[Test]
-	public void ChangeBalance_InsufficientFunds_ShouldThrow()
+	public void ChangeBalance_NegativeAmount_ShouldThrow()
+	{
+		Assert.Throws<ArgumentOutOfRangeException>(
+			() => _manager.GiveMoney(GetUserId(AddUser()), -1M));
+		Assert.Throws<ArgumentOutOfRangeException>(
+			() => _manager.TakeMoney(GetUserId(AddUser()), -1M));
+	}
+
+	[Test]
+	public void TakeMoney_InsufficientFunds_ShouldThrow()
 	{
 		//Arrange
-		var amount = -100M;
+		var amount = 100M;
 		var balance = 1M;
-		Assert.Negative(amount);
-		Assert.Negative(balance + amount);
+		Assert.Positive(amount);
+		Assert.Negative(balance - amount);
 
 		var user1 = AddUser();
 		var user2 = AddUserWithFunds(balance);
 
 		//Act & Assert
 		Assert.Throws<InsufficientFundsException>(
-			() => _manager.ChangeBalance(GetUserId(user1), amount));
+			() => _manager.TakeMoney(GetUserId(user1), amount));
 
 		Assert.Throws<InsufficientFundsException>(
-			() => _manager.ChangeBalance(GetUserId(user2), amount));
+			() => _manager.TakeMoney(GetUserId(user2), amount));
 	}
 
 	[Test]
-	public void ChangeBalance_PositiveAmount_ShouldAddFunds()
+	public void GiveMoney_PositiveAmount_ShouldAddFunds()
 	{
 		//Arrange
 		var amount = 1M;
@@ -72,8 +87,8 @@ public class UserManagerTests : ManagerTest
 		var user2 = AddUserWithFunds(balance);
 
 		//Act
-		_manager.ChangeBalance(GetUserId(user1), amount);
-		_manager.ChangeBalance(GetUserId(user2), amount);
+		_manager.GiveMoney(GetUserId(user1), amount);
+		_manager.GiveMoney(GetUserId(user2), amount);
 
 		//Assert
 		Assert.AreEqual(amount, user1.Funds);
@@ -81,19 +96,19 @@ public class UserManagerTests : ManagerTest
 	}
 
 	[Test]
-	public void ChangeBalance_NegativeAmountWithEnoughMoney_ShouldTakeFunds()
+	public void TakeMoney_EnoughMoneyOnUser_ShouldTakeFunds()
 	{
 		//Arrange
-		var amount = -1M;
+		var amount = 1M;
 		var balance = 100M;
-		Assert.Negative(amount);
-		Assert.Positive(balance + amount);
+		Assert.Positive(amount);
+		Assert.Positive(balance - amount);
 
 		var user = AddUserWithFunds(balance);
 
 		//Act & Assert
-		_manager.ChangeBalance(GetUserId(user), amount);
-		Assert.AreEqual(amount + balance, user.Funds);
+		_manager.TakeMoney(GetUserId(user), amount);
+		Assert.AreEqual(balance - amount, user.Funds);
 	}
 
 	[Test]
@@ -139,12 +154,7 @@ public class UserManagerTests : ManagerTest
 		Assert.Throws<ArgumentOutOfRangeException>(
 			() => _manager.TransferMoney(NewUserId(), NewUserId(), -1M));
 	}
-
-	private Guid NewUserId()
-	{
-		return GetUserId(AddUser());
-	}
-
+	
 	[Test]
 	public void TransferMoney_InsufficientFunds_ShouldThrow()
 	{
@@ -167,6 +177,11 @@ public class UserManagerTests : ManagerTest
 		//Assert
 		Assert.Zero(payer.Funds);
 		Assert.AreEqual(amount, recipient.Funds);
+	}
+
+	private Guid NewUserId()
+	{
+		return GetUserId(AddUser());
 	}
 
 	private User AddUserWithFunds(decimal funds)

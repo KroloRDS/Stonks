@@ -2,15 +2,18 @@
 using Stonks.Models;
 using Stonks.Helpers;
 
-namespace Stonks.Managers.Bankruptcy;
+namespace Stonks.Managers.Common;
 
 public class UpdatePriceManager : IUpdatePriceManager
 {
 	private readonly AppDbContext _ctx;
+	private readonly ITransactionManager _transactionManager;
 
-	public UpdatePriceManager(AppDbContext ctx)
+	public UpdatePriceManager(AppDbContext ctx,
+		ITransactionManager transactionManager)
 	{
 		_ctx = ctx;
+		_transactionManager = transactionManager;
 	}
 
 	public void UpdateAveragePrices()
@@ -43,7 +46,8 @@ public class UpdatePriceManager : IUpdatePriceManager
 			return;
 		}
 
-		var transactions = GetNewTransactions(stockId, currentPrice!.Created);
+		var transactions = _transactionManager.GetTransactions(
+			stockId, currentPrice!.Created);
 		(var amount, var sharesTraded) = CalculateNewAverage(currentPrice, transactions);
 
 		_ctx.Add(new AvgPrice
@@ -64,7 +68,7 @@ public class UpdatePriceManager : IUpdatePriceManager
 
 	private void AddFirstAvgPrice(Guid stockId)
 	{
-		var transactions = GetAllTransactions(stockId);
+		var transactions = _transactionManager.GetTransactions(stockId);
 		var sharesTraded = 0UL;
 		var priceSum = 0M;
 
@@ -86,31 +90,6 @@ public class UpdatePriceManager : IUpdatePriceManager
 		});
 
 		_ctx.SaveChanges();
-	}
-
-	private List<Transaction> GetNewTransactions(Guid stockId, DateTime dateTime)
-	{
-		return _ctx.Transaction
-			.Where(x => x.StockId == stockId &&
-				x.Timestamp >= dateTime)
-			.Select(x => new Transaction
-			{
-				Amount = x.Amount,
-				Price = x.Price
-			})
-			.ToList();
-	}
-
-	private List<Transaction> GetAllTransactions(Guid stockId)
-	{
-		return _ctx.Transaction
-			.Where(x => x.StockId == stockId)
-			.Select(x => new Transaction
-			{
-				Amount = x.Amount,
-				Price = x.Price
-			})
-			.ToList();
 	}
 
 	private static (decimal, ulong) CalculateNewAverage(
