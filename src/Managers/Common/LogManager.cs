@@ -40,18 +40,32 @@ public class LogManager : ILogManager
 
 	private void SaveLog(string message, string? exception, string? objectDump)
 	{
-		_ctx.Add(new Log
+		try
 		{
-			Message = message,
-			ObjectDump = objectDump,
-			Exception = exception,
-			Timestamp = DateTime.Now
-		});
-		_ctx.SaveChanges();
+			_ctx.Add(new Log
+			{
+				Message = message,
+				ObjectDump = objectDump,
+				Exception = exception,
+				Timestamp = DateTime.Now
+			});
+			_ctx.SaveChanges();
+		}
+		catch
+		{
+			return;
+		}
 	}
 
 	private static string GetObjectDump(object obj)
 	{
-		return JsonSerializer.Serialize(obj);
+		try
+		{
+			return JsonSerializer.Serialize(obj);
+		}
+		catch
+		{
+			return "";
+		}
 	}
 }

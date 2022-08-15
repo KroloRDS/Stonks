@@ -1,0 +1,41 @@
+﻿@model Stonks.ViewModels.StockViewModel
+
+@{
+	ViewData["Title"] = "Index";
+}
+
+<h1>@Html.DisplayFor(model => model.Stock.Name)</h1>
+<h2>@Html.DisplayFor(model => model.Stock.Symbol)</h2>
+
+<span>@Html.DisplayFor(model => model.CurrentPrice.Amount)</span>
+<br />
+
+<span>BUY</span><span>SELL</span>
+<br />
+<br />
+<br />
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                <b>Date</b>
+            </th>
+            <th>
+                <b>Price</b>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model.Prices) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.DateTime)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Amount)
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

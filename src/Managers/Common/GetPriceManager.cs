@@ -40,11 +40,13 @@ public class GetPriceManager : IGetPriceManager
 		{
 			return _ctx.AvgPrice
 				.Where(x => x.StockId == stockId && x.DateTime >= fromDate)
+				.OrderBy(x => x.DateTime)
 				.ToList();
 		}
 
 		return _ctx.AvgPrice
 			.Where(x => x.StockId == stockId && x.DateTime >= fromDate && x.DateTime <= toDate)
+			.OrderBy(x => x.DateTime)
 			.ToList();
 	}
 }
