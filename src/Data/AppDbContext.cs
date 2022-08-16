@@ -38,12 +38,38 @@ public class AppDbContext : IdentityDbContext<User>
 		return entity;
 	}
 
+	public async Task<T> GetByIdAsync<T>(Guid? id,
+		CancellationToken cancellationToken) where T : HasId
+	{
+		if (id is null)
+			throw new ArgumentNullException(nameof(id));
+
+		var entity = await FindAsync<T>(id, cancellationToken);
+
+		if (entity is null)
+			throw new KeyNotFoundException(nameof(id));
+
+		return entity;
+	}
+
 	public Guid EnsureExist<T>(Guid? id) where T : HasId
 	{
 		if (id is null)
 			throw new ArgumentNullException(nameof(id));
 
 		if (!Set<T>().Any(x => x.Id == id))
+			throw new KeyNotFoundException(nameof(id));
+
+		return id.Value;
+	}
+
+	public async Task<Guid> EnsureExistAsync<T>(Guid? id, 
+		CancellationToken cancellationToken) where T : HasId
+	{
+		if (id is null)
+			throw new ArgumentNullException(nameof(id));
+
+		if (!await Set<T>().AnyAsync(x => x.Id == id, cancellationToken))
 			throw new KeyNotFoundException(nameof(id));
 
 		return id.Value;

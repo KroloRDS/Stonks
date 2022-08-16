@@ -1,26 +1,30 @@
 ﻿using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Stonks.Data;
 using Stonks.Responses.Bankruptcy;
 
 namespace Stonks.Requests.Queries.Bankruptcy;
 
-public class GetTotalAmountOfSharesQuery : IRequest<GetTotalAmountOfSharesResponse>
-{
-	public Guid StockId { get; set; }
-
-	public void Validate()
-	{
-		if (StockId == default)
-		{
-			throw new ArgumentNullException(nameof(StockId));
-		}
-	}
-}
+public record GetTotalAmountOfSharesQuery(Guid StockId)
+	: IRequest<GetTotalAmountOfSharesResponse>;
 
 public class GetTotalAmountOfSharesQueryHandler :
 	IRequestHandler<GetTotalAmountOfSharesQuery, GetTotalAmountOfSharesResponse>
 {
-	public Task<GetTotalAmountOfSharesResponse> Handle(GetTotalAmountOfSharesQuery request, CancellationToken cancellationToken)
+	private readonly AppDbContext _ctx;
+
+	public GetTotalAmountOfSharesQueryHandler(AppDbContext ctx)
 	{
-		throw new NotImplementedException();
+		_ctx = ctx;
+	}
+
+	public async Task<GetTotalAmountOfSharesResponse> Handle(
+		GetTotalAmountOfSharesQuery request,
+		CancellationToken cancellationToken)
+	{
+		var sum = await _ctx.Share
+			.Where(x => x.StockId == request.StockId)
+			.SumAsync(x => x.Amount, cancellationToken);
+		return new GetTotalAmountOfSharesResponse(sum);
 	}
 }

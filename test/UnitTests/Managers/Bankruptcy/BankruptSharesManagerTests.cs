@@ -26,9 +26,15 @@ public class BankruptSharesManagerTests : ManagerTest
 	}
 
 	[Test]
-	public void GetAllSharesAmount_WrongStock_ShouldThrow()
+	public void GetAllSharesAmount_WrongStock_ShouldBeZero()
 	{
 		Assert.Zero(_manager.GetTotalAmountOfShares(Guid.NewGuid()));
+	}
+
+	[Test]
+	public void GetAllSharesAmount_NoShares_ShouldBeZero()
+	{
+		Assert.Zero(_manager.GetTotalAmountOfShares(AddStock().Id));
 	}
 
 	[Test]

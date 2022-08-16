@@ -1,26 +1,40 @@
 ﻿using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Stonks.Data;
+using Stonks.Helpers;
+using Stonks.Models;
 using Stonks.Responses.Common;
 
 namespace Stonks.Requests.Queries.Common;
 
-public class GetCurrentPriceQuery : IRequest<GetCurrentPriceResponse>
-{
-	public Guid StockId { get; set; }
-
-	public void Validate()
-	{
-		if (StockId == default)
-		{
-			throw new ArgumentNullException(nameof(StockId));
-		}
-	}
-}
+public record GetCurrentPriceQuery(Guid StockId)
+	: IRequest<GetCurrentPriceResponse>;
 
 public class GetCurrentPriceQueryHandler :
 	IRequestHandler<GetCurrentPriceQuery, GetCurrentPriceResponse>
 {
-	public Task<GetCurrentPriceResponse> Handle(GetCurrentPriceQuery request, CancellationToken cancellationToken)
+	private readonly AppDbContext _ctx;
+
+	public GetCurrentPriceQueryHandler(AppDbContext ctx)
 	{
-		throw new NotImplementedException();
+		_ctx = ctx;
+	}
+
+	public async Task<GetCurrentPriceResponse> Handle(
+		GetCurrentPriceQuery request, CancellationToken cancellationToken)
+	{
+		var stock = await _ctx.GetByIdAsync<Stock>(request.StockId,
+			cancellationToken);
+
+		if (stock.Bankrupt)
+			throw new BankruptStockException();
+
+		var price = await _ctx.AvgPriceCurrent.SingleOrDefaultAsync(
+			x => x.StockId == request.StockId, cancellationToken);
+
+		if (price is null)
+			throw new NoCurrentPriceException();
+
+		return new GetCurrentPriceResponse(price);
 	}
 }

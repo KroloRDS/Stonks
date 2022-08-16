@@ -52,7 +52,8 @@ public static class ExtensionMethods
 		return Math.Sqrt(sum / count);
 	}
 
-	public static IEnumerable<StockIndicatorNormalised> Normalise(this IEnumerable<StockIndicator>? indicators)
+	public static IEnumerable<StockIndicatorNormalised> Normalise(
+		this IEnumerable<StockIndicator>? indicators)
 	{
 		if (indicators is null || !indicators.Any())
 			return Enumerable.Empty<StockIndicatorNormalised>();
