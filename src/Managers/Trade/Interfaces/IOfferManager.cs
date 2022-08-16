@@ -1,4 +1,4 @@
-﻿using Stonks.Contracts.Commands.Trade;
+﻿using Stonks.Requests.Commands.Trade;
 
 namespace Stonks.Managers.Trade;
 

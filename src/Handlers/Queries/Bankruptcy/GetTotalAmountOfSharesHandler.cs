@@ -1,5 +1,6 @@
-﻿using Stonks.Contracts.Queries.Bankruptcy;
-using Stonks.Data;
+﻿using Stonks.Data;
+using Stonks.Requests.Queries.Bankruptcy;
+using Stonks.Responses.Bankruptcy;
 
 namespace Stonks.Handlers.Queries.Bankruptcy;
 

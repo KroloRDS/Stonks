@@ -1,6 +1,8 @@
-﻿namespace Stonks.Handlers.Commands;
+﻿using Stonks.Contracts.Commands;
 
-public interface ICommandHandler<Command>
+namespace Stonks.Handlers.Commands;
+
+public interface ICommandHandler<Request> where Request : Command
 {
-	void Handle(Command command);
+	void Handle(Request request);
 }

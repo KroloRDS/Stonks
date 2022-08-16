@@ -10,7 +10,7 @@ using Stonks.Models;
 using Stonks.Helpers;
 using Stonks.Managers.Trade;
 using System.Linq.Expressions;
-using Stonks.Contracts.Commands.Trade;
+using Stonks.Requests.Commands.Trade;
 
 namespace UnitTests.Managers.Trade;
 
