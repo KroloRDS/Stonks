@@ -29,7 +29,7 @@ public class BattleRoyaleManager : IBattleRoyaleManager
 		var toEliminate = GetWeakestStockId();
 		var amount = _config.NewStocksAfterRound();
 		_stockManager.Bankrupt(toEliminate);
-		_stockManager.EmitNewStocks(amount);
+		_stockManager.EmitNewShares(amount);
 		_ctx.SaveChanges();
 	}
 
@@ -61,7 +61,7 @@ public class BattleRoyaleManager : IBattleRoyaleManager
 	private decimal GetMarketCap(Guid stockId)
 	{
 		var price = _priceManager.GetCurrentPrice(stockId).Amount;
-		return _shareManager.GetAllSharesAmount(stockId) * price;
+		return _shareManager.GetTotalAmountOfShares(stockId) * price;
 	}
 
 	private double GetVolatility(Guid stockId)

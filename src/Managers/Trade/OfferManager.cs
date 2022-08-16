@@ -1,7 +1,7 @@
 ﻿using Stonks.Data;
-using Stonks.DTOs;
 using Stonks.Models;
 using Stonks.Helpers;
+using Stonks.Contracts.Commands.Trade;
 
 namespace Stonks.Managers.Trade;
 
@@ -68,11 +68,7 @@ public class OfferManager : IOfferManager
 		if (command is null)
 			throw new ArgumentNullException(nameof(command));
 
-		if (command.Type is null)
-			throw new ArgumentNullException(nameof(command.Type));
-		var type = command.Type.Value;
-
-		if (type == OfferType.PublicOfferring)
+		if (command.Type == OfferType.PublicOfferring)
 			throw new PublicOfferingException();
 
 		var stock = _ctx.GetById<Stock>(command.StockId);
@@ -83,10 +79,10 @@ public class OfferManager : IOfferManager
 		var price = command.Price.AssertPositive();
 		var writerId = _ctx.EnsureUserExist(command.WriterId);
 
-		if (type == OfferType.Sell)
+		if (command.Type == OfferType.Sell)
 			ValidateOwnedAmount(writerId, stock.Id, amount);
 
-		return (type, amount, stock.Id, price, writerId);
+		return (command.Type, amount, stock.Id, price, writerId);
 	}
 
 	private void ValidateOwnedAmount(Guid writerId, Guid stockId, int amount)
@@ -173,9 +169,9 @@ public class OfferManager : IOfferManager
 		}
 	}
 
-	private void BuyShares(Guid userId, TradeOffer offer, int? amount)
+	private void BuyShares(Guid userId, TradeOffer offer, int amount)
 	{
-		Guid? buyerId;
+		Guid buyerId;
 		Guid? sellerId = null;
 		var buyFromUser = true;
 
@@ -197,14 +193,12 @@ public class OfferManager : IOfferManager
 			}
 		}
 
-		_shareManager.TransferShares(new TransferSharesCommand
-		{
-			Amount = amount,
-			BuyerId = buyerId,
-			SellerId = sellerId,
-			BuyFromUser = buyFromUser,
-			StockId = offer.StockId
-		});
+		_shareManager.TransferShares(new TransferSharesCommand(
+			offer.StockId,
+			buyerId,
+			sellerId,
+			amount,
+			buyFromUser));
 	}
 
 	public void CancelOffer(Guid? offerId)

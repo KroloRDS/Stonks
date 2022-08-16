@@ -139,7 +139,7 @@ public class StockManagerTests : ManagerTest
 	public void EmitNewStocks_WrongAmount_ShouldThrow(int amount)
 	{
 		Assert.Throws<ArgumentOutOfRangeException>(
-			() => _manager.EmitNewStocks(amount));
+			() => _manager.EmitNewShares(amount));
 		_mockOfferManager.Verify(x =>
 			x.AddPublicOffers(It.IsAny<int>()), Times.Never);
 	}
@@ -165,7 +165,7 @@ public class StockManagerTests : ManagerTest
 		var bankruptStock = AddBankruptStock();
 
 		//Act
-		_manager.EmitNewStocks(amount);
+		_manager.EmitNewShares(amount);
 
 		//Assert
 		_mockOfferManager.Verify(x =>

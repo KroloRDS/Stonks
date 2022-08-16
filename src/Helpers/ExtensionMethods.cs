@@ -4,26 +4,35 @@ namespace Stonks.Helpers;
 
 public static class ExtensionMethods
 {
-	public static int AssertPositive(this int? amount)
+	public static int AssertPositive(this int number)
 	{
-		if (amount is null)
-			throw new ArgumentNullException(nameof(amount));
+		if (number < 1)
+			throw new ArgumentOutOfRangeException(nameof(number));
 
-		if (amount < 1)
-			throw new ArgumentOutOfRangeException(nameof(amount));
-
-		return amount.Value;
+		return number;
 	}
 
-	public static decimal AssertPositive(this decimal? price)
+	public static int AssertPositive(this int? number)
 	{
-		if (price is null)
-			throw new ArgumentNullException(nameof(price));
+		if (number is null)
+			throw new ArgumentNullException(nameof(number));
 
-		if (price <= decimal.Zero)
-			throw new ArgumentOutOfRangeException(nameof(price));
+		return number.Value.AssertPositive();
+	}
 
-		return price.Value;
+	public static decimal AssertPositive(this decimal number)
+	{
+		if (number <= decimal.Zero)
+			throw new ArgumentOutOfRangeException(nameof(number));
+
+		return number;
+	}
+	public static decimal AssertPositive(this decimal? number)
+	{
+		if (number is null)
+			throw new ArgumentNullException(nameof(number));
+
+		return number.Value.AssertPositive();
 	}
 
 	public static void AssertNotEmpty(this string? str)

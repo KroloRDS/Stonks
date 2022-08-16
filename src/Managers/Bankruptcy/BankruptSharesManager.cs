@@ -19,7 +19,7 @@ public class BankruptSharesManager : IBankruptSharesManager
 		_ctx.RemoveRange(_ctx.Share.Where(x => x.StockId == stockId));
 	}
 
-	public int GetAllSharesAmount(Guid? stockId)
+	public int GetTotalAmountOfShares(Guid? stockId)
 	{
 		if (stockId is null)
 		{

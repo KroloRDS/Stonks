@@ -22,13 +22,13 @@ public class BankruptSharesManagerTests : ManagerTest
 	[Test]
 	public void GetAllSharesAmount_NullStock_ShouldThrow()
 	{
-		Assert.Throws<ArgumentNullException>(() => _manager.GetAllSharesAmount(null));
+		Assert.Throws<ArgumentNullException>(() => _manager.GetTotalAmountOfShares(null));
 	}
 
 	[Test]
 	public void GetAllSharesAmount_WrongStock_ShouldThrow()
 	{
-		Assert.Zero(_manager.GetAllSharesAmount(Guid.NewGuid()));
+		Assert.Zero(_manager.GetTotalAmountOfShares(Guid.NewGuid()));
 	}
 
 	[Test]
@@ -60,7 +60,7 @@ public class BankruptSharesManagerTests : ManagerTest
 		_ctx.SaveChanges();
 
 		//Act
-		var actual = _manager.GetAllSharesAmount(stock.Id);
+		var actual = _manager.GetTotalAmountOfShares(stock.Id);
 
 		//Assert
 		Assert.AreEqual(amount1 + amount2, actual);

@@ -41,7 +41,7 @@ public class BankruptStockManager : IBankruptStockManager
 		return stock.PublicallyOfferredAmount;
 	}
 
-	public void EmitNewStocks(int amount)
+	public void EmitNewShares(int amount)
 	{
 		if (amount <= 0)
 			throw new ArgumentOutOfRangeException(nameof(amount));

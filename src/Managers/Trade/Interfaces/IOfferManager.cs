@@ -1,4 +1,4 @@
-﻿using Stonks.DTOs;
+﻿using Stonks.Contracts.Commands.Trade;
 
 namespace Stonks.Managers.Trade;
 

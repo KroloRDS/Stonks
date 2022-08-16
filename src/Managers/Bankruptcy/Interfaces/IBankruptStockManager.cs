@@ -4,5 +4,5 @@ public interface IBankruptStockManager
 	void Bankrupt(Guid? stockId);
 	DateTime? GetLastBankruptDate();
 	int GetPublicStocksAmount(Guid? stockId);
-	void EmitNewStocks(int amount);
+	void EmitNewShares(int amount);
 }

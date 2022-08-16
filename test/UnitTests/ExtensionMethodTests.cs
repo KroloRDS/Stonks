@@ -17,7 +17,10 @@ public class ExtensionMethodTests
 	[TestCase(-99)]
 	public void AssertPositiveInt_NegativeInput_ShouldThrow(int? amount)
 	{
-		Assert.Throws<ArgumentOutOfRangeException>(() => amount.AssertPositive());
+		Assert.Throws<ArgumentOutOfRangeException>(
+			() => amount.AssertPositive());
+		Assert.Throws<ArgumentOutOfRangeException>(
+			() => amount!.Value.AssertPositive());
 	}
 
 	[Test]
@@ -36,6 +39,7 @@ public class ExtensionMethodTests
 		Assert.NotNull(amount);
 		Assert.Greater(amount, 0);
 		Assert.AreEqual(amount!.Value, amount.AssertPositive());
+		Assert.AreEqual(amount!.Value, amount!.Value.AssertPositive());
 	}
 
 	[Test]
@@ -44,7 +48,11 @@ public class ExtensionMethodTests
 	[TestCase(-99)]
 	public void AssertPositiveDecimal_NegativeInput_ShouldThrow(decimal? amount)
 	{
-		Assert.Throws<ArgumentOutOfRangeException>(() => amount.AssertPositive());
+		Assert.Throws<ArgumentOutOfRangeException>(
+			() => amount.AssertPositive());
+
+		Assert.Throws<ArgumentOutOfRangeException>(
+			() => amount!.Value.AssertPositive());
 	}
 
 	[Test]
@@ -63,6 +71,7 @@ public class ExtensionMethodTests
 		Assert.NotNull(amount);
 		Assert.Greater(amount, 0);
 		Assert.AreEqual(amount!.Value, amount.AssertPositive());
+		Assert.AreEqual(amount!.Value, amount!.Value.AssertPositive());
 	}
 
 	[Test]

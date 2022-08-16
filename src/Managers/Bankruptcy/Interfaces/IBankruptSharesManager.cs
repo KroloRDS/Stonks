@@ -3,5 +3,5 @@
 public interface IBankruptSharesManager
 {
 	void RemoveAllShares(Guid? stockId);
-	int GetAllSharesAmount(Guid? stockId);
+	int GetTotalAmountOfShares(Guid? stockId);
 }

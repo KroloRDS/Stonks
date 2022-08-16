@@ -1,7 +1,7 @@
 ﻿using Stonks.Data;
-using Stonks.DTOs;
 using Stonks.Models;
 using Stonks.Helpers;
+using Stonks.Contracts.Commands.Trade;
 
 namespace Stonks.Managers.Trade;
 
