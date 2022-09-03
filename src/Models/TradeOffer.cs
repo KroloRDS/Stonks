@@ -18,7 +18,7 @@ public class TradeOffer : HasId
 	public int Amount { get; set; }
 
 	[Column(TypeName = "decimal(8,2)")]
-	public decimal BuyPrice { get; set; }
+	public decimal Price { get; set; }
 
 	[Column(TypeName = "decimal(8,2)")]
 	public decimal SellPrice { get; set; }

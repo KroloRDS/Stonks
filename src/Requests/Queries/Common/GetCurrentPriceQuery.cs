@@ -35,6 +35,6 @@ public class GetCurrentPriceQueryHandler :
 		if (price is null)
 			throw new NoCurrentPriceException();
 
-		return new GetCurrentPriceResponse(price);
+		return new GetCurrentPriceResponse(price.Amount);
 	}
 }

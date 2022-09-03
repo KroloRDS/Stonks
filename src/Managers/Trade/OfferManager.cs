@@ -56,7 +56,7 @@ public class OfferManager : IOfferManager
 		};
 
 		if (type == OfferType.Buy)
-			newOffer.BuyPrice = price;
+			newOffer.Price = price;
 		else
 			newOffer.SellPrice = price;
 
@@ -98,8 +98,8 @@ public class OfferManager : IOfferManager
 		return _ctx.TradeOffer.Where(x =>
 		   x.Type == OfferType.Buy &&
 		   x.StockId == stockId &&
-		   x.BuyPrice >= price)
-			.OrderByDescending(x => x.BuyPrice)
+		   x.Price >= price)
+			.OrderByDescending(x => x.Price)
 			.ToList();
 	}
 
@@ -152,7 +152,7 @@ public class OfferManager : IOfferManager
 	private void SettleMoney(Guid clientId, TradeOffer offer, int amount)
 	{
 		var offerValue = offer.Type == OfferType.Buy ?
-			offer.BuyPrice * amount :
+			offer.Price * amount :
 			offer.SellPrice * amount;
 
 		switch (offer.Type)
@@ -223,7 +223,7 @@ public class OfferManager : IOfferManager
 	{
 		if (offer.Type != OfferType.Buy) return;
 		_userManager.GiveMoney(_ctx.EnsureUserExist(offer.WriterId),
-			offer.BuyPrice * offer.Amount);
+			offer.Price * offer.Amount);
 	}
 
 	private void TakeMoneyUpFront(OfferType type,

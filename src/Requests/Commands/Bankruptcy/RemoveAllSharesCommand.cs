@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Stonks.Data;
 using Stonks.Models;
+using Z.EntityFramework.Plus;
 
 namespace Stonks.Requests.Commands.Bankruptcy;
 
@@ -21,7 +22,8 @@ public class RemoveAllSharesCommandHandler :
 	{
 		var id = await _ctx.EnsureExistAsync<Stock>(
 			request?.StockId, cancellationToken);
-		_ctx.RemoveRange(_ctx.Share.Where(x => x.StockId == id));
+		await _ctx.Share.Where(x => x.StockId == id)
+			.DeleteAsync(cancellationToken);
 		return Unit.Value;
 	}
 }

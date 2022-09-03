@@ -71,7 +71,7 @@ public class OfferManagerTests : ManagerTest
 		VerifyTransferMoneyNotCalled();
 		VerifyTransferSharesMockNotCalled();
 		VerifyGiveMoneyCalled(Guid.Parse(offer.WriterId!),
-			offer.BuyPrice * offer.Amount);
+			offer.Price * offer.Amount);
 	}
 
 	[Test]
@@ -475,7 +475,7 @@ public class OfferManagerTests : ManagerTest
 		var existingOffer1 = new TradeOffer
 		{
 			Amount = buyAmount,
-			BuyPrice = price1,
+			Price = price1,
 			StockId = stock.Id,
 			Type = OfferType.Buy,
 			WriterId = AddUser().Id
@@ -485,7 +485,7 @@ public class OfferManagerTests : ManagerTest
 		var existingOffer2 = new TradeOffer
 		{
 			Amount = buyAmount,
-			BuyPrice = price2,
+			Price = price2,
 			StockId = stock.Id,
 			Type = OfferType.Buy,
 			WriterId = AddUser().Id
@@ -523,7 +523,7 @@ public class OfferManagerTests : ManagerTest
 
 		var offer = _ctx.TradeOffer.First();
 		Assert.AreEqual(OfferType.Buy, offer.Type);
-		Assert.AreEqual(price1, offer.BuyPrice);
+		Assert.AreEqual(price1, offer.Price);
 		Assert.AreEqual(buyAmount * 2 - sellAmount, offer.Amount);
 	}
 
@@ -560,7 +560,7 @@ public class OfferManagerTests : ManagerTest
 		Assert.AreEqual(1, _ctx.TradeOffer.Count());
 
 		var offer = _ctx.TradeOffer.First();
-		Assert.AreEqual(price, offer.BuyPrice);
+		Assert.AreEqual(price, offer.Price);
 		Assert.AreEqual(OfferType.Buy, offer.Type);
 		Assert.AreEqual(amount, offer.Amount);
 	}
@@ -689,7 +689,7 @@ public class OfferManagerTests : ManagerTest
 		Guid clientId, int amount)
 	{
 		var offerValue = offer.Type == OfferType.Buy ?
-			offer.BuyPrice * amount :
+			offer.Price * amount :
 			offer.SellPrice * amount;
 
 		VerifyTransferSharesMockCalled(offer, clientId, amount);

@@ -67,12 +67,11 @@ public class GetWeakestStockIdQueryHandler :
 	private async Task<decimal> GetMarketCap(
 		Guid stockId, CancellationToken cancellationToken)
 	{
-		var priceResponse = _mediator.Send(
+		var price = _mediator.Send(
 			new GetCurrentPriceQuery(stockId), cancellationToken);
-		var sharesResponse = _mediator.Send(
+		var shares = _mediator.Send(
 			new GetTotalAmountOfSharesQuery(stockId), cancellationToken);
-		return (await sharesResponse).Amount * 
-			(await priceResponse).CurrentPrice.Amount;
+		return (await shares).Amount * (await price).Price;
 	}
 
 	private async Task<double> GetVolatility(

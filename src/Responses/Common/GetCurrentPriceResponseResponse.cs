@@ -1,5 +1,3 @@
-﻿using Stonks.Models;
+﻿namespace Stonks.Responses.Common;
 
-namespace Stonks.Responses.Common;
-
-public record GetCurrentPriceResponse(AvgPriceCurrent CurrentPrice);
+public record GetCurrentPriceResponse(decimal Price);

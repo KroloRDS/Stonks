@@ -87,6 +87,21 @@ public class AppDbContext : IdentityDbContext<User>
 		return user;
 	}
 
+	public async Task<User> GetUserAsync(Guid? userId,
+		CancellationToken cancellationToken)
+	{
+		if (userId is null)
+			throw new ArgumentNullException(nameof(userId));
+
+		var user = await Users.FirstOrDefaultAsync(
+			x => x.Id == userId.ToString(), cancellationToken);
+
+		if (user is null)
+			throw new KeyNotFoundException(nameof(userId));
+
+		return user;
+	}
+
 	public Guid EnsureUserExist(string? userId)
 	{
 		if (userId is null)
@@ -109,6 +124,31 @@ public class AppDbContext : IdentityDbContext<User>
 		return userId.Value;
 	}
 
+	public async Task<Guid> EnsureUserExistAsync(
+		string? userId, CancellationToken cancellationToken)
+	{
+		if (userId is null)
+			throw new ArgumentNullException(nameof(userId));
+
+		if (!await Users.AnyAsync(x => x.Id == userId, cancellationToken))
+			throw new KeyNotFoundException(nameof(userId));
+
+		return Guid.Parse(userId);
+	}
+
+	public async Task<Guid> EnsureUserExistAsync(
+		Guid? userId, CancellationToken cancellationToken)
+	{
+		if (userId is null)
+			throw new ArgumentNullException(nameof(userId));
+
+		if (!await Users.AnyAsync(x => x.Id == userId.ToString(),
+			cancellationToken))
+			throw new KeyNotFoundException(nameof(userId));
+
+		return userId.Value;
+	}
+
 	public Share? GetShares(Guid? userId, Guid? stockId)
 	{
 		if (userId is null)
@@ -120,5 +160,43 @@ public class AppDbContext : IdentityDbContext<User>
 		return Share.FirstOrDefault(x =>
 			x.StockId == stockId &&
 			x.OwnerId == userId.ToString());
+	}
+
+	public async Task<Share?> GetSharesAsync(Guid? userId,
+		Guid? stockId, CancellationToken cancellationToken)
+	{
+		if (userId is null)
+			throw new ArgumentNullException(nameof(userId));
+
+		if (stockId is null)
+			throw new ArgumentNullException(nameof(stockId));
+
+		return await Share.FirstOrDefaultAsync(x =>
+			x.StockId == stockId &&
+			x.OwnerId == userId.ToString(),
+			cancellationToken);
+	}
+
+	public async Task ExecuteTransactionAsync(Task task, string handlerName,
+		CancellationToken cancellationToken)
+	{
+		var transaction = Database.BeginTransaction();
+		try
+		{
+			await task;
+			await SaveChangesAsync(cancellationToken);
+			await transaction.CommitAsync(cancellationToken);
+		}
+		catch (Exception ex)
+		{
+			await transaction.RollbackAsync(cancellationToken);
+			throw new Exception(
+				$"Exception during transaction in {handlerName}, " +
+				$"see inner exception for details", ex);
+		}
+		finally
+		{
+			await transaction.DisposeAsync();
+		}
 	}
 }
