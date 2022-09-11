@@ -46,8 +46,7 @@ public class TransferSharesCommandHandler :
 		var userId = _ctx.EnsureUserExistAsync(
 			command.BuyerId, cancellationToken);
 
-		var stock = await _ctx.GetByIdAsync<Stock>(
-			command.StockId, cancellationToken);
+		var stock = await _ctx.GetByIdAsync<Stock>(command.StockId);
 
 		if (stock.Bankrupt)
 			throw new BankruptStockException();
@@ -59,8 +58,7 @@ public class TransferSharesCommandHandler :
 	private async Task BuyFromCompany(TransferOrder order,
 		CancellationToken cancellationToken)
 	{
-		var stock = await _ctx.GetByIdAsync<Stock>(
-			order.StockId, cancellationToken);
+		var stock = await _ctx.GetByIdAsync<Stock>(order.StockId);
 
 		if (stock.PublicallyOfferredAmount < order.Amount)
 			throw new NoPublicStocksException();

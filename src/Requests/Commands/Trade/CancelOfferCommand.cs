@@ -19,19 +19,17 @@ public class CancelOfferCommandHandler : IRequestHandler<CancelOfferCommand>
 	public async Task<Unit> Handle(CancelOfferCommand request,
 		CancellationToken cancellationToken)
 	{
-		var offer = await ValidateRequest(request, cancellationToken);
+		var offer = await ValidateRequest(request);
 		_ctx.TradeOffer.Remove(offer);
 		return Unit.Value;
 	}
 
-	private async Task<TradeOffer> ValidateRequest(CancelOfferCommand request,
-		CancellationToken cancellationToken)
+	private async Task<TradeOffer> ValidateRequest(CancelOfferCommand request)
 	{
 		if (request.OfferId == default)
 			throw new ArgumentNullException(nameof(request.OfferId));
 
-		var offer = await _ctx.GetByIdAsync<TradeOffer>(
-			request.OfferId, cancellationToken);
+		var offer = await _ctx.GetByIdAsync<TradeOffer>(request.OfferId);
 
 		if (offer.Type is OfferType.PublicOfferring)
 			throw new PublicOfferingException();

@@ -38,13 +38,12 @@ public class AppDbContext : IdentityDbContext<User>
 		return entity;
 	}
 
-	public async Task<T> GetByIdAsync<T>(Guid? id,
-		CancellationToken cancellationToken) where T : HasId
+	public async Task<T> GetByIdAsync<T>(Guid? id) where T : HasId
 	{
 		if (id is null)
 			throw new ArgumentNullException(nameof(id));
 
-		var entity = await FindAsync<T>(id, cancellationToken);
+		var entity = await FindAsync<T>(id);
 
 		if (entity is null)
 			throw new KeyNotFoundException(nameof(id));

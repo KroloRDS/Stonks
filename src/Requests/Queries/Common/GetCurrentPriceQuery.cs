@@ -23,17 +23,13 @@ public class GetCurrentPriceQueryHandler :
 	public async Task<GetCurrentPriceResponse> Handle(
 		GetCurrentPriceQuery request, CancellationToken cancellationToken)
 	{
-		var stock = await _ctx.GetByIdAsync<Stock>(request.StockId,
-			cancellationToken);
+		var stock = await _ctx.GetByIdAsync<Stock>(request.StockId);
 
 		if (stock.Bankrupt)
 			throw new BankruptStockException();
 
-		var price = await _ctx.AvgPriceCurrent.SingleOrDefaultAsync(
+		var price = await _ctx.AvgPriceCurrent.SingleAsync(
 			x => x.StockId == request.StockId, cancellationToken);
-
-		if (price is null)
-			throw new NoCurrentPriceException();
 
 		return new GetCurrentPriceResponse(price.Amount);
 	}

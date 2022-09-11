@@ -1,5 +1,4 @@
 ﻿using MediatR;
-using Microsoft.EntityFrameworkCore;
 using Stonks.Data;
 using Stonks.Models;
 using Stonks.Responses.Common;
@@ -9,18 +8,14 @@ namespace Stonks.Requests.Queries.Common;
 public class GetHistoricalPricesQuery : IRequest<GetHistoricalPricesResponse>
 {
 	public Guid StockId { get; set; }
-	public DateTime FromDate { get; set; }
+	public DateTime? FromDate { get; set; }
 	public DateTime? ToDate { get; set; }
 
 	public void Validate()
 	{
-		if (StockId == default)
-			throw new ArgumentNullException(nameof(StockId));
-
-		if (FromDate == default)
-			throw new ArgumentNullException(nameof(FromDate));
-
-		if (ToDate is not null && ToDate <= FromDate)
+		if (FromDate is not null &&
+			ToDate is not null && 
+			ToDate <= FromDate)
 			throw new ArgumentOutOfRangeException(nameof(ToDate));
 	}
 }
@@ -39,15 +34,21 @@ public class GetHistoricalPricesQueryHandler :
 		GetHistoricalPricesQuery request, CancellationToken cancellationToken)
 	{
 		request.Validate();
-		var toDate = request.ToDate ?? DateTime.MaxValue;
+		await _ctx.EnsureExistAsync<Stock>(request.StockId, cancellationToken);
 
-		var list = await _ctx.AvgPrice
-			.Where(x => x.StockId == request.StockId &&
-				x.DateTime >= request.FromDate &&
-				x.DateTime <= toDate)
+		var query = (AvgPrice x) => x.StockId == request.StockId;
+
+		var queryFrom = request.FromDate is null ? query :
+			(AvgPrice x) => query(x) && x.DateTime >= request.FromDate;
+
+		var queryTo = request.ToDate is null ? queryFrom :
+			(AvgPrice x) => queryFrom(x) && x.DateTime <= request.ToDate;
+
+		var prices = await Task.Run(() => _ctx.AvgPrice
+			.Where(queryTo)
 			.OrderBy(x => x.DateTime)
-			.ToListAsync(cancellationToken);
+			.ToList(), cancellationToken);
 
-		return new GetHistoricalPricesResponse(list);
+		return new GetHistoricalPricesResponse(prices);
 	}
 }

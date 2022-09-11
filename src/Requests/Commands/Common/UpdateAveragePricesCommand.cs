@@ -80,11 +80,7 @@ public class UpdateAveragePricesCommandHandler :
 	private async Task<IEnumerable<Transaction>> GetTransactions(Guid stockId,
 		DateTime? from, CancellationToken cancellationToken)
 	{
-		var query = new GetTransactionsQuery
-		{
-			StockId = stockId,
-			From = from
-		};
+		var query = new GetTransactionsQuery(stockId, from);
 		var result = await _mediator.Send(query, cancellationToken);
 		return result.Transactions;
 	}

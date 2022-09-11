@@ -21,7 +21,7 @@ public class GetPriceManager : IGetPriceManager
 
 		var price = _ctx.AvgPriceCurrent.SingleOrDefault(x => x.StockId == stockId);
 		if (price is null)
-			throw new NoCurrentPriceException();
+			throw new Exception();
 
 		return price;
 	}

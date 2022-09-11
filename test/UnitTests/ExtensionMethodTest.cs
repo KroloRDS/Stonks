@@ -9,7 +9,7 @@ using Stonks.Helpers;
 namespace UnitTests;
 
 [TestFixture]
-public class ExtensionMethodTests
+public class ExtensionMethodTest
 {
 	[Test]
 	[TestCase(0)]

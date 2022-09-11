@@ -19,7 +19,7 @@ public class BankruptCommandHandler : IRequestHandler<BankruptCommand>
 		CancellationToken cancellationToken)
 	{
 		var stock = await _ctx.GetByIdAsync<Stock>(
-			request.StockId, cancellationToken);
+			request.StockId);
 
 		stock.Bankrupt = true;
 		stock.BankruptDate = DateTime.Now;

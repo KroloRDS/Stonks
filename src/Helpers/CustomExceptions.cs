@@ -30,12 +30,6 @@
 		public InsufficientFundsException() : base(Desc) { }
 	}
 
-	public class NoCurrentPriceException : InvalidOperationException
-	{
-		private const string Desc = "No current price for given stock in the database";
-		public NoCurrentPriceException() : base(Desc) { }
-	}
-
 	public class PublicOfferingException : InvalidOperationException
 	{
 		private const string Desc = "Invalid operation for 'Public Offering' trade offer";

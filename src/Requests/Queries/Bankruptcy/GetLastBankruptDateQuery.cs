@@ -1,7 +1,6 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Stonks.Data;
-using Stonks.Helpers;
 using Stonks.Responses.Bankruptcy;
 
 namespace Stonks.Requests.Queries.Bankruptcy;
@@ -25,9 +24,8 @@ public class GetLastBankruptDateQueryHandler :
 			.Select(x => x.BankruptDate!.Value);
 
 		var hasBankrupted = await stocks.AnyAsync(cancellationToken);
-		var date = hasBankrupted ?
-			await stocks.MaxAsync(cancellationToken) : 
-			GlobalConstants.BEGIN_DATE;
+		DateTime? date = hasBankrupted ?
+			await stocks.MaxAsync(cancellationToken) : null;
 		return new GetLastBankruptDateResponse(date);
 	}
 }
