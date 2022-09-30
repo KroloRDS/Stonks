@@ -8,7 +8,7 @@ using Stonks.Requests.Queries.Bankruptcy;
 namespace UnitTests.Handlers.Queries.Bankruptcy;
 
 public class GetTotalAmountOfSharesTest :
-	HandlerTest<GetTotalAmountOfSharesQuery, GetTotalAmountOfSharesResponse>
+	QueryTest<GetTotalAmountOfSharesQuery, GetTotalAmountOfSharesResponse>
 {
 	protected override IRequestHandler<GetTotalAmountOfSharesQuery,
 		GetTotalAmountOfSharesResponse> GetHandler()

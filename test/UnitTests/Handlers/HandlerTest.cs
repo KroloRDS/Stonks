@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Threading;
+using Moq;
 using MediatR;
 using NUnit.Framework;
+using Stonks.Managers.Common;
 
 namespace UnitTests.Handlers;
 
 public abstract class HandlerTest<Request, Response> : InMemoryDb
 	where Request : IRequest<Response>
 {
+	protected readonly Mock<IMediator> _mediator = new();
+	protected readonly Mock<IConfigurationManager> _config = new();
 	protected readonly IRequestHandler<Request, Response> _handler;
 
 	public HandlerTest()
@@ -23,8 +27,10 @@ public abstract class HandlerTest<Request, Response> : InMemoryDb
 		Assert.ThrowsAsync<T>(() => _handler.Handle(request, CancellationToken.None));
 	}
 
-	protected Response Handle(Request request)
+	[TearDown]
+	public void ResetMockCallCounts()
 	{
-		return _handler.Handle(request, CancellationToken.None).Result;
+		_mediator.Invocations.Clear();
+		_config.Invocations.Clear();
 	}
 }

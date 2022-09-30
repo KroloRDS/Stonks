@@ -6,7 +6,6 @@ using NUnit.Framework;
 
 using Stonks.Models;
 using Stonks.Helpers;
-using Stonks.Managers.Common;
 using Stonks.Responses.Common;
 using Stonks.Responses.Bankruptcy;
 using Stonks.Requests.Queries.Common;
@@ -15,11 +14,8 @@ using Stonks.Requests.Queries.Bankruptcy;
 namespace UnitTests.Handlers.Queries.Bankruptcy;
 
 public class GetWeakestStockIdTest :
-	HandlerTest<GetWeakestStockIdQuery, GetWeakestStockIdResponse>
+	QueryTest<GetWeakestStockIdQuery, GetWeakestStockIdResponse>
 {
-	private readonly Mock<IMediator> _mediator = new();
-	private readonly Mock<IConfigurationManager> _config = new();
-
 	protected override IRequestHandler<GetWeakestStockIdQuery,
 		GetWeakestStockIdResponse> GetHandler()
 	{

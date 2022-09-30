@@ -11,7 +11,7 @@ using Stonks.Requests.Queries.Common;
 namespace UnitTests.Handlers.Queries.Common;
 
 public class GetTransactionsTest
-	: HandlerTest<GetTransactionsQuery, GetTransactionsResponse>
+	: QueryTest<GetTransactionsQuery, GetTransactionsResponse>
 {
 	protected override IRequestHandler<GetTransactionsQuery,
 		GetTransactionsResponse> GetHandler()

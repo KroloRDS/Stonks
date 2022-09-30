@@ -5,8 +5,8 @@ using Stonks.Models;
 
 namespace Stonks.Requests.Commands.Trade;
 
-public record AcceptOfferCommand(Guid UserId, Guid OfferId, int? Amount)
-	: IRequest;
+public record AcceptOfferCommand(Guid UserId,
+	Guid OfferId, int? Amount = null) : IRequest;
 
 public class AcceptOfferCommandHandler : IRequestHandler<AcceptOfferCommand>
 {
@@ -46,7 +46,6 @@ public class AcceptOfferCommandHandler : IRequestHandler<AcceptOfferCommand>
 			_ctx.TradeOffer.Remove(offer);
 
 		await Task.WhenAll(buyShares, settleMoney);
-		await _ctx.SaveChangesAsync(cancellationToken);
 	}
 
 	private async Task SettleMoney(Guid clientId, TradeOffer offer,
@@ -93,10 +92,10 @@ public class AcceptOfferCommandHandler : IRequestHandler<AcceptOfferCommand>
 
 		await _mediator.Send(new TransferSharesCommand(
 			offer.StockId,
-			buyerId,
-			sellerId,
 			amount,
-			buyFromUser), cancellationToken);
+			buyerId,
+			buyFromUser,
+			sellerId), cancellationToken);
 	}
 
 	private async Task TransferMoney(string? payerId, Guid recipientId,

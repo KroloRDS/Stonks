@@ -11,7 +11,7 @@ using Stonks.Requests.Queries.Common;
 namespace UnitTests.Handlers.Queries.Common;
 
 public class GetCurrentPriceTest :
-	HandlerTest<GetCurrentPriceQuery, GetCurrentPriceResponse>
+	QueryTest<GetCurrentPriceQuery, GetCurrentPriceResponse>
 {
 	protected override IRequestHandler<GetCurrentPriceQuery,
 		GetCurrentPriceResponse> GetHandler()

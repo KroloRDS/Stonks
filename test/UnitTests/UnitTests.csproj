@@ -21,17 +21,10 @@
     <PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
     <PackageReference Include="PayPal" Version="1.9.1" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="6.0.0" />
-    <PackageReference Include="Z.EntityFramework.Plus.EF6" Version="6.14.4" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Stonks.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Handlers\Commands\Trade\" />
-    <Folder Include="Handlers\Commands\Bankruptcy\" />
-    <Folder Include="Handlers\Commands\Common\" />
   </ItemGroup>
 
 </Project>

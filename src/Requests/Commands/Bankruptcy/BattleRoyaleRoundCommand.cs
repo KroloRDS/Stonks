@@ -31,16 +31,16 @@ public class BattleRoyaleRoundCommandHandler :
 		return Unit.Value;
 	}
 
-	private async Task BattleRoyaleRound(CancellationToken cancellationToken)
+	public async Task BattleRoyaleRound(CancellationToken cancellationToken)
 	{
 		var weakestStock = _mediator.Send(
 			new GetWeakestStockIdQuery(), cancellationToken);
 		var amount = _config.NewStocksAfterRound();
 
-		var offers = _mediator.Send(new AddPublicOffersCommand(amount),
-			cancellationToken);
-		var shares = _mediator.Send(new EmitNewSharesCommand(amount),
-			cancellationToken);
+		var offers = _mediator.Send(
+			new AddPublicOffersCommand(amount), cancellationToken);
+		var shares = _mediator.Send(
+			new UpdatePublicallyOfferedAmountCommand(amount), cancellationToken);
 		var bankrupt = RemoveBankruptedStock((await weakestStock).Id,
 			cancellationToken);
 

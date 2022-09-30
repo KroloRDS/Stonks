@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Stonks.Data;
 using Stonks.Helpers;
 using Stonks.Models;
@@ -41,7 +42,7 @@ public class PlaceOfferCommandHandler : IRequestHandler<PlaceOfferCommand>
 			if (offer.Amount < request.Amount)
 			{
 				await _mediator.Send(new AcceptOfferCommand(request.WriterId,
-					offer.Id, null), cancellationToken);
+					offer.Id), cancellationToken);
 				request.Amount -= offer.Amount;
 			}
 			else
@@ -68,11 +69,8 @@ public class PlaceOfferCommandHandler : IRequestHandler<PlaceOfferCommand>
 	}
 
 	private async Task<ValidatedRequest> ValidateRequest(
-		PlaceOfferCommand? command, CancellationToken cancellationToken)
+		PlaceOfferCommand command, CancellationToken cancellationToken)
 	{
-		if (command is null)
-			throw new ArgumentNullException(nameof(command));
-
 		if (command.Type == OfferType.PublicOfferring)
 			throw new PublicOfferingException();
 
@@ -87,21 +85,40 @@ public class PlaceOfferCommandHandler : IRequestHandler<PlaceOfferCommand>
 
 		if (command.Type == OfferType.Sell)
 		{
-			await ValidateOwnedAmount(writerId, stock.Id,
+			await CheckOwnedShares(writerId, stock.Id,
 				amount, cancellationToken);
+		}
+		if (command.Type == OfferType.Buy)
+		{
+			await CheckAvailableFunds(command.Price * command.Amount,
+				writerId, cancellationToken);
 		}
 
 		return new ValidatedRequest(command.Type, amount,
 			stock.Id, price, writerId);
 	}
 
-	private async Task ValidateOwnedAmount(Guid writerId, Guid stockId,
+	private async Task CheckOwnedShares(Guid writerId, Guid stockId,
 		int amount, CancellationToken cancellationToken)
 	{
 		var share = await _ctx.GetSharesAsync(writerId,
 			stockId, cancellationToken);
 		if (share?.Amount is null || share.Amount < amount)
 			throw new NoStocksOnSellerException();
+	}
+
+	private async Task CheckAvailableFunds(decimal amount,
+		Guid userId, CancellationToken cancellationToken)
+	{
+		var inOtherOffers = _ctx.TradeOffer
+			.Where(x => x.Type == OfferType.Buy &&
+				x.WriterId == userId.ToString())
+			.SumAsync(x => x.Price * x.Amount, cancellationToken);
+
+		var user = _ctx.GetUserAsync(userId, cancellationToken);
+
+		if ((await user).Funds < await inOtherOffers + amount)
+			throw new InsufficientFundsException();
 	}
 
 	private IEnumerable<TradeOffer> FindBuyOffers(Guid stockId, decimal price)

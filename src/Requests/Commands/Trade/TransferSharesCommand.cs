@@ -7,10 +7,10 @@ namespace Stonks.Requests.Commands.Trade;
 
 public record TransferSharesCommand(
 	Guid StockId,
-	Guid BuyerId,
-	Guid? SellerId,
 	int Amount,
-	bool BuyFromUser) : IRequest;
+	Guid BuyerId,
+	bool BuyFromUser,
+	Guid? SellerId = null) : IRequest;
 
 public class TransferSharesCommandHandler :
 	IRequestHandler<TransferSharesCommand>
@@ -31,7 +31,7 @@ public class TransferSharesCommandHandler :
 			BuyFromUser(order, request.SellerId, cancellationToken) :
 			BuyFromCompany(order, cancellationToken);
 
-		var giveTask = GiveStocksToUser(order, cancellationToken);
+		var giveTask = GiveSharesToUser(order, cancellationToken);
 
 		await Task.WhenAll(buyTask, giveTask);
 		return Unit.Value;
@@ -71,13 +71,15 @@ public class TransferSharesCommandHandler :
 	private async Task BuyFromUser(TransferOrder order,
 		Guid? sellerId, CancellationToken cancellationToken)
 	{
-		await _ctx.EnsureUserExistAsync(sellerId, cancellationToken);
+		var sellerValidatedId = await _ctx.EnsureUserExistAsync(
+			sellerId, cancellationToken);
+
 		await Task.WhenAll(
-			TakeStocksFromUser(order, cancellationToken),
-			AddTransactionLog(order, sellerId, cancellationToken));
+			TakeSharesFromUser(order, sellerValidatedId, cancellationToken),
+			AddTransactionLog(order, sellerValidatedId, cancellationToken));
 	}
 
-	private async Task GiveStocksToUser(TransferOrder order,
+	private async Task GiveSharesToUser(TransferOrder order,
 		CancellationToken cancellationToken)
 	{
 		var ownership = await _ctx.GetSharesAsync(order.UserId,
@@ -98,10 +100,10 @@ public class TransferSharesCommandHandler :
 		}
 	}
 
-	private async Task TakeStocksFromUser(TransferOrder order,
-		CancellationToken cancellationToken)
+	private async Task TakeSharesFromUser(TransferOrder order,
+		Guid sellerId, CancellationToken cancellationToken)
 	{
-		var ownership = await _ctx.GetSharesAsync(order.UserId,
+		var ownership = await _ctx.GetSharesAsync(sellerId,
 			order.StockId, cancellationToken);
 
 		if (ownership is null || ownership.Amount < order.Amount)

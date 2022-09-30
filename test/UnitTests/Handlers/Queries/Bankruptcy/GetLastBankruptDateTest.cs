@@ -1,13 +1,13 @@
 ﻿using System;
 using MediatR;
 using NUnit.Framework;
-using Stonks.Requests.Queries.Bankruptcy;
 using Stonks.Responses.Bankruptcy;
+using Stonks.Requests.Queries.Bankruptcy;
 
 namespace UnitTests.Handlers.Queries.Bankruptcy;
 
-public class GetLastBankruptDateTests :
-	HandlerTest<GetLastBankruptDateQuery, GetLastBankruptDateResponse>
+public class GetLastBankruptDateTest :
+	QueryTest<GetLastBankruptDateQuery, GetLastBankruptDateResponse>
 {
 	protected override IRequestHandler<GetLastBankruptDateQuery,
 		GetLastBankruptDateResponse> GetHandler()

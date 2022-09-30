@@ -73,4 +73,19 @@ public class InMemoryDb
 	{
 		return Guid.Parse(user.Id);
 	}
+
+	protected TradeOffer AddOffer(OfferType type)
+	{
+		var offer = new TradeOffer
+		{
+			Amount = 10,
+			Price = 1M,
+			StockId = AddStock().Id,
+			Type = type,
+			WriterId = type == OfferType.PublicOfferring ? null : AddUser().Id
+		};
+		_ctx.Add(offer);
+		_ctx.SaveChanges();
+		return offer;
+	}
 }

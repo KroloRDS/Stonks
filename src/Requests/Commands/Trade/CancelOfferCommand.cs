@@ -26,9 +26,6 @@ public class CancelOfferCommandHandler : IRequestHandler<CancelOfferCommand>
 
 	private async Task<TradeOffer> ValidateRequest(CancelOfferCommand request)
 	{
-		if (request.OfferId == default)
-			throw new ArgumentNullException(nameof(request.OfferId));
-
 		var offer = await _ctx.GetByIdAsync<TradeOffer>(request.OfferId);
 
 		if (offer.Type is OfferType.PublicOfferring)

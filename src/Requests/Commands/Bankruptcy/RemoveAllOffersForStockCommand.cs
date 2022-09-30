@@ -1,7 +1,6 @@
 ﻿using MediatR;
 using Stonks.Data;
 using Stonks.Models;
-using Z.EntityFramework.Plus;
 
 namespace Stonks.Requests.Commands.Bankruptcy;
 
@@ -21,8 +20,9 @@ public class RemoveAllOffersForStockCommandHandler :
 		CancellationToken cancellationToken)
 	{
 		await _ctx.EnsureExistAsync<Stock>(request.StockId, cancellationToken);
-		await _ctx.TradeOffer.Where(x => x.StockId == request.StockId)
-			.DeleteAsync(cancellationToken);
+		await Task.Run(() => _ctx.TradeOffer.RemoveRange(
+			_ctx.TradeOffer.Where(x => x.StockId == request.StockId)),
+			cancellationToken);
 		return Unit.Value;
 	}
 }

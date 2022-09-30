@@ -194,12 +194,12 @@ public class OfferManager : IOfferManager
 			}
 		}
 
-		_shareManager.TransferShares(new TransferSharesCommand(
+		/*_shareManager.TransferShares(new TransferSharesCommand(
 			offer.StockId,
 			buyerId,
 			sellerId,
 			amount,
-			buyFromUser));
+			buyFromUser));*/
 	}
 
 	public void CancelOffer(Guid? offerId)

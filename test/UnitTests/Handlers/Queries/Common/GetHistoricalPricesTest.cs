@@ -11,7 +11,7 @@ using System.Collections.Generic;
 namespace UnitTests.Handlers.Queries.Common;
 
 public class GetHistoricalPricesTest : 
-	HandlerTest<GetHistoricalPricesQuery, GetHistoricalPricesResponse>
+	QueryTest<GetHistoricalPricesQuery, GetHistoricalPricesResponse>
 {
 	protected override IRequestHandler<GetHistoricalPricesQuery,
 		GetHistoricalPricesResponse> GetHandler()
