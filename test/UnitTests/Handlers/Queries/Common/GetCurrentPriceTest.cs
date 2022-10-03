@@ -4,9 +4,9 @@ using MediatR;
 using NUnit.Framework;
 
 using Stonks.Models;
-using Stonks.Helpers;
 using Stonks.Responses.Common;
 using Stonks.Requests.Queries.Common;
+using Stonks.CustomExceptions;
 
 namespace UnitTests.Handlers.Queries.Common;
 
@@ -67,7 +67,7 @@ public class GetCurrentPriceTest :
 		_ctx.Add(new AvgPriceCurrent
 		{
 			StockId = stockId,
-			Amount = price
+			Price = price
 		});
 		_ctx.SaveChanges();
 

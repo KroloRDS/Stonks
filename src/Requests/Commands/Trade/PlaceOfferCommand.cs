@@ -1,8 +1,9 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Stonks.Data;
-using Stonks.Helpers;
 using Stonks.Models;
+using Stonks.ExtensionMethods;
+using Stonks.CustomExceptions;
 
 namespace Stonks.Requests.Commands.Trade;
 

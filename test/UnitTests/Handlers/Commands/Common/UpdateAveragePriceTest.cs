@@ -6,7 +6,6 @@ using Moq;
 using MediatR;
 using NUnit.Framework;
 using Stonks.Models;
-using Stonks.Managers.Common;
 using Stonks.Responses.Common;
 using Stonks.Requests.Queries.Common;
 using Stonks.Requests.Commands.Common;
@@ -52,7 +51,8 @@ public class UpdateAveragePriceTest :
 
 		//Assert
 		Assert.AreEqual(0UL, priceRecord.SharesTraded);
-		Assert.AreEqual(IUpdatePriceManager.DEFAULT_PRICE, priceRecord.Amount);
+		Assert.AreEqual(UpdateAveragePriceCommandHandler.DEFAULT_PRICE,
+			priceRecord.Price);
 		VerifyMediator(1);
 	}
 
@@ -80,8 +80,8 @@ public class UpdateAveragePriceTest :
 
 		Assert.AreNotEqual(newPriceRecord.Created, oldPriceRecord!.DateTime);
 
-		Assert.AreEqual(averagePrice, oldPriceRecord.Amount);
-		Assert.AreEqual(averagePrice, newPriceRecord.Amount);
+		Assert.AreEqual(averagePrice, oldPriceRecord.Price);
+		Assert.AreEqual(averagePrice, newPriceRecord.Price);
 
 		Assert.AreEqual(sharesTraded, oldPriceRecord.SharesTraded);
 		Assert.AreEqual(sharesTraded, newPriceRecord.SharesTraded);
@@ -118,7 +118,7 @@ public class UpdateAveragePriceTest :
 
 		//Assert
 		Assert.AreEqual(expectedAmount, priceRecord.SharesTraded);
-		Assert.AreEqual(expectedAverage, priceRecord.Amount);
+		Assert.AreEqual(expectedAverage, priceRecord.Price);
 		VerifyMediator(1);
 	}
 
@@ -166,8 +166,8 @@ public class UpdateAveragePriceTest :
 
 		Assert.AreNotEqual(newPriceRecord.Created, oldPriceRecord!.DateTime);
 
-		Assert.AreEqual(averagePrice, oldPriceRecord.Amount);
-		Assert.AreEqual(expectedAverage, newPriceRecord.Amount);
+		Assert.AreEqual(averagePrice, oldPriceRecord.Price);
+		Assert.AreEqual(expectedAverage, newPriceRecord.Price);
 
 		Assert.AreEqual(amountTraded, oldPriceRecord.SharesTraded);
 		Assert.AreEqual(expectedAmount, newPriceRecord.SharesTraded);
@@ -202,7 +202,7 @@ public class UpdateAveragePriceTest :
 			StockId = stockId,
 			Created = DateTime.Now,
 			SharesTraded = sharesTraded,
-			Amount = averagePrice,
+			Price = averagePrice,
 		});
 		_ctx.SaveChanges();
 	}

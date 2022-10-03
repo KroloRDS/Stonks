@@ -3,8 +3,8 @@ using System.Linq;
 using System.Collections.Generic;
 using MediatR;
 using NUnit.Framework;
-using Stonks.Helpers;
 using Stonks.Requests.Commands.Trade;
+using Stonks.CustomExceptions;
 
 namespace UnitTests.Handlers.Commands.Trade;
 

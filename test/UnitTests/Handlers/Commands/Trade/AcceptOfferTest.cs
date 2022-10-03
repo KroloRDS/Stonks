@@ -7,7 +7,6 @@ using MediatR;
 using NUnit.Framework;
 using Stonks.Models;
 using Stonks.Requests.Commands.Trade;
-using PayPal.Api;
 
 namespace UnitTests.Handlers.Commands.Trade;
 

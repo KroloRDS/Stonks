@@ -1,0 +1,52 @@
+﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using Stonks.Data;
+using Stonks.Managers;
+
+namespace Stonks.Controllers;
+
+public class BaseController : Controller
+{
+	private readonly IMediator _mediator;
+	private readonly ILogManager _logger;
+	protected readonly AppDbContext _context;
+
+	public BaseController(IMediator mediator,
+		ILogManager logger, AppDbContext context)
+	{
+		_mediator = mediator;
+		_logger = logger;
+		_context = context;
+	}
+
+	protected async Task<IActionResult> TryExecuteCommand(
+		IRequest request, CancellationToken cancellationToken)
+	{
+		try
+		{
+			await _mediator.Send(request, cancellationToken);
+			return Ok();
+		}
+		catch (Exception ex)
+		{
+			_logger.Log(ex, request);
+			return Problem("Internal Server Error");
+		}
+	}
+
+	protected async Task<(bool Success, T? Result)> TryExecuteQuery<T>(
+		IRequest<T> request, CancellationToken cancellationToken)
+		where T : class
+	{
+		try
+		{
+			var result = await _mediator.Send(request, cancellationToken);
+			return new (true, result);
+		}
+		catch (Exception ex)
+		{
+			_logger.Log(ex, request);
+			return (false, null);
+		}
+	}
+}

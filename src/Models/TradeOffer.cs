@@ -19,9 +19,6 @@ public class TradeOffer : HasId
 
 	[Column(TypeName = "decimal(8,2)")]
 	public decimal Price { get; set; }
-
-	[Column(TypeName = "decimal(8,2)")]
-	public decimal SellPrice { get; set; }
 }
 
 public enum OfferType

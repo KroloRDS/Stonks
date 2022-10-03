@@ -3,7 +3,7 @@ using System.Threading;
 using Moq;
 using MediatR;
 using NUnit.Framework;
-using Stonks.Managers.Common;
+using Stonks.Managers;
 
 namespace UnitTests.Handlers;
 

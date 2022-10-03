@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 
 using Stonks.DTOs;
-using Stonks.Helpers;
+using Stonks.ExtensionMethods;
 
 namespace UnitTests;
 

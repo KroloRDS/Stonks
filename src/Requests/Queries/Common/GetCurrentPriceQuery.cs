@@ -1,8 +1,8 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Stonks.Data;
-using Stonks.Helpers;
 using Stonks.Models;
+using Stonks.CustomExceptions;
 using Stonks.Responses.Common;
 
 namespace Stonks.Requests.Queries.Common;
@@ -31,6 +31,6 @@ public class GetCurrentPriceQueryHandler :
 		var price = await _ctx.AvgPriceCurrent.SingleAsync(
 			x => x.StockId == request.StockId, cancellationToken);
 
-		return new GetCurrentPriceResponse(price.Amount);
+		return new GetCurrentPriceResponse(price.Price);
 	}
 }

@@ -52,13 +52,13 @@ public class UpdateAveragePriceCommandHandler :
 			StockId = currentPrice.StockId,
 			DateTime = currentPrice.Created,
 			SharesTraded = currentPrice.SharesTraded,
-			Amount = currentPrice.Amount,
-			AmountNormalised = currentPrice.Amount
+			Price = currentPrice.Price,
+			PriceNormalised = currentPrice.Price
 		});
 
 		currentPrice.Created = DateTime.Now;
 		currentPrice.SharesTraded = model.SharesTraded;
-		currentPrice.Amount = model.Amount;
+		currentPrice.Price = model.Amount;
 	}
 
 	private void AddFirstAvgPrice(StockPriceModel model, Guid stockId)
@@ -68,7 +68,7 @@ public class UpdateAveragePriceCommandHandler :
 			StockId = stockId,
 			Created = DateTime.Now,
 			SharesTraded = model.SharesTraded,
-			Amount = model.Amount
+			Price = model.Amount
 		});
 	}
 
@@ -84,7 +84,7 @@ public class UpdateAveragePriceCommandHandler :
 		IEnumerable<Transaction> transactions, AvgPriceCurrent? currentPrice)
 	{
 		var sharesTraded = currentPrice?.SharesTraded ?? 0UL;
-		var priceSum = (currentPrice?.Amount ?? 0M) * sharesTraded;
+		var priceSum = (currentPrice?.Price ?? 0M) * sharesTraded;
 		var ifNoTrade = currentPrice is null ? DEFAULT_PRICE : 0M;
 
 		foreach (var transaction in transactions)

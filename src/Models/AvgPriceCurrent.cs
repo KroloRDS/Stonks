@@ -15,5 +15,5 @@ public class AvgPriceCurrent : HasId
 	public DateTime Created { get; set; }
 
 	[Column(TypeName = "decimal(8,2)")]
-	public decimal Amount { get; set; }
+	public decimal Price { get; set; }
 }

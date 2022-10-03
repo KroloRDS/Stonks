@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 
 using Stonks.Data;
-using Stonks.Helpers;
+using Stonks.ExtensionMethods;
 
 namespace Stonks.Requests.Commands.Bankruptcy;
 

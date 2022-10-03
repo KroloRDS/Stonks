@@ -1,11 +1,13 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
+
 using Stonks.Data;
 using Stonks.DTOs;
-using Stonks.Helpers;
-using Stonks.Managers.Common;
-using Stonks.Requests.Queries.Common;
+using Stonks.Managers;
+using Stonks.CustomExceptions;
+using Stonks.ExtensionMethods;
 using Stonks.Responses.Bankruptcy;
+using Stonks.Requests.Queries.Common;
 
 namespace Stonks.Requests.Queries.Bankruptcy;
 
@@ -87,7 +89,7 @@ public class GetWeakestStockIdQueryHandler :
 		},
 		cancellationToken);
 
-		return result.Prices.Select(x => x.Amount).StandardDev();
+		return result.Prices.Select(x => x.Price).StandardDev();
 	}
 
 	private double GetScore(StockIndicatorNormalised indicator)

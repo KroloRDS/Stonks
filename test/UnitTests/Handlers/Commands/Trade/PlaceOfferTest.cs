@@ -1,6 +1,5 @@
 ﻿using MediatR;
 using NUnit.Framework;
-using Stonks.Helpers;
 using Stonks.Models;
 using Stonks.Requests.Commands.Trade;
 using System.Collections.Generic;
@@ -8,6 +7,7 @@ using System.Linq;
 using System;
 using Moq;
 using System.Threading;
+using Stonks.CustomExceptions;
 
 namespace UnitTests.Handlers.Commands.Trade;
 
@@ -281,7 +281,7 @@ public class PlaceOfferTest : CommandTest<PlaceOfferCommand>
 		var existingOffer1 = new TradeOffer
 		{
 			Amount = sellAmount,
-			SellPrice = price1,
+			Price = price1,
 			StockId = stock.Id,
 			Type = OfferType.Sell,
 			WriterId = AddUser().Id
@@ -291,7 +291,7 @@ public class PlaceOfferTest : CommandTest<PlaceOfferCommand>
 		var existingOffer2 = new TradeOffer
 		{
 			Amount = sellAmount,
-			SellPrice = price2,
+			Price = price2,
 			StockId = stock.Id,
 			Type = OfferType.PublicOfferring
 		};

@@ -1,6 +1,6 @@
 ﻿using MediatR;
 using Stonks.Data;
-using Stonks.Managers.Common;
+using Stonks.Managers;
 using Stonks.Requests.Queries.Bankruptcy;
 
 namespace Stonks.Requests.Commands.Bankruptcy;

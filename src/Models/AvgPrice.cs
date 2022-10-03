@@ -16,8 +16,8 @@ public class AvgPrice : HasId
 	public ulong SharesTraded { get; set; }
 
 	[Column(TypeName = "decimal(8,2)")]
-	public decimal Amount { get; set; }
+	public decimal Price { get; set; }
 
 	[Column(TypeName = "decimal(8,2)")]
-	public decimal AmountNormalised { get; set; }
+	public decimal PriceNormalised { get; set; }
 }

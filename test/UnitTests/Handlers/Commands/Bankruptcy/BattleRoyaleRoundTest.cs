@@ -3,11 +3,10 @@ using System.Threading;
 using Moq;
 using MediatR;
 using NUnit.Framework;
-
-using Stonks.Managers.Common;
 using Stonks.Responses.Bankruptcy;
 using Stonks.Requests.Queries.Bankruptcy;
 using Stonks.Requests.Commands.Bankruptcy;
+using Stonks.Managers;
 
 namespace UnitTests.Handlers.Commands.Bankruptcy;
 

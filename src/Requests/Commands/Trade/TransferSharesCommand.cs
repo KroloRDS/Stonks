@@ -1,7 +1,8 @@
 ﻿using MediatR;
 using Stonks.Data;
-using Stonks.Helpers;
 using Stonks.Models;
+using Stonks.CustomExceptions;
+using Stonks.ExtensionMethods;
 
 namespace Stonks.Requests.Commands.Trade;
 

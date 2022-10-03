@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using MediatR;
 using NUnit.Framework;
-using Stonks.Helpers;
+using Stonks.CustomExceptions;
 using Stonks.Requests.Commands.Trade;
 
 namespace UnitTests.Handlers.Commands.Trade;

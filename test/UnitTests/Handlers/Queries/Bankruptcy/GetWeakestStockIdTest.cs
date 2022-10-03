@@ -5,11 +5,11 @@ using MediatR;
 using NUnit.Framework;
 
 using Stonks.Models;
-using Stonks.Helpers;
 using Stonks.Responses.Common;
 using Stonks.Responses.Bankruptcy;
 using Stonks.Requests.Queries.Common;
 using Stonks.Requests.Queries.Bankruptcy;
+using Stonks.CustomExceptions;
 
 namespace UnitTests.Handlers.Queries.Bankruptcy;
 
@@ -40,7 +40,7 @@ public class GetWeakestStockIdTest :
 			{
 				new AvgPrice
 				{
-					Amount = 0
+					Price = 0
 				}
 			}));
 	}

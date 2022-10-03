@@ -1,49 +1,45 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
 
 using Stonks.Data;
 using Stonks.ViewModels;
-using Stonks.Managers.Common;
+using Stonks.Managers;
+using Stonks.Requests.Queries.Common;
+using Stonks.Responses.Common;
 
 namespace Stonks.Controllers;
 
-public class StockController : Controller
+public class StockController : BaseController
 {
-	private readonly AppDbContext _context;
-	private readonly IGetPriceManager _priceManager;
-	private readonly ILogManager _logger;
-
-	public StockController(AppDbContext context,
-		IGetPriceManager priceManager,
-		ILogManager logger)
+	public StockController(IMediator mediator, ILogManager logger,
+		AppDbContext context) : base(mediator, logger, context)
 	{
-		_context = context;
-		_priceManager = priceManager;
-		_logger = logger;
 	}
 
 	[Route("Stock/{stockSymbol}")]
-	public IActionResult Index(string stockSymbol)
-	{
-		try
-		{
-			return View(GetStockViewModel(stockSymbol));
-		}
-		catch (Exception ex)
-		{
-			_logger.Log(ex, stockSymbol);
-			return Problem("Oof");
-		}
-	}
-
-	private StockViewModel GetStockViewModel(string stockSymbol)
+	public async Task<IActionResult> Index(string stockSymbol,
+		CancellationToken cancellationToken)
 	{
 		var stock = _context.Stock
 			.First(x => x.Symbol == stockSymbol);
 
-		var prices = _priceManager.GetHistoricalPrices(
-			stock.Id, DateTime.Now.AddMonths(-1));
+		var historicalQuery = TryExecuteQuery(
+			new GetHistoricalPricesQuery
+			{
+				StockId = stock.Id,
+				FromDate = DateTime.Now.AddMonths(-1)
+			}, cancellationToken);
+		var currentQuery = TryExecuteQuery(
+			new GetCurrentPriceQuery(stock.Id), cancellationToken);
 
-		return new StockViewModel(stock, prices,
-			_priceManager.GetCurrentPrice(stock.Id));
+		var (success, historical) = await historicalQuery;
+		if (!success) return Problem("Internal Server Error");
+
+		(success, var current) = await currentQuery;
+		if (!success) return Problem("Internal Server Error");
+
+		return View(new StockViewModel(stock,
+			historical!.Prices, current!.Price));
+				
 	}
 }

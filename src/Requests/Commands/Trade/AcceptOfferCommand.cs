@@ -1,6 +1,6 @@
 ﻿using MediatR;
 using Stonks.Data;
-using Stonks.Helpers;
+using Stonks.ExtensionMethods;
 using Stonks.Models;
 
 namespace Stonks.Requests.Commands.Trade;
