@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Stonks.Data;
-using Stonks.Managers;
+using Stonks.Providers;
 using Stonks.ViewModels;
 
 namespace Stonks.Controllers;
@@ -9,11 +9,11 @@ namespace Stonks.Controllers;
 public class BaseController : Controller
 {
 	private readonly IMediator _mediator;
-	private readonly ILogManager _logger;
+	private readonly IStonksLogger _logger;
 	protected readonly AppDbContext _context;
 
 	public BaseController(IMediator mediator,
-		ILogManager logger, AppDbContext context)
+        IStonksLogger logger, AppDbContext context)
 	{
 		_mediator = mediator;
 		_logger = logger;

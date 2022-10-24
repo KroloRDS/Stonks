@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 using Stonks.Data;
 using Stonks.DTOs;
-using Stonks.Managers;
+using Stonks.Providers;
 using Stonks.CustomExceptions;
 using Stonks.ExtensionMethods;
 using Stonks.Responses.Bankruptcy;
@@ -18,10 +18,10 @@ public class GetWeakestStockIdQueryHandler :
 {
 	private readonly AppDbContext _ctx;
 	private readonly IMediator _mediator;
-	private readonly IConfigurationManager _config;
+	private readonly IStonksConfiguration _config;
 
-	public GetWeakestStockIdQueryHandler(AppDbContext ctx, IMediator mediator,
-		IConfigurationManager config)
+	public GetWeakestStockIdQueryHandler(AppDbContext ctx,
+		IMediator mediator, IStonksConfiguration config)
 	{
 		_ctx = ctx;
 		_mediator = mediator;

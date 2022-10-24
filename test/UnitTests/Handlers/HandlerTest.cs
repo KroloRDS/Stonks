@@ -3,7 +3,7 @@ using System.Threading;
 using Moq;
 using MediatR;
 using NUnit.Framework;
-using Stonks.Managers;
+using Stonks.Providers;
 
 namespace UnitTests.Handlers;
 
@@ -11,7 +11,7 @@ public abstract class HandlerTest<Request, Response> : InMemoryDb
 	where Request : IRequest<Response>
 {
 	protected readonly Mock<IMediator> _mediator = new();
-	protected readonly Mock<IConfigurationManager> _config = new();
+	protected readonly Mock<IStonksConfiguration> _config = new();
 	protected readonly IRequestHandler<Request, Response> _handler;
 
 	public HandlerTest()

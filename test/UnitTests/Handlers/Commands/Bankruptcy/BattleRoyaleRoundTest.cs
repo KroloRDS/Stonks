@@ -3,17 +3,18 @@ using System.Threading;
 using Moq;
 using MediatR;
 using NUnit.Framework;
+
+using Stonks.Providers;
 using Stonks.Responses.Bankruptcy;
 using Stonks.Requests.Queries.Bankruptcy;
 using Stonks.Requests.Commands.Bankruptcy;
-using Stonks.Managers;
 
 namespace UnitTests.Handlers.Commands.Bankruptcy;
 
 public class BattleRoyaleRoundTest : InMemoryDb
 {
 	private readonly Mock<IMediator> _mediator = new();
-	private readonly Mock<IConfigurationManager> _config = new();
+	private readonly Mock<IStonksConfiguration> _config = new();
 	private readonly BattleRoyaleRoundCommandHandler _handler;
 
 	public BattleRoyaleRoundTest()

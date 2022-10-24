@@ -2,15 +2,14 @@
 using Microsoft.AspNetCore.Mvc;
 
 using Stonks.Data;
-using Stonks.ViewModels;
-using Stonks.Managers;
+using Stonks.Providers;
 using Stonks.Requests.Queries.Common;
 
 namespace Stonks.Controllers;
 
 public class StockController : BaseController
 {
-	public StockController(IMediator mediator, ILogManager logger,
+	public StockController(IMediator mediator, IStonksLogger logger,
 		AppDbContext context) : base(mediator, logger, context)
 	{
 	}

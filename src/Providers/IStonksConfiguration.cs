@@ -1,11 +1,10 @@
-﻿namespace Stonks.Managers;
+﻿namespace Stonks.Providers;
 
-public interface IConfigurationManager
+public interface IStonksConfiguration
 {
     double FunWeight();
     double StockAmountWeight();
     double VolatilityWeight();
     double MarketCapWeight();
     int NewStocksAfterRound();
-    Dictionary<string, string> PayPalConfig();
 }

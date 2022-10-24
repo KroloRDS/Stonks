@@ -4,9 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 using Stonks.Data;
 using Stonks.Models;
-using Stonks.Managers;
-
-using ConfigurationManager = Stonks.Managers.ConfigurationManager;
+using Stonks.Providers;
 
 var builder = WebApplication.CreateBuilder(args);
 AddServices(builder);
@@ -17,8 +15,8 @@ app.Run();
 static void AddServices(WebApplicationBuilder builder)
 {
 	var services = builder.Services;
-	services.AddScoped<ILogManager, LogManager>();
-	services.AddScoped<IConfigurationManager, ConfigurationManager>();
+	services.AddScoped<Stonks.Providers.IStonksLogger, StonksLogger>();
+	services.AddScoped<IStonksConfiguration, StonksConfiguration>();
 	services.AddMediatR(Assembly.GetExecutingAssembly());
 	builder.Services.AddControllersWithViews();
 

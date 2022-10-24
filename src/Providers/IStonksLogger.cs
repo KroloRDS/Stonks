@@ -1,6 +1,6 @@
-﻿namespace Stonks.Managers;
+﻿namespace Stonks.Providers;
 
-public interface ILogManager
+public interface IStonksLogger
 {
     void Log(string message);
     void Log(string message, object obj);

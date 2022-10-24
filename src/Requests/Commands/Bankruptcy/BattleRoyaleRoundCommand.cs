@@ -1,6 +1,6 @@
 ﻿using MediatR;
 using Stonks.Data;
-using Stonks.Managers;
+using Stonks.Providers;
 using Stonks.Requests.Queries.Bankruptcy;
 
 namespace Stonks.Requests.Commands.Bankruptcy;
@@ -12,10 +12,10 @@ public class BattleRoyaleRoundCommandHandler :
 {
 	private readonly AppDbContext _ctx;
 	private readonly IMediator _mediator;
-	private readonly IConfigurationManager _config;
+	private readonly IStonksConfiguration _config;
 
 	public BattleRoyaleRoundCommandHandler(
-		AppDbContext ctx, IMediator mediator, IConfigurationManager config)
+		AppDbContext ctx, IMediator mediator, IStonksConfiguration config)
 	{
 		_ctx = ctx;
 		_mediator = mediator;

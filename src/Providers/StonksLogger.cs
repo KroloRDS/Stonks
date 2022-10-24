@@ -3,12 +3,12 @@
 using Stonks.Data;
 using Stonks.Models;
 
-namespace Stonks.Managers;
-public class LogManager : ILogManager
+namespace Stonks.Providers;
+public class StonksLogger : IStonksLogger
 {
     private readonly AppDbContext _ctx;
 
-    public LogManager(AppDbContext ctx)
+    public StonksLogger(AppDbContext ctx)
     {
         _ctx = ctx;
     }
