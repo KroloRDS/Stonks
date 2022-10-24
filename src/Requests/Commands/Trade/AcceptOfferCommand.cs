@@ -32,7 +32,7 @@ public class AcceptOfferCommandHandler : IRequestHandler<AcceptOfferCommand>
 	public async Task AcceptOffer(AcceptOfferCommand request,
 		CancellationToken cancellationToken)
 	{
-		var offer = _ctx.GetById<TradeOffer>(request.OfferId);
+		var offer = await _ctx.GetByIdAsync<TradeOffer>(request.OfferId);
 		var amount = request.Amount ?? offer.Amount;
 		amount.AssertPositive();
 

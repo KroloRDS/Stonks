@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Stonks.Data;
 using Stonks.Managers;
+using Stonks.ViewModels;
 
 namespace Stonks.Controllers;
 
@@ -34,19 +35,19 @@ public class BaseController : Controller
 		}
 	}
 
-	protected async Task<(bool Success, T? Result)> TryExecuteQuery<T>(
+	protected async Task<IActionResult> TryGetViewModel<T>(
 		IRequest<T> request, CancellationToken cancellationToken)
-		where T : class
+		where T : BaseViewModel
 	{
 		try
 		{
 			var result = await _mediator.Send(request, cancellationToken);
-			return new (true, result);
+			return View(result);
 		}
 		catch (Exception ex)
 		{
 			_logger.Log(ex, request);
-			return (false, null);
+			return Problem("Internal Server Error");
 		}
 	}
 }

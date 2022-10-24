@@ -1,5 +1,4 @@
 ﻿using MediatR;
-using Microsoft.EntityFrameworkCore;
 using Stonks.Data;
 using Stonks.Models;
 using Stonks.Responses.Common;

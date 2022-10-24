@@ -8,7 +8,8 @@ namespace Stonks.Requests.Commands.Bankruptcy;
 
 public record AddPublicOffersCommand(int Amount) : IRequest;
 
-public class AddPublicOffersCommandHandler : IRequestHandler<AddPublicOffersCommand>
+public class AddPublicOffersCommandHandler : 
+	IRequestHandler<AddPublicOffersCommand>
 {
 	private readonly AppDbContext _ctx;
 	private readonly IMediator _mediator;

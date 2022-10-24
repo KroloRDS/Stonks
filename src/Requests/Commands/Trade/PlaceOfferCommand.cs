@@ -75,7 +75,7 @@ public class PlaceOfferCommandHandler : IRequestHandler<PlaceOfferCommand>
 		if (command.Type == OfferType.PublicOfferring)
 			throw new PublicOfferingException();
 
-		var stock = _ctx.GetById<Stock>(command.StockId);
+		var stock = await _ctx.GetByIdAsync<Stock>(command.StockId);
 		if (stock.Bankrupt)
 			throw new BankruptStockException();
 

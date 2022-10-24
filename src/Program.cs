@@ -25,7 +25,7 @@ static void AddServices(WebApplicationBuilder builder)
 	var connectionString = builder.Configuration
 		.GetConnectionString("DefaultConnection");
 	services.AddDbContext<AppDbContext>(options => 
-		options.UseSqlServer(connectionString));
+		options.UseSqlServer(connectionString), ServiceLifetime.Transient);
 
 	builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 	builder.Services.AddDefaultIdentity<User>(options =>
