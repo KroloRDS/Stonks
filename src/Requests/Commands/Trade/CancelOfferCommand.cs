@@ -20,7 +20,7 @@ public class CancelOfferCommandHandler : IRequestHandler<CancelOfferCommand>
 		CancellationToken cancellationToken)
 	{
 		var offer = await ValidateRequest(request);
-		_ctx.TradeOffer.Remove(offer);
+		await Task.Run(() => _ctx.TradeOffer.Remove(offer), cancellationToken);
 		return Unit.Value;
 	}
 

@@ -1,14 +1,14 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using MediatR.Wrappers;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Stonks.Models;
+using Stonks.Providers;
 
 namespace Stonks.Data;
 public class AppDbContext : IdentityDbContext<User>
 {
 	public AppDbContext(DbContextOptions<AppDbContext> options)
-		: base(options)
-	{
-	}
+		: base(options) {}
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
@@ -176,26 +176,34 @@ public class AppDbContext : IdentityDbContext<User>
 			cancellationToken);
 	}
 
-	public async Task ExecuteTransactionAsync(Task task, string handlerName,
-		CancellationToken cancellationToken)
+	public async Task ExecuteTransactionAsync(Task task,
+		string handlerName, CancellationToken cancellationToken)
 	{
-		var transaction = Database.BeginTransaction();
 		try
 		{
 			await task;
 			await SaveChangesAsync(cancellationToken);
-			await transaction.CommitAsync(cancellationToken);
 		}
 		catch (Exception ex)
 		{
-			await transaction.RollbackAsync(cancellationToken);
-			throw new Exception(
-				$"Exception during transaction in {handlerName}, " +
-				$"see inner exception for details", ex);
+			ChangeTracker.Clear();
+			throw GetTransactionException(handlerName, ex);
 		}
-		finally
+	}
+
+	private Exception GetTransactionException(
+		string handlerName, Exception inner)
+	{
+		var msg = $"Exception during transaction in {handlerName}. ";
+		try
 		{
-			await transaction.DisposeAsync();
+			new StonksLogger(this).Log(inner);
+			msg += "See inner exception for details.";
 		}
+		catch
+		{
+			msg += "Failed to log inner exception.";
+		}
+		return new Exception(msg, inner);
 	}
 }

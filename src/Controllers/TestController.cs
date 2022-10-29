@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Stonks.Data;
 using Stonks.Models;
@@ -12,19 +7,19 @@ namespace Stonks.Controllers
 {
     public class TestController : Controller
     {
-        private readonly AppDbContext _context;
+		private readonly AppDbContext _context;
 
-        public TestController(AppDbContext context)
-        {
-            _context = context;
-        }
+		public TestController(AppDbContext context)
+		{
+			_context = context;
+		}
 
-        // GET: Test
-        public async Task<IActionResult> Index()
+		// GET: Test
+		public async Task<IActionResult> Index()
         {
-              return _context.Stock != null ? 
-                          View(await _context.Stock.ToListAsync()) :
-                          Problem("Entity set 'AppDbContext.Stock'  is null.");
+			return _context.Stock != null ? 
+				View(await _context.Stock.ToListAsync()) :
+				Problem("Entity set 'AppDbContext.Stock'  is null.");
         }
 
         // GET: Test/Details/5

@@ -6,31 +6,29 @@ using Stonks.Requests.Queries.Common;
 
 namespace Stonks.Requests.Commands.Bankruptcy;
 
-public record AddPublicOffersCommand(int Amount) : IRequest;
-
-public class AddPublicOffersCommandHandler : 
-	IRequestHandler<AddPublicOffersCommand>
+public class AddPublicOffersHandler
 {
 	private readonly AppDbContext _ctx;
 	private readonly IMediator _mediator;
 
-	public AddPublicOffersCommandHandler(AppDbContext ctx,
+	public AddPublicOffersHandler(AppDbContext ctx,
 		IMediator mediator)
 	{
 		_ctx = ctx;
 		_mediator = mediator;
 	}
 
-	public async Task<Unit> Handle(AddPublicOffersCommand request,
+	public async Task Handle(int amount, Guid bankruptedId,
 		CancellationToken cancellationToken)
 	{
-		var tasks = _ctx.Stock
-			.Where(x => !x.Bankrupt)
-			.Select(x => AddPublicOffer(
-				x.Id, request.Amount, cancellationToken));
+		var ids = _ctx.Stock
+			.Where(x => !x.Bankrupt && x.Id != bankruptedId)
+			.Select(x => x.Id);
 
-		await Task.WhenAll(tasks);
-		return Unit.Value;
+		foreach (var id in ids)
+		{
+			await AddPublicOffer(id, amount, cancellationToken);
+		}
 	}
 
 	private async Task AddPublicOffer(Guid stockId, int amount,

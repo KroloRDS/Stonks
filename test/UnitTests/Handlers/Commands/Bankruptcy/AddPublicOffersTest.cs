@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading;
+
 using Moq;
 using MediatR;
 using NUnit.Framework;
@@ -12,15 +13,18 @@ using Stonks.Requests.Commands.Bankruptcy;
 
 namespace UnitTests.Handlers.Commands.Bankruptcy;
 
-public class AddPublicOffersTest : CommandTest<AddPublicOffersCommand>
+public class AddPublicOffersTest : InMemoryDb
 {
-	protected override IRequestHandler<AddPublicOffersCommand, Unit> GetHandler()
+	private readonly Mock<IMediator> _mediator = new();
+	private readonly AddPublicOffersHandler _handler;
+
+	public AddPublicOffersTest()
 	{
 		_mediator.Setup(x => x.Send(
 			It.IsAny<GetCurrentPriceQuery>(),
 			It.IsAny<CancellationToken>()))
 			.ReturnsAsync(new GetCurrentPriceResponse(0));
-		return new AddPublicOffersCommandHandler(_ctx, _mediator.Object);
+		_handler = new AddPublicOffersHandler(_ctx, _mediator.Object);
 	}
 
 	[Test]
@@ -41,6 +45,7 @@ public class AddPublicOffersTest : CommandTest<AddPublicOffersCommand>
 		var stock1 = AddStock();
 		var stock2 = AddStock();
 		var stock3 = AddStock();
+		var excludedStock = AddStock();
 		var bankruptStock = AddBankruptStock();
 
 		_ctx.AddRange(new[]
@@ -61,7 +66,9 @@ public class AddPublicOffersTest : CommandTest<AddPublicOffersCommand>
 		_ctx.SaveChanges();
 
 		//Act
-		Handle(new AddPublicOffersCommand(amount));
+		_handler.Handle(amount, excludedStock.Id, 
+			CancellationToken.None).Wait();
+		_ctx.SaveChanges();
 
 		//Assert
 		_mediator.Verify(x => x.Send(It.IsAny<GetCurrentPriceQuery>(),
@@ -71,6 +78,7 @@ public class AddPublicOffersTest : CommandTest<AddPublicOffersCommand>
 		Assert.AreEqual(amount, GetPublicOffer(stock1.Id)?.Amount);
 		Assert.AreEqual(amount, GetPublicOffer(stock2.Id)?.Amount);
 		Assert.AreEqual(biggerAmount, GetPublicOffer(stock3.Id)?.Amount);
+		Assert.Null(GetPublicOffer(excludedStock.Id));
 		Assert.Null(GetPublicOffer(bankruptStock.Id));
 	}
 

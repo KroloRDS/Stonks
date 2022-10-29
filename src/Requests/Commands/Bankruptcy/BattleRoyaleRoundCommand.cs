@@ -1,6 +1,10 @@
 ﻿using MediatR;
+using Microsoft.EntityFrameworkCore;
+
 using Stonks.Data;
+using Stonks.Models;
 using Stonks.Providers;
+using Stonks.ExtensionMethods;
 using Stonks.Requests.Queries.Bankruptcy;
 
 namespace Stonks.Requests.Commands.Bankruptcy;
@@ -14,12 +18,16 @@ public class BattleRoyaleRoundCommandHandler :
 	private readonly IMediator _mediator;
 	private readonly IStonksConfiguration _config;
 
-	public BattleRoyaleRoundCommandHandler(
-		AppDbContext ctx, IMediator mediator, IStonksConfiguration config)
+	private readonly AddPublicOffersHandler _addPublicOffers;
+
+	public BattleRoyaleRoundCommandHandler(AppDbContext ctx,
+		IMediator mediator, IStonksConfiguration config)
 	{
 		_ctx = ctx;
 		_mediator = mediator;
 		_config = config;
+
+		_addPublicOffers = new AddPublicOffersHandler(ctx, mediator);
 	}
 
 	public async Task<Unit> Handle(BattleRoyaleRoundCommand request,
@@ -36,26 +44,40 @@ public class BattleRoyaleRoundCommandHandler :
 		var weakestStock = _mediator.Send(
 			new GetWeakestStockIdQuery(), cancellationToken);
 		var amount = _config.NewStocksAfterRound();
+		var id = (await weakestStock).Id;
 
-		var offers = _mediator.Send(
-			new AddPublicOffersCommand(amount), cancellationToken);
-		var shares = _mediator.Send(
-			new UpdatePublicallyOfferedAmountCommand(amount), cancellationToken);
-		var bankrupt = RemoveBankruptedStock((await weakestStock).Id,
-			cancellationToken);
-
-		await Task.WhenAll(bankrupt, shares, offers);
+		await Bankrupt(id, cancellationToken);
+		await _addPublicOffers.Handle(amount, id, cancellationToken);
+		await RemoveSharesAndOffers(id, cancellationToken);
+		await UpdatePublicallyOfferedAmount(amount, id, cancellationToken);
 	}
 
-	private async Task RemoveBankruptedStock(Guid id,
-		CancellationToken cancellationToken)
+	public async Task Bankrupt(Guid id, CancellationToken cancellationToken)
 	{
-		var bankrupt = _mediator.Send(new BankruptCommand(
-			id), cancellationToken);
-		var removeOffers = _mediator.Send(new RemoveAllOffersForStockCommand(
-			id), cancellationToken);
-		var removeShares = _mediator.Send(new RemoveAllSharesCommand(
-			id), cancellationToken);
-		await Task.WhenAll(bankrupt, removeOffers, removeShares);
+		var stock = await _ctx.GetByIdAsync<Stock>(id);
+		stock.Bankrupt = true;
+		stock.BankruptDate = DateTime.Now;
+		stock.PublicallyOfferredAmount = 0;
+	}
+
+	public async Task RemoveSharesAndOffers(
+		Guid id, CancellationToken cancellationToken)
+	{
+		await _ctx.EnsureExistAsync<Stock>(id, cancellationToken);
+		await Task.Run(() => _ctx.Share.RemoveRange(
+			_ctx.Share.Where(x => x.StockId == id)), cancellationToken);
+		await Task.Run(() => _ctx.TradeOffer.RemoveRange(
+			_ctx.TradeOffer.Where(x => x.StockId == id)), cancellationToken);
+	}
+
+	public async Task UpdatePublicallyOfferedAmount(int amount,
+		Guid bankruptedId, CancellationToken cancellationToken)
+	{
+		amount.AssertPositive();
+		await _ctx.Stock
+			.Where(x => !x.Bankrupt && x.Id != bankruptedId && 
+				x.PublicallyOfferredAmount < amount)
+			.ForEachAsync(x => x.PublicallyOfferredAmount = amount,
+			cancellationToken);
 	}
 }

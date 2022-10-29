@@ -10,11 +10,9 @@ namespace Stonks.Controllers;
 public class StockController : BaseController
 {
 	public StockController(IMediator mediator, IStonksLogger logger,
-		AppDbContext context) : base(mediator, logger, context)
-	{
-	}
+		AppDbContext context) : base(mediator, logger, context) {}
 
-	[Route("{stockSymbol}")]
+	[Route("stock/{stockSymbol}")]
 	public async Task<IActionResult> Index(string stockSymbol,
 		CancellationToken cancellationToken)
 	{

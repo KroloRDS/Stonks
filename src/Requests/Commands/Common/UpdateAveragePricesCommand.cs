@@ -22,8 +22,9 @@ public class UpdateAveragePricesCommandHandler :
 		CancellationToken cancellationToken)
 	{
 		await Task.WhenAll(_ctx.Stock
-			.Select(stock => _mediator.Send(
-				new UpdateAveragePriceCommand(stock.Id), cancellationToken)));
+			.Where(x => !x.Bankrupt)
+			.Select(x => _mediator.Send(
+				new UpdateAveragePriceCommand(x.Id), cancellationToken)));
 		return Unit.Value;
 	}
 }

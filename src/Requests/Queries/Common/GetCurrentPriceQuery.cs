@@ -24,9 +24,7 @@ public class GetCurrentPriceQueryHandler :
 		GetCurrentPriceQuery request, CancellationToken cancellationToken)
 	{
 		var stock = await _ctx.GetByIdAsync<Stock>(request.StockId);
-
-		if (stock.Bankrupt)
-			throw new BankruptStockException();
+		if (stock.Bankrupt) throw new BankruptStockException();
 
 		var price = await _ctx.AvgPriceCurrent.SingleAsync(
 			x => x.StockId == request.StockId, cancellationToken);
