@@ -16,7 +16,7 @@ namespace UnitTests.Handlers.Commands.Bankruptcy;
 public class AddPublicOffersTest : InMemoryDb
 {
 	private readonly Mock<IMediator> _mediator = new();
-	private readonly AddPublicOffersHandler _handler;
+	private readonly AddPublicOffers _handler;
 
 	public AddPublicOffersTest()
 	{
@@ -24,7 +24,7 @@ public class AddPublicOffersTest : InMemoryDb
 			It.IsAny<GetCurrentPriceQuery>(),
 			It.IsAny<CancellationToken>()))
 			.ReturnsAsync(new GetCurrentPriceResponse(0));
-		_handler = new AddPublicOffersHandler(_ctx, _mediator.Object);
+		_handler = new AddPublicOffers(_ctx, _mediator.Object);
 	}
 
 	[Test]

@@ -15,28 +15,40 @@ public class BattleRoyaleRoundCommandHandler :
 	IRequestHandler<BattleRoyaleRoundCommand>
 {
 	private readonly AppDbContext _ctx;
-	private readonly IMediator _mediator;
-	private readonly IStonksConfiguration _config;
-
-	private readonly AddPublicOffersHandler _addPublicOffers;
+	private readonly BattleRoyaleRoundRepository _repo;
 
 	public BattleRoyaleRoundCommandHandler(AppDbContext ctx,
 		IMediator mediator, IStonksConfiguration config)
 	{
 		_ctx = ctx;
-		_mediator = mediator;
-		_config = config;
-
-		_addPublicOffers = new AddPublicOffersHandler(ctx, mediator);
+		_repo = new BattleRoyaleRoundRepository(ctx, mediator, config,
+			new AddPublicOffers(ctx, mediator));
 	}
 
 	public async Task<Unit> Handle(BattleRoyaleRoundCommand request,
 		CancellationToken cancellationToken)
 	{
-		var task = BattleRoyaleRound(cancellationToken);
+		var task = _repo.BattleRoyaleRound(cancellationToken);
 		await _ctx.ExecuteTransactionAsync(task,
 			nameof(BattleRoyaleRoundCommandHandler), cancellationToken);
 		return Unit.Value;
+	}
+}
+
+public class BattleRoyaleRoundRepository
+{
+	private readonly AppDbContext _ctx;
+	private readonly IMediator _mediator;
+	private readonly IStonksConfiguration _config;
+	private readonly IAddPublicOffers _addPublicOffers;
+
+	public BattleRoyaleRoundRepository(AppDbContext ctx, IMediator mediator,
+		IStonksConfiguration config, IAddPublicOffers addPublicOffers)
+	{
+		_ctx = ctx;
+		_config = config;
+		_mediator = mediator;
+		_addPublicOffers = addPublicOffers;
 	}
 
 	public async Task BattleRoyaleRound(CancellationToken cancellationToken)
@@ -54,7 +66,7 @@ public class BattleRoyaleRoundCommandHandler :
 
 	public async Task Bankrupt(Guid id, CancellationToken cancellationToken)
 	{
-		var stock = await _ctx.GetByIdAsync<Stock>(id);
+		var stock = await _ctx.GetById<Stock>(id);
 		stock.Bankrupt = true;
 		stock.BankruptDate = DateTime.Now;
 		stock.PublicallyOfferredAmount = 0;
@@ -75,7 +87,7 @@ public class BattleRoyaleRoundCommandHandler :
 	{
 		amount.AssertPositive();
 		await _ctx.Stock
-			.Where(x => !x.Bankrupt && x.Id != bankruptedId && 
+			.Where(x => !x.Bankrupt && x.Id != bankruptedId &&
 				x.PublicallyOfferredAmount < amount)
 			.ForEachAsync(x => x.PublicallyOfferredAmount = amount,
 			cancellationToken);

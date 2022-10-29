@@ -13,11 +13,11 @@ public class Transaction : HasId
 	public Stock Stock { get; set; }
 
 	[Required]
-	public string BuyerId { get; set; }
+	public Guid BuyerId { get; set; }
 	[Required]
 	public User Buyer { get; set; }
 
-	public string? SellerId { get; set; }
+	public Guid? SellerId { get; set; }
 	public User? Seller { get; set; }
 
 	[Required]

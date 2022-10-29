@@ -9,7 +9,7 @@ public class TradeOffer : HasId
 	public Guid StockId { get; set; }
 	public Stock Stock { get; set; }
 
-	public string? WriterId { get; set; }
+	public Guid? WriterId { get; set; }
 	public User? Writer { get; set; }
 
 	[Required]

@@ -5,7 +5,7 @@ namespace Stonks.Models;
 public class Share
 {
 	[Required]
-	public string OwnerId { get; set; }
+	public Guid OwnerId { get; set; }
 	[Required]
 	public User Owner { get; set; }
 

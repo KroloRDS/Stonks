@@ -6,13 +6,18 @@ using Stonks.Requests.Queries.Common;
 
 namespace Stonks.Requests.Commands.Bankruptcy;
 
-public class AddPublicOffersHandler
+public interface IAddPublicOffers
+{
+	Task Handle(int amount, Guid bankruptedId,
+		CancellationToken cancellationToken);
+}
+
+public class AddPublicOffers : IAddPublicOffers
 {
 	private readonly AppDbContext _ctx;
 	private readonly IMediator _mediator;
 
-	public AddPublicOffersHandler(AppDbContext ctx,
-		IMediator mediator)
+	public AddPublicOffers(AppDbContext ctx, IMediator mediator)
 	{
 		_ctx = ctx;
 		_mediator = mediator;

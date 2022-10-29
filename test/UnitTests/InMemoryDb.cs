@@ -69,11 +69,6 @@ public class InMemoryDb
 		return user;
 	}
 
-	protected static Guid GetUserId(User user)
-	{
-		return Guid.Parse(user.Id);
-	}
-
 	protected TradeOffer AddOffer(OfferType type)
 	{
 		var offer = new TradeOffer

@@ -26,7 +26,7 @@ public class UpdateAveragePriceCommandHandler :
 		CancellationToken cancellationToken)
 	{
 		var stockId = request.StockId;
-		var stock = await _ctx.GetByIdAsync<Stock>(stockId);
+		var stock = await _ctx.GetById<Stock>(stockId);
 		if (stock.Bankrupt) return Unit.Value;
 
 		var currentPrice = await _ctx.AvgPriceCurrent

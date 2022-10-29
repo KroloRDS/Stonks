@@ -22,7 +22,7 @@ public class GetPublicStocksAmountQueryHandler :
 		GetPublicStocksAmountQuery request,
 		CancellationToken cancellationToken)
 	{
-		var stock = await _ctx.GetByIdAsync<Stock>(request.StockId);
+		var stock = await _ctx.GetById<Stock>(request.StockId);
 		return new GetPublicStocksAmountResponse(
 			stock.PublicallyOfferredAmount);
 	}
