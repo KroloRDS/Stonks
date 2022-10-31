@@ -3,8 +3,8 @@ using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 
 using Stonks.Data;
-using Stonks.Models;
-using Stonks.Providers;
+using Stonks.Util;
+using Stonks.Data.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 AddServices(builder);
@@ -15,7 +15,7 @@ app.Run();
 static void AddServices(WebApplicationBuilder builder)
 {
 	var services = builder.Services;
-	services.AddScoped<Stonks.Providers.IStonksLogger, StonksLogger>();
+	services.AddScoped<Stonks.Util.IStonksLogger, StonksLogger>();
 	services.AddScoped<IStonksConfiguration, StonksConfiguration>();
 	services.AddMediatR(Assembly.GetExecutingAssembly());
 	builder.Services.AddControllersWithViews();

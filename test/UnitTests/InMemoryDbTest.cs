@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 using NUnit.Framework;
-using Stonks.Models;
+using Stonks.Data.Models;
 
 namespace UnitTests;
 

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Stonks.Data;
-using Stonks.Models;
+using Stonks.Data.Models;
 
 namespace Stonks.Controllers
 {

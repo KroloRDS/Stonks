@@ -1,8 +1,8 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Stonks.CQRS.Queries.ViewModels;
 using Stonks.Data;
-using Stonks.Providers;
-using Stonks.ViewModels;
+using Stonks.Util;
 
 namespace Stonks.Controllers;
 

@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Stonks.Models;
-using Stonks.Providers;
+using Stonks.Data.Models;
+using Stonks.Util;
 
 namespace Stonks.Data;
 public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
@@ -38,7 +38,7 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
 		return entity;
 	}
 
-	public async Task<Guid> EnsureExistAsync<T>(Guid? id, 
+	public async Task<Guid> EnsureExist<T>(Guid? id, 
 		CancellationToken cancellationToken) where T : class, IHasId
 	{
 		if (id is null)
@@ -64,7 +64,7 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
 			cancellationToken);
 	}
 
-	public async Task ExecuteTransactionAsync(Task task,
+	public async Task ExecuteTransaction(Task task,
 		string handlerName, CancellationToken cancellationToken)
 	{
 		try

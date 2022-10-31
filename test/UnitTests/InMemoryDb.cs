@@ -3,8 +3,7 @@ using NUnit.Framework;
 using Microsoft.EntityFrameworkCore;
 
 using Stonks.Data;
-using Stonks.Models;
-
+using Stonks.Data.Models;
 
 namespace UnitTests;
 

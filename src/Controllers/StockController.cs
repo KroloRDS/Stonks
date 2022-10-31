@@ -2,8 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 
 using Stonks.Data;
-using Stonks.Providers;
-using Stonks.Requests.Queries.Common;
+using Stonks.Util;
+using Stonks.CQRS.Queries.ViewModels;
 
 namespace Stonks.Controllers;
 
