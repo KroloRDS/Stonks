@@ -14,7 +14,13 @@ public record TransferSharesCommand
 	public Guid? SellerId { get; set; } = null;
 }
 
-public class TransferShares
+public interface ITransferShares
+{
+	Task Handle(TransferSharesCommand command,
+		CancellationToken cancellationToken);
+}
+
+public class TransferShares : ITransferShares
 {
     private readonly AppDbContext _ctx;
 
@@ -40,6 +46,7 @@ public class TransferShares
     private async Task ValidateCommand(TransferSharesCommand command,
 		CancellationToken cancellationToken)
     {
+		command.Amount.AssertPositive();
         if (command.BuyFromUser is not true && command.SellerId is not null)
             throw new ExtraRefToSellerException();
 

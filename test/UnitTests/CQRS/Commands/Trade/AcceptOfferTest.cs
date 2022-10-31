@@ -3,8 +3,9 @@ using System.Linq;
 using System.Threading;
 using System.Collections.Generic;
 using Moq;
-using MediatR;
 using NUnit.Framework;
+
+using Stonks.Util;
 using Stonks.Data.Models;
 using Stonks.CQRS.Helpers;
 using Stonks.CQRS.Commands.Trade;
@@ -13,12 +14,14 @@ namespace UnitTests.CQRS.Commands.Trade;
 
 public class AcceptOfferTest : InMemoryDb
 {
-    private readonly Mock<IMediator> _mediator = new();
-    private readonly AcceptOfferCommandHandler _handler;
+    private readonly Mock<IGiveMoney> _giveMoney = new();
+    private readonly Mock<ITransferShares> _transferShares = new();
+    private readonly AcceptOfferRepository _repo;
 
     public AcceptOfferTest()
     {
-        _handler = new AcceptOfferCommandHandler(_ctx, _mediator.Object);
+        _repo = new AcceptOfferRepository(_ctx,
+			_giveMoney.Object, _transferShares.Object);
     }
 
     [Test]
@@ -29,7 +32,8 @@ public class AcceptOfferTest : InMemoryDb
             new AcceptOfferCommand(userId, default));
         AssertThrows<KeyNotFoundException>(
             new AcceptOfferCommand(userId, Guid.NewGuid()));
-        _mediator.VerifyNoOtherCalls();
+		_giveMoney.VerifyNoOtherCalls();
+		_transferShares.VerifyNoOtherCalls();
     }
 
     [Test]
@@ -41,8 +45,9 @@ public class AcceptOfferTest : InMemoryDb
         var offer = AddOffer(OfferType.Buy);
         AssertThrows<ArgumentOutOfRangeException>(
             new AcceptOfferCommand(AddUser().Id, offer.Id, amount));
-        _mediator.VerifyNoOtherCalls();
-    }
+		_giveMoney.VerifyNoOtherCalls();
+		_transferShares.VerifyNoOtherCalls();
+	}
 
     [Test]
     [TestCase(OfferType.Buy, null)]
@@ -55,17 +60,19 @@ public class AcceptOfferTest : InMemoryDb
         OfferType type, int? amount)
     {
         //Arrange
-        var clientId = AddUser().Id;
+        var client = AddUser();
         var offer = AddOffer(type);
+		client.Funds = offer.Amount * offer.Price * 2;
+		_ctx.SaveChanges();
         var offerCopy = CloneOffer(offer);
         if (amount.HasValue)
             Assert.Greater(amount.Value, offer.Amount);
 
         //Act
-        AcceptOffer(new AcceptOfferCommand(clientId, offer.Id));
+        AcceptOffer(new AcceptOfferCommand(client.Id, offer.Id));
 
         //Assert
-        VerifyMocks(offerCopy, clientId);
+        VerifyMocks(offerCopy, client.Id);
         Assert.False(_ctx.TradeOffer.Any());
     }
 
@@ -76,62 +83,48 @@ public class AcceptOfferTest : InMemoryDb
     public void AcceptOffer_NotFullAmount_ShouldNotRemoveOffer(OfferType type)
     {
         //Arrange
-        var clientId = AddUser().Id;
+        var client = AddUser();
         var offer = AddOffer(type);
         var amount = 5;
         var initialAmout = offer.Amount;
-        Assert.Greater(initialAmout, amount);
+		client.Funds = offer.Amount * offer.Price * 2;
+		_ctx.SaveChanges();
+		Assert.Greater(initialAmout, amount);
 
         //Act
-        AcceptOffer(new AcceptOfferCommand(clientId, offer.Id, amount));
+        AcceptOffer(new AcceptOfferCommand(client.Id, offer.Id, amount));
 
         //Assert
-        VerifyMocks(offer, clientId);
+        VerifyMocks(offer, client.Id);
         Assert.AreEqual(1, _ctx.TradeOffer.Count());
         Assert.AreEqual(initialAmout - amount, offer.Amount);
     }
 
     private void VerifyMocks(TradeOffer offer, Guid userId)
     {
-        VerifyMoneyTransfer(offer.Type, offer.Amount * offer.Price,
+		VerifyGiveMoney(offer.Type, offer.Amount * offer.Price,
             userId, offer.WriterId);
-        VerifySharesTransfer(offer.Type, offer.Amount, offer.StockId,
+        VerifyTransferShares(offer.Type, offer.Amount, offer.StockId,
             userId, offer.WriterId);
-        _mediator.VerifyNoOtherCalls();
     }
 
-    private void VerifyMoneyTransfer(OfferType type,
-        decimal offerValue, Guid userId, Guid? offerWriterId)
+    private void VerifyGiveMoney(OfferType type,
+		decimal amount, Guid userId, Guid? offerWriterId)
     {
-        if (type == OfferType.Buy)
-        {
-            if (!offerWriterId.HasValue)
-                throw new ArgumentNullException(nameof(offerWriterId));
-            VerifyTakeAndGiveMoney(offerValue, offerWriterId.Value, userId);
-        }
-        else
-        {
-            VerifyTakeAndGiveMoney(offerValue, userId, offerWriterId);
-        }
+		if (type != OfferType.PublicOfferring)
+		{
+			var id = type == OfferType.Buy ? userId : offerWriterId;
+			_giveMoney.Verify(x => x.Handle(
+				It.Is<Guid>(x => x == id),
+				It.Is<decimal>(x => x == amount)), Times.Once());
+		}
+		_giveMoney.VerifyNoOtherCalls();
     }
 
-    private void VerifyTakeAndGiveMoney(decimal amount,
-        Guid senderUserId, Guid? recipientUserId = null)
-    {
-        _mediator.Verify(x => x.Send(It.Is<TakeMoneyCommand>(
-            c => c.UserId == senderUserId && c.Amount == amount),
-            CancellationToken.None), Times.Once());
-
-        if (!recipientUserId.HasValue) return;
-        _mediator.Verify(x => x.Send(It.Is<GiveMoneyCommand>(
-            c => c.UserId == recipientUserId.Value && c.Amount == amount),
-            CancellationToken.None), Times.Once());
-    }
-
-    private void VerifySharesTransfer(OfferType offerType, int amount,
+    private void VerifyTransferShares(OfferType offerType, int amount,
         Guid stockId, Guid userId, Guid? offerWriterId = null)
     {
-        _mediator.Verify(x => x.Send(It.Is<TransferSharesCommand>(
+        _transferShares.Verify(x => x.Handle(It.Is<TransferSharesCommand>(
             c => c.StockId == stockId &&
             c.Amount == amount &&
             c.BuyerId ==
@@ -140,22 +133,23 @@ public class AcceptOfferTest : InMemoryDb
             c.SellerId ==
                 (offerType == OfferType.Buy ? userId : offerWriterId)),
             CancellationToken.None), Times.Once());
-    }
+		_transferShares.VerifyNoOtherCalls();
+	}
 
     private void AssertThrows<T>(AcceptOfferCommand command)
         where T : Exception
     {
-        Assert.ThrowsAsync<T>(() => _handler.AcceptOffer(
+        Assert.ThrowsAsync<T>(() => _repo.AcceptOffer(
             command, CancellationToken.None));
     }
 
-    private void AcceptOffer(AcceptOfferCommand command)
-    {
-        _handler.AcceptOffer(command, CancellationToken.None).Wait();
-        _ctx.SaveChanges();
-    }
+	private void AcceptOffer(AcceptOfferCommand command)
+	{
+		_repo.AcceptOffer(command, CancellationToken.None).Wait();
+		_ctx.SaveChanges();
+	}
 
-    private static TradeOffer CloneOffer(TradeOffer offer)
+	private static TradeOffer CloneOffer(TradeOffer offer)
     {
         return new TradeOffer
         {
@@ -168,9 +162,72 @@ public class AcceptOfferTest : InMemoryDb
         };
     }
 
-    [TearDown]
+	[Test]
+	public void TakeMoney_WrongUser_ShouldThrow()
+	{
+		AssertThrows<KeyNotFoundException>(default, 1M);
+		AssertThrows<KeyNotFoundException>(Guid.NewGuid(), 1M);
+	}
+
+	[Test]
+	[TestCase(0)]
+	[TestCase(-1)]
+	public void TakeMoney_NotPositiveAmount_ShouldThrow(decimal amount)
+	{
+		AssertThrows<ArgumentOutOfRangeException>(AddUser().Id, amount);
+	}
+
+	[Test]
+	public void TakeMoney_InsufficientFunds_ShouldThrow()
+	{
+		//Arrange
+		var user = AddUser();
+		var funds = 5M;
+		var toTake = 10M;
+		Assert.Less(funds, toTake);
+
+		user.Funds = funds;
+		_ctx.SaveChanges();
+
+		//Act & Assert
+		AssertThrows<InsufficientFundsException>(user.Id, toTake);
+	}
+
+	[Test]
+	public void TakeMoney_PositiveTest()
+	{
+		//Arrange
+		var user = AddUser();
+		var funds = 10M;
+		var toTake = 5M;
+		Assert.Greater(funds, toTake);
+
+		user.Funds = funds;
+		_ctx.SaveChanges();
+
+		//Act
+		TakeMoney(user.Id, toTake);
+
+		//Assert
+		Assert.AreEqual(funds - toTake, user.Funds);
+	}
+
+	private void AssertThrows<T>(Guid id, decimal amount)
+		where T : Exception
+	{
+		Assert.ThrowsAsync<T>(() => _repo.TakeMoney(id, amount));
+	}
+
+	private void TakeMoney(Guid id, decimal amount)
+	{
+		_repo.TakeMoney(id, amount).Wait();
+		_ctx.SaveChanges();
+	}
+
+	[TearDown]
     public void ResetMockCallCounts()
     {
-        _mediator.Invocations.Clear();
+        _giveMoney.Invocations.Clear();
+        _transferShares.Invocations.Clear();
     }
 }

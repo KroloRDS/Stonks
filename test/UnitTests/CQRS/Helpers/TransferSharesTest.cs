@@ -1,22 +1,22 @@
 ﻿using System;
 using System.Linq;
-using System.Collections.Generic;
-using MediatR;
-using NUnit.Framework;
 using System.Threading;
+using System.Collections.Generic;
+using NUnit.Framework;
+
 using Stonks.Util;
 using Stonks.CQRS.Helpers;
-using UnitTests.CQRS.Commands;
 
 namespace UnitTests.CQRS.Helpers;
 
-public class TransferSharesTest : CommandTest<TransferSharesCommand>
+public class TransferSharesTest : InMemoryDb
 {
-    protected override IRequestHandler<TransferSharesCommand, Unit>
-        GetHandler()
-    {
-        return new TransferShares(_ctx);
-    }
+	private readonly TransferShares _transferShares;
+
+	public TransferSharesTest()
+	{
+		_transferShares = new TransferShares(_ctx);
+	}
 
     [Test]
     [TestCase(0)]
@@ -24,19 +24,35 @@ public class TransferSharesTest : CommandTest<TransferSharesCommand>
     [TestCase(-99)]
     public void TransferShares_WrongAmount_ShouldThrow(int amount)
     {
-        var command = new TransferSharesCommand(
-            AddStock().Id, amount, AddUser().Id, false);
-        AssertThrows<ArgumentOutOfRangeException>(command);
+		var command = new TransferSharesCommand
+		{
+			StockId = AddStock().Id,
+			Amount = amount,
+			BuyerId = AddUser().Id,
+			BuyFromUser = false
+		};
+        Assert.ThrowsAsync<ArgumentOutOfRangeException>(
+			() => _transferShares.Handle(command, CancellationToken.None));
     }
 
     [Test]
     public void TransferShares_WrongBuyer_ShouldThrow()
     {
         var stockId = AddStock().Id;
-        var command1 = new TransferSharesCommand(
-            stockId, 1, default, false);
-        var command2 = new TransferSharesCommand(
-            stockId, 1, Guid.NewGuid(), false);
+		var command1 = new TransferSharesCommand
+		{
+			StockId = stockId,
+			Amount = 1,
+			BuyerId = default,
+			BuyFromUser = false
+		};
+		var command2 = new TransferSharesCommand
+		{
+			StockId = stockId,
+			Amount = 1,
+			BuyerId = Guid.NewGuid(),
+			BuyFromUser = false
+		};
         AssertThrows<KeyNotFoundException>(command1);
         AssertThrows<KeyNotFoundException>(command2);
     }
@@ -44,61 +60,105 @@ public class TransferSharesTest : CommandTest<TransferSharesCommand>
     [Test]
     public void TransferShares_NullSeller_ShouldThrow()
     {
-        var command = new TransferSharesCommand(
-            AddStock().Id, 1, AddUser().Id, true, null);
-        AssertThrows<ArgumentNullException>(command);
+		var command = new TransferSharesCommand
+		{
+			StockId = AddStock().Id,
+			Amount = 1,
+			BuyerId = AddUser().Id,
+			BuyFromUser = true,
+			SellerId = null
+		};
+		AssertThrows<ArgumentNullException>(command);
     }
 
     [Test]
     public void TransferShares_WrongSeller_ShouldThrow()
     {
-        var command = new TransferSharesCommand(
-            AddStock().Id, 1, AddUser().Id, true, Guid.NewGuid());
-        AssertThrows<KeyNotFoundException>(command);
+		var command = new TransferSharesCommand
+		{
+			StockId = AddStock().Id,
+			Amount = 1,
+			BuyerId = AddUser().Id,
+			BuyFromUser = true,
+			SellerId = Guid.NewGuid()
+		};
+		AssertThrows<KeyNotFoundException>(command);
     }
 
     [Test]
     public void TransferShares_WrongStock_ShouldThrow()
     {
         var userId = AddUser().Id;
-        var command1 = new TransferSharesCommand(
-            default, 1, userId, false);
-        var command2 = new TransferSharesCommand(
-            Guid.NewGuid(), 1, userId, false);
-        AssertThrows<KeyNotFoundException>(command1);
+		var command1 = new TransferSharesCommand
+		{
+			StockId = Guid.NewGuid(),
+			Amount = 1,
+			BuyerId = userId,
+			BuyFromUser = false
+		};
+		var command2 = new TransferSharesCommand
+		{
+			StockId = default,
+			Amount = 1,
+			BuyerId = userId,
+			BuyFromUser = false
+		};
+		AssertThrows<KeyNotFoundException>(command1);
         AssertThrows<KeyNotFoundException>(command2);
     }
 
     [Test]
     public void TransferShares_BuyNotFromUser_SellerNotNull_ShouldThrow()
     {
-        var command = new TransferSharesCommand(AddStock().Id,
-            1, AddUser().Id, false, AddUser().Id);
-        AssertThrows<ExtraRefToSellerException>(command);
+		var command = new TransferSharesCommand
+		{
+			StockId = AddStock().Id,
+			Amount = 1,
+			BuyerId = AddUser().Id,
+			BuyFromUser = false,
+			SellerId = AddUser().Id
+		};
+		AssertThrows<ExtraRefToSellerException>(command);
     }
 
     [Test]
     public void TransferShares_NotEnoughPublicStocks_ShouldThrow()
     {
-        var command = new TransferSharesCommand(
-            AddStock(0).Id, 5, AddUser().Id, false);
-        AssertThrows<NoPublicStocksException>(command);
+		var command = new TransferSharesCommand
+		{
+			StockId = AddStock(0).Id,
+			Amount = 5,
+			BuyerId = AddUser().Id,
+			BuyFromUser = false
+		};
+		AssertThrows<NoPublicStocksException>(command);
     }
 
     [Test]
     public void TransferShares_BankruptStock_ShouldThrow()
     {
-        var command = new TransferSharesCommand(
-            AddBankruptStock().Id, 5, AddUser().Id, false);
-        AssertThrows<BankruptStockException>(command);
+		var command = new TransferSharesCommand
+		{
+			StockId = AddBankruptStock().Id,
+			Amount = 5,
+			BuyerId = AddUser().Id,
+			BuyFromUser = false
+		};
+		AssertThrows<BankruptStockException>(command);
     }
 
     [Test]
     public void TransferShares_NoStocksOnSeller_ShouldThrow()
     {
-        var command = new TransferSharesCommand(AddStock().Id,
-            1, AddUser().Id, true, AddUser().Id);
-        AssertThrows<NoStocksOnSellerException>(command);
+		var command = new TransferSharesCommand
+		{
+			StockId = AddStock().Id,
+			Amount = 1,
+			BuyerId = AddUser().Id,
+			BuyFromUser = true,
+			SellerId = AddUser().Id
+		};
+		AssertThrows<NoStocksOnSellerException>(command);
     }
 
     [Test]
@@ -111,11 +171,22 @@ public class TransferSharesTest : CommandTest<TransferSharesCommand>
 
         var sellerId = AddUser().Id;
         var stockId = AddStock().Id;
-        Handle(new TransferSharesCommand(
-            stockId, sellerInitialStocks, sellerId, false));
+		Handle(new TransferSharesCommand
+		{
+			StockId = stockId,
+			Amount = sellerInitialStocks,
+			BuyerId = sellerId,
+			BuyFromUser = false
+		});
 
-        var command = new TransferSharesCommand(stockId,
-            buyerStocks, AddUser().Id, true, sellerId);
+        var command = new TransferSharesCommand
+		{
+			StockId = stockId,
+			Amount = buyerStocks,
+			BuyerId = AddUser().Id,
+			BuyFromUser = true,
+			SellerId = sellerId
+		};
 
         //Act & Assert
         AssertThrows<NoStocksOnSellerException>(command);
@@ -138,11 +209,16 @@ public class TransferSharesTest : CommandTest<TransferSharesCommand>
         var stock = AddStock(publicStocks);
 
         //Act
-        Handle(new TransferSharesCommand(stock.Id,
-            sellerInitialStocks, sellerId, false));
+		Handle(new TransferSharesCommand
+		{
+			StockId = stock.Id,
+			Amount = sellerInitialStocks,
+			BuyerId = sellerId,
+			BuyFromUser = false
+		});
 
-        //Assert
-        var sellerActualStocks = GetAmountOfOwnedStocks(sellerId, stock.Id);
+		//Assert
+		var sellerActualStocks = GetAmountOfOwnedStocks(sellerId, stock.Id);
         Assert.AreEqual(sellerInitialStocks, sellerActualStocks);
         Assert.AreEqual(publicStocks - sellerInitialStocks,
             stock.PublicallyOfferredAmount);
@@ -151,11 +227,17 @@ public class TransferSharesTest : CommandTest<TransferSharesCommand>
         //Part 2 - buy stocks from user
 
         //Arrange & Act
-        Handle(new TransferSharesCommand(stock.Id,
-            buyerStocks, buyerId, true, sellerId));
+		Handle(new TransferSharesCommand
+		{
+			StockId = stock.Id,
+			Amount = buyerStocks,
+			BuyerId = buyerId,
+			BuyFromUser = true,
+			SellerId = sellerId
+		});
 
-        //Assert
-        sellerActualStocks = GetAmountOfOwnedStocks(sellerId, stock.Id);
+		//Assert
+		sellerActualStocks = GetAmountOfOwnedStocks(sellerId, stock.Id);
         var buyerActualStocks = GetAmountOfOwnedStocks(buyerId, stock.Id);
 
         Assert.AreEqual(sellerInitialStocks - buyerStocks, sellerActualStocks);
@@ -187,4 +269,17 @@ public class TransferSharesTest : CommandTest<TransferSharesCommand>
             x.Seller != null && x.Seller.Id == sellerId)
             .Count();
     }
+
+	private void AssertThrows<T>(TransferSharesCommand command)
+		where T : Exception
+	{
+		Assert.ThrowsAsync<T>(
+			() => _transferShares.Handle(command, CancellationToken.None));
+	}
+
+	private void Handle(TransferSharesCommand command)
+	{
+		_transferShares.Handle(command, CancellationToken.None).Wait();
+		_ctx.SaveChanges();
+	}
 }

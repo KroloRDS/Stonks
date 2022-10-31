@@ -1,26 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
-using MediatR;
 using NUnit.Framework;
 using Stonks.CQRS.Helpers;
-using UnitTests.CQRS.Commands;
 
 namespace UnitTests.CQRS.Helpers;
 
-public class GiveMoneyTest : CommandTest<GiveMoneyCommand>
+public class GiveMoneyTest : InMemoryDb
 {
-    protected override IRequestHandler<GiveMoneyCommand, Unit> GetHandler()
-    {
-        return new GiveMoney(_ctx);
-    }
+	private readonly GiveMoney _giveMoney;
 
-    [Test]
+	public GiveMoneyTest()
+	{
+		_giveMoney = new GiveMoney(_ctx);
+	}
+
+	[Test]
     public void GiveMoney_WrongUser_ShouldThrow()
     {
-        AssertThrows<KeyNotFoundException>(
-            new GiveMoneyCommand(default, 1M));
-        AssertThrows<KeyNotFoundException>(
-            new GiveMoneyCommand(Guid.NewGuid(), 1M));
+        Assert.ThrowsAsync<KeyNotFoundException>(
+            () => _giveMoney.Handle(default, 1M));
+		Assert.ThrowsAsync<KeyNotFoundException>(
+			() => _giveMoney.Handle(Guid.NewGuid(), 1M));
     }
 
     [Test]
@@ -28,8 +28,8 @@ public class GiveMoneyTest : CommandTest<GiveMoneyCommand>
     [TestCase(-1)]
     public void GiveMoney_NotPositiveAmount_ShouldThrow(decimal amount)
     {
-        AssertThrows<ArgumentOutOfRangeException>(
-            new GiveMoneyCommand(AddUser().Id, amount));
+		Assert.ThrowsAsync<ArgumentOutOfRangeException>(
+			() => _giveMoney.Handle(AddUser().Id, amount));
     }
 
     [Test]
@@ -39,8 +39,9 @@ public class GiveMoneyTest : CommandTest<GiveMoneyCommand>
         var user = AddUser();
         var amount = 1M;
 
-        //Act
-        Handle(new GiveMoneyCommand(user.Id, amount));
+		//Act
+		_giveMoney.Handle(user.Id, amount).Wait();
+		_ctx.SaveChanges();
 
         //Assert
         Assert.AreEqual(amount, user.Funds);

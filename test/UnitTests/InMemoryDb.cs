@@ -60,9 +60,9 @@ public class InMemoryDb
 		return stock;
 	}
 
-	protected User AddUser()
+	protected User AddUser(decimal funds = 0)
 	{
-		var user = new User();
+		var user = new User { Funds = funds };
 		_ctx.Add(user);
 		_ctx.SaveChanges();
 		return user;
@@ -76,7 +76,8 @@ public class InMemoryDb
 			Price = 1M,
 			StockId = AddStock().Id,
 			Type = type,
-			WriterId = type == OfferType.PublicOfferring ? null : AddUser().Id
+			WriterId = type == OfferType.PublicOfferring ?
+				null : AddUser(100M).Id
 		};
 		_ctx.Add(offer);
 		_ctx.SaveChanges();

@@ -4,7 +4,12 @@ using Stonks.Data.Models;
 
 namespace Stonks.CQRS.Helpers;
 
-public class GiveMoney
+public interface IGiveMoney
+{
+	Task Handle(Guid userId, decimal amount);
+}
+
+public class GiveMoney : IGiveMoney
 {
     private readonly AppDbContext _ctx;
 
