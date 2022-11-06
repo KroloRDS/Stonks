@@ -64,7 +64,7 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
 			cancellationToken);
 	}
 
-	public async Task ExecuteTransaction(Task task,
+	public virtual async Task ExecuteTransaction(Task task,
 		string handlerName, CancellationToken cancellationToken)
 	{
 		try
@@ -75,23 +75,8 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
 		catch (Exception ex)
 		{
 			ChangeTracker.Clear();
-			throw GetTransactionException(handlerName, ex);
+			var logged = new StonksLogger(this).Log(ex);
+			throw new DbTransactionException(handlerName, logged, ex);
 		}
-	}
-
-	private Exception GetTransactionException(
-		string handlerName, Exception inner)
-	{
-		var msg = $"Exception during transaction in {handlerName}. ";
-		try
-		{
-			new StonksLogger(this).Log(inner);
-			msg += "See inner exception for details.";
-		}
-		catch
-		{
-			msg += "Failed to log inner exception.";
-		}
-		return new Exception(msg, inner);
 	}
 }

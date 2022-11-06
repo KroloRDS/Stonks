@@ -7,26 +7,29 @@ using Moq;
 using MediatR;
 using NUnit.Framework;
 
-using Stonks.Util;
 using Stonks.Data.Models;
-using Stonks.CQRS.Queries.Bankruptcy.GetWeakestStock;
 using Stonks.CQRS.Helpers;
 using Stonks.CQRS.Commands;
+using Stonks.CQRS.Queries.Bankruptcy.GetWeakestStock;
 
 namespace UnitTests.CQRS.Commands;
 
-public class BattleRoyaleRoundTest : InMemoryDb
+public class BattleRoyaleRoundTest : CommandTest<BattleRoyaleRoundCommand>
 {
-    private readonly BattleRoyaleRoundRepository _repo;
-    private readonly Mock<IMediator> _mediator = new();
-    private readonly Mock<IStonksConfiguration> _config = new();
-    private readonly Mock<IAddPublicOffers> _publicOffers = new();
+    private readonly Mock<IAddPublicOffers> _addOffers = new();
+	private readonly BattleRoyaleRoundCommandHandler _battleRoyaleHandler;
 
-    public BattleRoyaleRoundTest()
-    {
-        _repo = new BattleRoyaleRoundRepository(_ctx, _mediator.Object,
-            _config.Object, _publicOffers.Object);
-    }
+	public BattleRoyaleRoundTest()
+	{
+		_battleRoyaleHandler = new BattleRoyaleRoundCommandHandler(
+			_ctx, _mediator.Object, _config.Object, _addOffers.Object);
+	}
+
+	protected override IRequestHandler<BattleRoyaleRoundCommand, Unit> GetHandler()
+	{
+		return new BattleRoyaleRoundCommandHandler(_ctx,
+			_mediator.Object, _config.Object, _addOffers.Object);
+	}
 
     [Test]
     public void BattleRoyaleRound_PositiveTest()
@@ -38,50 +41,54 @@ public class BattleRoyaleRoundTest : InMemoryDb
             It.IsAny<CancellationToken>()))
             .ReturnsAsync(new GetWeakestStockIdResponse(AddStock().Id));
 
-        //Act
-        _repo.BattleRoyaleRound(CancellationToken.None).Wait();
+		//Act
+		Handle(new BattleRoyaleRoundCommand());
 
         //Assert
-        VerifyMediatorMocks();
+        VerifyMocks();
     }
 
-    private void VerifyMediatorMocks()
+    private void VerifyMocks()
     {
         _mediator.Verify(x => x.Send(It.IsAny<GetWeakestStockIdQuery>(),
             It.IsAny<CancellationToken>()), Times.Once());
         _mediator.VerifyNoOtherCalls();
-        _publicOffers.Verify(x => x.Handle(It.IsAny<int>(), It.IsAny<Guid>(),
+        _addOffers.Verify(x => x.Handle(It.IsAny<int>(), It.IsAny<Guid>(),
             It.IsAny<CancellationToken>()), Times.Once());
-        _publicOffers.VerifyNoOtherCalls();
+        _addOffers.VerifyNoOtherCalls();
         _config.Verify(x => x.NewStocksAfterRound(), Times.Once());
         _config.VerifyNoOtherCalls();
     }
 
     [Test]
     [TestCase(default)]
-    [TestCase("8bc61de3-1cc0-45f7-81a4-75c5588c3f16")]
+    [TestCase(_zeroGuid)]
+    [TestCase(_randomGuid)]
     public void Bankrupt_WrongStock_ShouldThrow(Guid id)
     {
-		Assert.ThrowsAsync<KeyNotFoundException>(() => _repo.Bankrupt(id));
+		Assert.ThrowsAsync<KeyNotFoundException>(() =>
+			_battleRoyaleHandler.Bankrupt(id));
 	}
 
     [Test]
     public void Bankrupt_PositiveTest()
     {
         var stock = AddStock();
-        _repo.Bankrupt(stock.Id).Wait();
+		_battleRoyaleHandler.Bankrupt(stock.Id).Wait();
         Assert.IsTrue(stock.Bankrupt);
         Assert.Zero(stock.PublicallyOfferredAmount);
         Assert.NotNull(stock.BankruptDate);
     }
 
-    [Test]
-    [TestCase(default)]
-    [TestCase("209a450e-142c-4d64-a073-2783862e0b64")]
-    public void RemoveSharesAndOffers_WrongStock_ShouldThrow(Guid id)
+	[Test]
+	[TestCase(default)]
+	[TestCase(_zeroGuid)]
+	[TestCase(_randomGuid)]
+	public void RemoveSharesAndOffers_WrongStock_ShouldThrow(Guid id)
     {
-        Assert.ThrowsAsync<KeyNotFoundException>(
-            () => _repo.RemoveSharesAndOffers(id, CancellationToken.None));
+        Assert.ThrowsAsync<KeyNotFoundException>(() =>
+			_battleRoyaleHandler.RemoveSharesAndOffers(
+				id, CancellationToken.None));
     }
 
     [Test]
@@ -108,8 +115,9 @@ public class BattleRoyaleRoundTest : InMemoryDb
         Assert.AreEqual(count > 0, _ctx.Share.Any());
         Assert.AreEqual(count > 0, _ctx.TradeOffer.Any());
 
-        //Act
-        _repo.RemoveSharesAndOffers(stockId, CancellationToken.None).Wait();
+		//Act
+		_battleRoyaleHandler.RemoveSharesAndOffers(
+			stockId, CancellationToken.None).Wait();
         _ctx.SaveChanges();
 
         //Assert
@@ -123,8 +131,8 @@ public class BattleRoyaleRoundTest : InMemoryDb
     [TestCase(-99)]
     public void UpdatePublicallyOfferedAmount_WrongAmount_ShouldThrow(int amount)
     {
-        Assert.ThrowsAsync<ArgumentOutOfRangeException>(
-            () => _repo.UpdatePublicallyOfferedAmount(
+        Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+			_battleRoyaleHandler.UpdatePublicallyOfferedAmount(
                 amount, AddStock().Id, CancellationToken.None));
     }
 
@@ -149,9 +157,9 @@ public class BattleRoyaleRoundTest : InMemoryDb
         var excludedStock = AddStock(0);
         var bankruptStock = AddBankruptStock();
 
-        //Act
-        _repo.UpdatePublicallyOfferedAmount(amount,
-            excludedStock.Id, CancellationToken.None).Wait();
+		//Act
+		_battleRoyaleHandler.UpdatePublicallyOfferedAmount(
+			amount, excludedStock.Id, CancellationToken.None).Wait();
         _ctx.SaveChanges();
 
         //Assert

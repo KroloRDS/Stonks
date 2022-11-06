@@ -19,7 +19,8 @@ public class GetHistoricalPricesTest :
 
 	[Test]
 	[TestCase(default)]
-	[TestCase("8f0f0cef-4451-43ed-8dd6-9c568e862e99")]
+	[TestCase(_zeroGuid)]
+	[TestCase(_randomGuid)]
 	public void GetHistoricalPrices_WrongStock_ShouldThrow(Guid id)
 	{
 		AssertThrows<KeyNotFoundException>(

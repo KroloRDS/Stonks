@@ -17,7 +17,8 @@ public class GetTotalAmountOfSharesTest :
 
 	[Test]
 	[TestCase(default)]
-	[TestCase("164f5fb6-41ec-4182-91ec-4a0bfd34c0de")]
+	[TestCase(_zeroGuid)]
+	[TestCase(_randomGuid)]
 	public void GetAllSharesAmount_WrongStock_ShouldBeZero(Guid id)
 	{
 		Assert.Zero(Handle(new GetTotalAmountOfSharesQuery(id)).Amount);

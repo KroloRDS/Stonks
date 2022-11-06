@@ -17,7 +17,8 @@ public class GetPublicStockAmountTest :
 
 	[Test]
 	[TestCase(default)]
-	[TestCase("be16f8b0-b3c1-48c7-bc97-55449b7ffa3a")]
+	[TestCase(_zeroGuid)]
+	[TestCase(_randomGuid)]
 	public void GetPublicStocksAmount_WrongStock_ShouldThrow(Guid id)
 	{
 		AssertThrows<KeyNotFoundException>(new GetPublicStocksAmountQuery(id));

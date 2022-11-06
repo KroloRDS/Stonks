@@ -4,6 +4,7 @@ using Moq;
 using MediatR;
 using NUnit.Framework;
 using Stonks.Util;
+using System.Transactions;
 
 namespace UnitTests.CQRS;
 
@@ -24,7 +25,18 @@ public abstract class CQRSTest<Request, Response> : InMemoryDb
 	protected void AssertThrows<T>(Request request)
 		where T : Exception
 	{
-		Assert.ThrowsAsync<T>(() => _handler.Handle(request, CancellationToken.None));
+		Assert.ThrowsAsync<T>(() =>
+			_handler.Handle(request, CancellationToken.None));
+	}
+
+	protected void AssertThrowsInner<T>(Request request)
+		where T : Exception
+	{
+		var ex = Assert.CatchAsync(() => 
+			_handler.Handle(request, CancellationToken.None))
+			?.InnerException;
+		Assert.NotNull(ex);
+		Assert.IsInstanceOf<T>(ex);
 	}
 
 	[TearDown]

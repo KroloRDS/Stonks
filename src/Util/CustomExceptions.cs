@@ -42,14 +42,19 @@ public class ExtraRefToSellerException : ArgumentException
     public ExtraRefToSellerException() : base(Desc) { }
 }
 
-public class EmailTooLongException : ArgumentException
+public class DbTransactionException : SystemException
 {
-    private const string Desc = "Email exceedes maximum allowed length of ";
-    public EmailTooLongException(int length) : base(Desc + length) { }
-}
+	public DbTransactionException(string handlerName, bool logged, Exception inner)
+		: base(GetMessage(handlerName, logged), inner) {}
 
-public class InvalidEmailException : ArgumentException
-{
-    private const string Desc = "Ivalid Email address: ";
-    public InvalidEmailException(string email) : base(Desc + email) { }
+	private static string GetMessage(string handlerName, bool logged)
+	{
+		var msg = "Exception during transaction";
+		msg += string.IsNullOrEmpty(handlerName) ? ". " :
+			$"in {handlerName}. ";
+		msg += logged ?
+			"See inner exception for details." :
+			"Failed to log inner exception.";
+		return msg;
+	}
 }

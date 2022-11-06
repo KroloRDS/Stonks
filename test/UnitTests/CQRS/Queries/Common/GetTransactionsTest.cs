@@ -19,7 +19,8 @@ public class GetTransactionsTest
 
 	[Test]
 	[TestCase(default)]
-	[TestCase("a9c8020e-87c6-4acb-b8fa-34487791024c")]
+	[TestCase(_zeroGuid)]
+	[TestCase(_randomGuid)]
 	public void GetTransactions_WrongStock_ShouldThrow(Guid id)
 	{
 		AssertThrows<KeyNotFoundException>(new GetTransactionsQuery(id));

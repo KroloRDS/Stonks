@@ -23,12 +23,12 @@ public class UpdateAveragePriceTest :
     }
 
     [Test]
-    public void UpdateAveragePrice_WrongStock_ShouldThrow()
+	[TestCase(default)]
+	[TestCase(_zeroGuid)]
+	[TestCase(_randomGuid)]
+	public void UpdateAveragePrice_WrongStock_ShouldThrow(Guid id)
     {
-        AssertThrows<KeyNotFoundException>(
-            new UpdateAveragePriceCommand(default));
-        AssertThrows<KeyNotFoundException>(
-            new UpdateAveragePriceCommand(Guid.NewGuid()));
+        AssertThrows<KeyNotFoundException>(new UpdateAveragePriceCommand(id));
     }
 
     [Test]

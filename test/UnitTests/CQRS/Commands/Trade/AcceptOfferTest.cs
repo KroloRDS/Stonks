@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Collections.Generic;
 using Moq;
+using MediatR;
 using NUnit.Framework;
 
 using Stonks.Util;
@@ -12,26 +13,33 @@ using Stonks.CQRS.Commands.Trade;
 
 namespace UnitTests.CQRS.Commands.Trade;
 
-public class AcceptOfferTest : InMemoryDb
+public class AcceptOfferTest : CommandTest<AcceptOfferCommand>
 {
-    private readonly Mock<IGiveMoney> _giveMoney = new();
-    private readonly Mock<ITransferShares> _transferShares = new();
-    private readonly AcceptOfferRepository _repo;
+	private readonly Mock<ITransferShares> _transferShares = new();
+	private readonly Mock<IGiveMoney> _giveMoney = new();
+	private readonly AcceptOfferCommandHandler _takeMoney;
 
-    public AcceptOfferTest()
-    {
-        _repo = new AcceptOfferRepository(_ctx,
-			_giveMoney.Object, _transferShares.Object);
-    }
+	public AcceptOfferTest()
+	{
+		_takeMoney = new AcceptOfferCommandHandler(_ctx,
+			_transferShares.Object, _giveMoney.Object);
+	}
 
-    [Test]
-    public void AcceptOffer_WrongOffer_ShouldThrow()
+	protected override IRequestHandler<AcceptOfferCommand, Unit> GetHandler()
+	{
+		return new AcceptOfferCommandHandler(_ctx,
+			_transferShares.Object, _giveMoney.Object);
+	}
+
+	[Test]
+	[TestCase(default)]
+	[TestCase(_zeroGuid)]
+	[TestCase(_randomGuid)]
+	public void AcceptOffer_WrongOffer_ShouldThrow(Guid id)
     {
         var userId = AddUser().Id;
-        AssertThrows<KeyNotFoundException>(
-            new AcceptOfferCommand(userId, default));
-        AssertThrows<KeyNotFoundException>(
-            new AcceptOfferCommand(userId, Guid.NewGuid()));
+        AssertThrowsInner<KeyNotFoundException>(
+            new AcceptOfferCommand(userId, id));
 		_giveMoney.VerifyNoOtherCalls();
 		_transferShares.VerifyNoOtherCalls();
     }
@@ -43,7 +51,7 @@ public class AcceptOfferTest : InMemoryDb
     public void AcceptOffer_WrongAmount_ShouldThrow(int amount)
     {
         var offer = AddOffer(OfferType.Buy);
-        AssertThrows<ArgumentOutOfRangeException>(
+		AssertThrowsInner<ArgumentOutOfRangeException>(
             new AcceptOfferCommand(AddUser().Id, offer.Id, amount));
 		_giveMoney.VerifyNoOtherCalls();
 		_transferShares.VerifyNoOtherCalls();
@@ -69,7 +77,7 @@ public class AcceptOfferTest : InMemoryDb
             Assert.Greater(amount.Value, offer.Amount);
 
         //Act
-        AcceptOffer(new AcceptOfferCommand(client.Id, offer.Id));
+        Handle(new AcceptOfferCommand(client.Id, offer.Id));
 
         //Assert
         VerifyMocks(offerCopy, client.Id);
@@ -91,8 +99,8 @@ public class AcceptOfferTest : InMemoryDb
 		_ctx.SaveChanges();
 		Assert.Greater(initialAmout, amount);
 
-        //Act
-        AcceptOffer(new AcceptOfferCommand(client.Id, offer.Id, amount));
+		//Act
+		Handle(new AcceptOfferCommand(client.Id, offer.Id, amount));
 
         //Assert
         VerifyMocks(offer, client.Id);
@@ -136,19 +144,6 @@ public class AcceptOfferTest : InMemoryDb
 		_transferShares.VerifyNoOtherCalls();
 	}
 
-    private void AssertThrows<T>(AcceptOfferCommand command)
-        where T : Exception
-    {
-        Assert.ThrowsAsync<T>(() => _repo.AcceptOffer(
-            command, CancellationToken.None));
-    }
-
-	private void AcceptOffer(AcceptOfferCommand command)
-	{
-		_repo.AcceptOffer(command, CancellationToken.None).Wait();
-		_ctx.SaveChanges();
-	}
-
 	private static TradeOffer CloneOffer(TradeOffer offer)
     {
         return new TradeOffer
@@ -163,10 +158,12 @@ public class AcceptOfferTest : InMemoryDb
     }
 
 	[Test]
-	public void TakeMoney_WrongUser_ShouldThrow()
+	[TestCase(default)]
+	[TestCase(_zeroGuid)]
+	[TestCase(_randomGuid)]
+	public void TakeMoney_WrongUser_ShouldThrow(Guid id)
 	{
-		AssertThrows<KeyNotFoundException>(default, 1M);
-		AssertThrows<KeyNotFoundException>(Guid.NewGuid(), 1M);
+		AssertThrows<KeyNotFoundException>(id, 1M);
 	}
 
 	[Test]
@@ -215,17 +212,17 @@ public class AcceptOfferTest : InMemoryDb
 	private void AssertThrows<T>(Guid id, decimal amount)
 		where T : Exception
 	{
-		Assert.ThrowsAsync<T>(() => _repo.TakeMoney(id, amount));
+		Assert.ThrowsAsync<T>(() => _takeMoney.TakeMoney(id, amount));
 	}
 
 	private void TakeMoney(Guid id, decimal amount)
 	{
-		_repo.TakeMoney(id, amount).Wait();
+		_takeMoney.TakeMoney(id, amount).Wait();
 		_ctx.SaveChanges();
 	}
 
 	[TearDown]
-    public void ResetMockCallCounts()
+    public void ResetAcceptOfferMocks()
     {
         _giveMoney.Invocations.Clear();
         _transferShares.Invocations.Clear();

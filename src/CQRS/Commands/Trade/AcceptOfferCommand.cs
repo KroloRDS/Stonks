@@ -11,39 +11,26 @@ public record AcceptOfferCommand(Guid UserId,
 
 public class AcceptOfferCommandHandler : BaseCommand<AcceptOfferCommand>
 {
-	private readonly AcceptOfferRepository _repo;
+	private readonly ITransferShares _transferShares;
+	private readonly IGiveMoney _giveMoney;
 
-    public AcceptOfferCommandHandler(AppDbContext ctx) : base(ctx)
+	public AcceptOfferCommandHandler(AppDbContext ctx,
+		ITransferShares transferShares, IGiveMoney giveMoney) : base(ctx)
     {
-		_repo = new AcceptOfferRepository(ctx,
-			new GiveMoney(ctx), new TransferShares(ctx));
-    }
+		_transferShares = transferShares;
+		_giveMoney = giveMoney;
+	}
 
     public override async Task<Unit> Handle(AcceptOfferCommand request,
         CancellationToken cancellationToken)
     {
-        var task = _repo.AcceptOffer(request, cancellationToken);
+        var task = AcceptOffer(request, cancellationToken);
         await _ctx.ExecuteTransaction(task,
             nameof(AcceptOfferCommandHandler), cancellationToken);
         return Unit.Value;
-    }  
-}
+    }
 
-public class AcceptOfferRepository
-{
-	private readonly AppDbContext _ctx;
-	private readonly IGiveMoney _giveMoney;
-	private readonly ITransferShares _transferShares;
-
-	public AcceptOfferRepository(AppDbContext ctx,
-		IGiveMoney giveMoney, ITransferShares transferShares)
-	{
-		_ctx = ctx;
-		_giveMoney = giveMoney;
-		_transferShares = transferShares;
-	}
-
-	public async Task AcceptOffer(AcceptOfferCommand request,
+	private async Task AcceptOffer(AcceptOfferCommand request,
 		CancellationToken cancellationToken)
 	{
 		var offer = await _ctx.GetById<TradeOffer>(request.OfferId);

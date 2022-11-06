@@ -6,11 +6,11 @@ namespace Stonks.Util;
 
 public interface IStonksLogger
 {
-	void Log(string message);
-	void Log(string message, object obj);
-	void Log(Exception exception);
-	void Log(Exception exception, object obj);
-	void Log(string message, Exception exception, object obj);
+	bool Log(string message);
+	bool Log(string message, object obj);
+	bool Log(Exception exception);
+	bool Log(Exception exception, object obj);
+	bool Log(string message, Exception exception, object obj);
 }
 
 public class StonksLogger : IStonksLogger
@@ -22,32 +22,32 @@ public class StonksLogger : IStonksLogger
         _ctx = ctx;
     }
 
-    public void Log(string message)
+    public bool Log(string message)
     {
-        SaveLog(message, null, null);
+		return SaveLog(message, null, null);
     }
 
-    public void Log(string message, object obj)
+    public bool Log(string message, object obj)
     {
-        SaveLog(message, null, GetObjectDump(obj));
+		return SaveLog(message, null, GetObjectDump(obj));
     }
 
-    public void Log(Exception exception)
+    public bool Log(Exception exception)
     {
-        SaveLog(exception.Message, exception.ToString(), null);
+		return SaveLog(exception.Message, exception.ToString(), null);
     }
 
-    public void Log(Exception exception, object obj)
+    public bool Log(Exception exception, object obj)
     {
-        SaveLog(exception.Message, exception.ToString(), GetObjectDump(obj));
+		return SaveLog(exception.Message, exception.ToString(), GetObjectDump(obj));
     }
 
-    public void Log(string message, Exception exception, object obj)
+    public bool Log(string message, Exception exception, object obj)
     {
-        SaveLog(message, exception.ToString(), GetObjectDump(obj));
+        return SaveLog(message, exception.ToString(), GetObjectDump(obj));
     }
 
-    private void SaveLog(string message, string? exception, string? objectDump)
+    private bool SaveLog(string message, string? exception, string? objectDump)
     {
         try
         {
@@ -59,10 +59,11 @@ public class StonksLogger : IStonksLogger
                 Timestamp = DateTime.Now
             });
             _ctx.SaveChanges();
+			return true;
         }
         catch
         {
-            return;
+            return false;
         }
     }
 

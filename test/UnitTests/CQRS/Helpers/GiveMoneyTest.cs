@@ -15,12 +15,13 @@ public class GiveMoneyTest : InMemoryDb
 	}
 
 	[Test]
-    public void GiveMoney_WrongUser_ShouldThrow()
+	[TestCase(default)]
+	[TestCase(_zeroGuid)]
+	[TestCase(_randomGuid)]
+	public void GiveMoney_WrongUser_ShouldThrow(Guid id)
     {
-        Assert.ThrowsAsync<KeyNotFoundException>(
-            () => _giveMoney.Handle(default, 1M));
-		Assert.ThrowsAsync<KeyNotFoundException>(
-			() => _giveMoney.Handle(Guid.NewGuid(), 1M));
+        Assert.ThrowsAsync<KeyNotFoundException>(() =>
+			_giveMoney.Handle(id, 1M));
     }
 
     [Test]

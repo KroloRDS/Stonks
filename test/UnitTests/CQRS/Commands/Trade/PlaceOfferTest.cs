@@ -19,14 +19,13 @@ public class PlaceOfferTest : CommandTest<PlaceOfferCommand>
     }
 
     [Test]
-    public void PlaceOffer_WrongStock_ShouldThrow()
+    [TestCase(default)]
+	[TestCase(_zeroGuid)]
+	[TestCase(_randomGuid)]
+	public void PlaceOffer_WrongStock_ShouldThrow(Guid id)
     {
-        var command1 = new PlaceOfferCommand(default,
-            AddUser().Id, 1, OfferType.Buy, 1M);
-        var command2 = new PlaceOfferCommand(Guid.NewGuid(),
-            AddUser().Id, 1, OfferType.Buy, 1M);
-        AssertThrows<KeyNotFoundException>(command1);
-        AssertThrows<KeyNotFoundException>(command2);
+        AssertThrows<KeyNotFoundException>(new PlaceOfferCommand(
+			id, AddUser().Id, 1, OfferType.Buy, 1M));
         _mediator.VerifyNoOtherCalls();
     }
 
@@ -39,15 +38,14 @@ public class PlaceOfferTest : CommandTest<PlaceOfferCommand>
         _mediator.VerifyNoOtherCalls();
     }
 
-    [Test]
-    public void PlaceOffer_WrongWriter_ShouldThrow()
+	[Test]
+	[TestCase(default)]
+	[TestCase(_zeroGuid)]
+	[TestCase(_randomGuid)]
+	public void PlaceOffer_WrongWriter_ShouldThrow(Guid id)
     {
-        var command1 = new PlaceOfferCommand(AddStock().Id,
-            default, 1, OfferType.Buy, 1M);
-        var command2 = new PlaceOfferCommand(AddStock().Id,
-            Guid.NewGuid(), 1, OfferType.Buy, 1M);
-        AssertThrows<KeyNotFoundException>(command1);
-        AssertThrows<KeyNotFoundException>(command2);
+        AssertThrows<KeyNotFoundException>(new PlaceOfferCommand(
+			AddStock().Id, id, 1, OfferType.Buy, 1M));
         _mediator.VerifyNoOtherCalls();
     }
 

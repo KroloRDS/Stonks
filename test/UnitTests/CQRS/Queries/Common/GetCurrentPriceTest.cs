@@ -20,7 +20,8 @@ public class GetCurrentPriceTest :
 
 	[Test]
 	[TestCase(default)]
-	[TestCase("0f2e2e31-972b-4440-a91f-e290089292a2")]
+	[TestCase(_zeroGuid)]
+	[TestCase(_randomGuid)]
 	public void GetCurrentPrice_WrongStock_ShouldThrow(Guid id)
 	{
 		AssertThrows<KeyNotFoundException>(new GetCurrentPriceQuery(id));

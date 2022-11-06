@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Stonks.Data;
 using Stonks.Data.Models;
+using System;
 
 namespace UnitTests;
 
@@ -10,6 +11,9 @@ public class InMemoryDb
 {
 	protected readonly AppDbContext _ctx;
 	protected readonly ReadOnlyDbContext _readOnlyCtx;
+
+	protected const string _zeroGuid = "00000000-0000-0000-0000-000000000000";
+	protected const string _randomGuid = "8bc61de3-1cc0-45f7-81a4-75c5588c3f16";
 
 	public InMemoryDb()
 	{

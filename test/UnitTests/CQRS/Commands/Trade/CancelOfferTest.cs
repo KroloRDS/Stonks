@@ -17,13 +17,13 @@ public class CancelOfferTest : CommandTest<CancelOfferCommand>
         return new CancelOfferCommandHandler(_ctx);
     }
 
-    [Test]
-    public void CancelOffer_WrongOffer_ShouldThrow()
+	[Test]
+	[TestCase(default)]
+	[TestCase(_zeroGuid)]
+	[TestCase(_randomGuid)]
+	public void CancelOffer_WrongOffer_ShouldThrow(Guid id)
     {
-        AssertThrows<KeyNotFoundException>(
-            new CancelOfferCommand(default));
-        AssertThrows<KeyNotFoundException>(
-            new CancelOfferCommand(Guid.NewGuid()));
+        AssertThrows<KeyNotFoundException>(new CancelOfferCommand(id));
     }
 
     [Test]

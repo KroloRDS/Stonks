@@ -36,25 +36,18 @@ public class TransferSharesTest : InMemoryDb
     }
 
     [Test]
-    public void TransferShares_WrongBuyer_ShouldThrow()
+	[TestCase(default)]
+	[TestCase(_zeroGuid)]
+	[TestCase(_randomGuid)]
+	public void TransferShares_WrongBuyer_ShouldThrow(Guid id)
     {
-        var stockId = AddStock().Id;
-		var command1 = new TransferSharesCommand
+        AssertThrows<KeyNotFoundException>(new TransferSharesCommand
 		{
-			StockId = stockId,
+			StockId = AddStock().Id,
 			Amount = 1,
-			BuyerId = default,
+			BuyerId = id,
 			BuyFromUser = false
-		};
-		var command2 = new TransferSharesCommand
-		{
-			StockId = stockId,
-			Amount = 1,
-			BuyerId = Guid.NewGuid(),
-			BuyFromUser = false
-		};
-        AssertThrows<KeyNotFoundException>(command1);
-        AssertThrows<KeyNotFoundException>(command2);
+		});
     }
 
     [Test]
@@ -86,25 +79,18 @@ public class TransferSharesTest : InMemoryDb
     }
 
     [Test]
-    public void TransferShares_WrongStock_ShouldThrow()
+	[TestCase(default)]
+	[TestCase(_zeroGuid)]
+	[TestCase(_randomGuid)]
+	public void TransferShares_WrongStock_ShouldThrow(Guid id)
     {
-        var userId = AddUser().Id;
-		var command1 = new TransferSharesCommand
+		AssertThrows<KeyNotFoundException>(new TransferSharesCommand
 		{
-			StockId = Guid.NewGuid(),
+			StockId = id,
 			Amount = 1,
-			BuyerId = userId,
+			BuyerId = AddUser().Id,
 			BuyFromUser = false
-		};
-		var command2 = new TransferSharesCommand
-		{
-			StockId = default,
-			Amount = 1,
-			BuyerId = userId,
-			BuyFromUser = false
-		};
-		AssertThrows<KeyNotFoundException>(command1);
-        AssertThrows<KeyNotFoundException>(command2);
+		});
     }
 
     [Test]
