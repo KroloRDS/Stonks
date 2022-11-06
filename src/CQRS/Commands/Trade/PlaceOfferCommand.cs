@@ -15,23 +15,15 @@ public record PlaceOfferCommand(
     decimal Price
 ) : IRequest;
 
-public class PlaceOfferCommandHandler : IRequestHandler<PlaceOfferCommand>
+public class PlaceOfferCommandHandler : BaseCommand<PlaceOfferCommand>
 {
-    private readonly AppDbContext _ctx;
-    private readonly IMediator _mediator;
+    public PlaceOfferCommandHandler(AppDbContext ctx, IMediator mediator)
+		: base(ctx, mediator) {}
 
-    public PlaceOfferCommandHandler(AppDbContext ctx,
-        IMediator mediator)
-    {
-        _ctx = ctx;
-        _mediator = mediator;
-    }
-
-    public async Task<Unit> Handle(PlaceOfferCommand placeOfferCommand,
+    public override async Task<Unit> Handle(PlaceOfferCommand command,
         CancellationToken cancellationToken)
     {
-        var request = await ValidateRequest(
-            placeOfferCommand, cancellationToken);
+        var request = await ValidateRequest(command, cancellationToken);
 
         // Try to match with existin offers first
         var offers = request.OfferType == OfferType.Buy ?

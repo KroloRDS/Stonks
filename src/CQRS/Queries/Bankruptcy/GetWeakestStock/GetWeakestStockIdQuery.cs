@@ -10,21 +10,17 @@ namespace Stonks.CQRS.Queries.Bankruptcy.GetWeakestStock;
 public record GetWeakestStockIdQuery : IRequest<GetWeakestStockIdResponse>;
 
 public class GetWeakestStockIdQueryHandler :
-    IRequestHandler<GetWeakestStockIdQuery, GetWeakestStockIdResponse>
+    BaseQuery<GetWeakestStockIdQuery, GetWeakestStockIdResponse>
 {
-    private readonly AppDbContext _ctx;
-    private readonly IMediator _mediator;
     private readonly IStonksConfiguration _config;
 
-    public GetWeakestStockIdQueryHandler(AppDbContext ctx,
-        IMediator mediator, IStonksConfiguration config)
+    public GetWeakestStockIdQueryHandler(ReadOnlyDbContext ctx,
+        IMediator mediator, IStonksConfiguration config) : base(ctx, mediator)
     {
-        _ctx = ctx;
-        _mediator = mediator;
         _config = config;
     }
 
-    public async Task<GetWeakestStockIdResponse> Handle(
+    public override async Task<GetWeakestStockIdResponse> Handle(
         GetWeakestStockIdQuery request, CancellationToken cancellationToken)
     {
         var stocks = await _ctx.Stock.Where(x => !x.Bankrupt)

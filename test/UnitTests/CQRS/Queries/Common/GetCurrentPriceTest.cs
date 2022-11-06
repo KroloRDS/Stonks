@@ -15,7 +15,7 @@ public class GetCurrentPriceTest :
 	protected override IRequestHandler<GetCurrentPriceQuery,
 		GetCurrentPriceResponse> GetHandler()
 	{
-		return new GetCurrentPriceQueryHandler(_ctx);
+		return new GetCurrentPriceQueryHandler(_readOnlyCtx);
 	}
 
 	[Test]

@@ -8,16 +8,12 @@ public record GetTotalAmountOfSharesQuery(Guid StockId)
 	: IRequest<GetTotalAmountOfSharesResponse>;
 
 public class GetTotalAmountOfSharesQueryHandler :
-	IRequestHandler<GetTotalAmountOfSharesQuery, GetTotalAmountOfSharesResponse>
+	BaseQuery<GetTotalAmountOfSharesQuery, GetTotalAmountOfSharesResponse>
 {
-	private readonly AppDbContext _ctx;
+	public GetTotalAmountOfSharesQueryHandler(
+		ReadOnlyDbContext ctx) : base(ctx) {}
 
-	public GetTotalAmountOfSharesQueryHandler(AppDbContext ctx)
-	{
-		_ctx = ctx;
-	}
-
-	public async Task<GetTotalAmountOfSharesResponse> Handle(
+	public override async Task<GetTotalAmountOfSharesResponse> Handle(
 		GetTotalAmountOfSharesQuery request,
 		CancellationToken cancellationToken)
 	{

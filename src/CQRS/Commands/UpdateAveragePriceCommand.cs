@@ -1,76 +1,69 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Stonks.Data;
-using Stonks.CQRS.Queries.Common;
 using Stonks.Data.Models;
+using Stonks.CQRS.Queries.Common;
 
 namespace Stonks.CQRS.Commands;
 
 public record UpdateAveragePriceCommand(Guid StockId) : IRequest;
 
 public class UpdateAveragePriceCommandHandler :
-    IRequestHandler<UpdateAveragePriceCommand>
+    BaseCommand<UpdateAveragePriceCommand>
 {
     public const decimal DEFAULT_PRICE = 1M;
-    private readonly AppDbContext _ctx;
-    private readonly IMediator _mediator;
 
     public UpdateAveragePriceCommandHandler(AppDbContext ctx,
-        IMediator mediator)
-    {
-        _ctx = ctx;
-        _mediator = mediator;
-    }
+        IMediator mediator) : base(ctx, mediator) {}
 
-    public async Task<Unit> Handle(UpdateAveragePriceCommand request,
+    public override async Task<Unit> Handle(UpdateAveragePriceCommand request,
         CancellationToken cancellationToken)
     {
-        var stockId = request.StockId;
-        var stock = await _ctx.GetById<Stock>(stockId);
-        if (stock.Bankrupt) return Unit.Value;
+		var stockId = request.StockId;
+		var stock = await _ctx.GetById<Stock>(stockId);
+		if (stock.Bankrupt) return Unit.Value;
 
-        var currentPrice = await _ctx.AvgPriceCurrent
-            .SingleOrDefaultAsync(x => x.StockId == stockId, cancellationToken);
-        var transactions = await GetTransactions(
-            stockId, currentPrice?.Created, cancellationToken);
-        var newPrice = AverageFromTransactions(
-            transactions, currentPrice);
+		var currentPrice = await _ctx.AvgPriceCurrent
+			.SingleOrDefaultAsync(x => x.StockId == stockId, cancellationToken);
+		var transactions = await GetTransactions(
+			stockId, currentPrice?.Created, cancellationToken);
+		var newPrice = AverageFromTransactions(
+			transactions, currentPrice);
 
-        if (currentPrice is null)
-            AddFirstAvgPrice(newPrice, stockId);
-        else
-            UpdateExistingPrice(newPrice, currentPrice);
-
-        await _ctx.SaveChangesAsync(cancellationToken);
-        return Unit.Value;
+		if (currentPrice is null)
+			await AddFirstAvgPrice(newPrice, stockId, cancellationToken);
+		else
+			await UpdateExistingPrice(newPrice, currentPrice, cancellationToken);
+		return Unit.Value;
     }
 
-    private void UpdateExistingPrice(StockPriceModel model,
-        AvgPriceCurrent currentPrice)
+	private async Task UpdateExistingPrice(StockPriceModel model,
+        AvgPriceCurrent currentPrice, CancellationToken cancellationToken)
     {
-        _ctx.Add(new AvgPrice
+        await _ctx.AddAsync(new AvgPrice
         {
             StockId = currentPrice.StockId,
             DateTime = currentPrice.Created,
             SharesTraded = currentPrice.SharesTraded,
             Price = currentPrice.Price,
             PriceNormalised = currentPrice.Price
-        });
+        }, cancellationToken);
 
         currentPrice.Created = DateTime.Now;
         currentPrice.SharesTraded = model.SharesTraded;
         currentPrice.Price = model.Amount;
     }
 
-    private void AddFirstAvgPrice(StockPriceModel model, Guid stockId)
+    private async Task AddFirstAvgPrice(StockPriceModel model, Guid stockId,
+		CancellationToken cancellationToken)
     {
-        _ctx.Add(new AvgPriceCurrent
+        await _ctx.AddAsync(new AvgPriceCurrent
         {
             StockId = stockId,
             Created = DateTime.Now,
             SharesTraded = model.SharesTraded,
             Price = model.Amount
-        });
+        }, cancellationToken);
     }
 
     private async Task<IEnumerable<Transaction>> GetTransactions(Guid stockId,

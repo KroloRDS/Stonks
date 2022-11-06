@@ -20,7 +20,7 @@ public class GetWeakestStockIdTest :
 	{
 		SetupMediator();
 		return new GetWeakestStockIdQueryHandler(
-			_ctx, _mediator.Object, _config.Object);
+			_readOnlyCtx, _mediator.Object, _config.Object);
 	}
 
 	private void SetupMediator()

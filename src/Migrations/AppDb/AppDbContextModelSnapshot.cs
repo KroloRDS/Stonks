@@ -3,19 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Stonks.Data;
 
 #nullable disable
 
-namespace Stonks.Data.Migrations
+namespace Stonks.Migrations.AppDb
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20221029131741_temp-remove-string-id-columns")]
-    partial class tempremovestringidcolumns
+    partial class AppDbContextModelSnapshot : ModelSnapshot
     {
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -24,10 +22,11 @@ namespace Stonks.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -51,7 +50,7 @@ namespace Stonks.Data.Migrations
                     b.ToTable("AspNetRoles", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -65,9 +64,8 @@ namespace Stonks.Data.Migrations
                     b.Property<string>("ClaimValue")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("RoleId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -76,7 +74,7 @@ namespace Stonks.Data.Migrations
                     b.ToTable("AspNetRoleClaims", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -90,9 +88,8 @@ namespace Stonks.Data.Migrations
                     b.Property<string>("ClaimValue")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -101,7 +98,7 @@ namespace Stonks.Data.Migrations
                     b.ToTable("AspNetUserClaims", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
                 {
                     b.Property<string>("LoginProvider")
                         .HasMaxLength(128)
@@ -114,9 +111,8 @@ namespace Stonks.Data.Migrations
                     b.Property<string>("ProviderDisplayName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("LoginProvider", "ProviderKey");
 
@@ -125,13 +121,13 @@ namespace Stonks.Data.Migrations
                     b.ToTable("AspNetUserLogins", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
                 {
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("RoleId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("UserId", "RoleId");
 
@@ -140,10 +136,10 @@ namespace Stonks.Data.Migrations
                     b.ToTable("AspNetUserRoles", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
                 {
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("LoginProvider")
                         .HasMaxLength(128)
@@ -161,7 +157,7 @@ namespace Stonks.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("Stonks.Models.AvgPrice", b =>
+            modelBuilder.Entity("Stonks.Data.Models.AvgPrice", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -192,7 +188,7 @@ namespace Stonks.Data.Migrations
                     b.ToTable("AvgPrice");
                 });
 
-            modelBuilder.Entity("Stonks.Models.AvgPriceCurrent", b =>
+            modelBuilder.Entity("Stonks.Data.Models.AvgPriceCurrent", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -217,7 +213,7 @@ namespace Stonks.Data.Migrations
                     b.ToTable("AvgPriceCurrent");
                 });
 
-            modelBuilder.Entity("Stonks.Models.Log", b =>
+            modelBuilder.Entity("Stonks.Data.Models.Log", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -244,21 +240,25 @@ namespace Stonks.Data.Migrations
                     b.ToTable("Log");
                 });
 
-            modelBuilder.Entity("Stonks.Models.Share", b =>
+            modelBuilder.Entity("Stonks.Data.Models.Share", b =>
                 {
-                    b.Property<int>("Amount")
-                        .IsConcurrencyToken()
-                        .HasColumnType("int");
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("StockId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Amount")
+                        .HasColumnType("int");
+
+                    b.HasKey("OwnerId", "StockId");
 
                     b.HasIndex("StockId");
 
                     b.ToTable("Share");
                 });
 
-            modelBuilder.Entity("Stonks.Models.Stock", b =>
+            modelBuilder.Entity("Stonks.Data.Models.Stock", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -276,7 +276,6 @@ namespace Stonks.Data.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<int>("PublicallyOfferredAmount")
-                        .IsConcurrencyToken()
                         .HasColumnType("int");
 
                     b.Property<string>("Symbol")
@@ -292,7 +291,7 @@ namespace Stonks.Data.Migrations
                     b.ToTable("Stock");
                 });
 
-            modelBuilder.Entity("Stonks.Models.TradeOffer", b =>
+            modelBuilder.Entity("Stonks.Data.Models.TradeOffer", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -310,14 +309,19 @@ namespace Stonks.Data.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("int");
 
+                    b.Property<Guid?>("WriterId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
                     b.HasIndex("StockId");
 
+                    b.HasIndex("WriterId");
+
                     b.ToTable("TradeOffer");
                 });
 
-            modelBuilder.Entity("Stonks.Models.Transaction", b =>
+            modelBuilder.Entity("Stonks.Data.Models.Transaction", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -326,8 +330,14 @@ namespace Stonks.Data.Migrations
                     b.Property<int>("Amount")
                         .HasColumnType("int");
 
+                    b.Property<Guid>("BuyerId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(8,2)");
+
+                    b.Property<Guid?>("SellerId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("StockId")
                         .HasColumnType("uniqueidentifier");
@@ -337,6 +347,10 @@ namespace Stonks.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("BuyerId");
+
+                    b.HasIndex("SellerId");
+
                     b.HasIndex("StockId");
 
                     b.HasIndex("Timestamp");
@@ -344,10 +358,11 @@ namespace Stonks.Data.Migrations
                     b.ToTable("Transaction");
                 });
 
-            modelBuilder.Entity("Stonks.Models.User", b =>
+            modelBuilder.Entity("Stonks.Data.Models.User", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
@@ -412,60 +427,60 @@ namespace Stonks.Data.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
                 {
-                    b.HasOne("Stonks.Models.User", null)
+                    b.HasOne("Stonks.Data.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
                 {
-                    b.HasOne("Stonks.Models.User", null)
+                    b.HasOne("Stonks.Data.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Stonks.Models.User", null)
+                    b.HasOne("Stonks.Data.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
                 {
-                    b.HasOne("Stonks.Models.User", null)
+                    b.HasOne("Stonks.Data.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Stonks.Models.AvgPrice", b =>
+            modelBuilder.Entity("Stonks.Data.Models.AvgPrice", b =>
                 {
-                    b.HasOne("Stonks.Models.Stock", "Stock")
+                    b.HasOne("Stonks.Data.Models.Stock", "Stock")
                         .WithMany()
                         .HasForeignKey("StockId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -474,9 +489,9 @@ namespace Stonks.Data.Migrations
                     b.Navigation("Stock");
                 });
 
-            modelBuilder.Entity("Stonks.Models.AvgPriceCurrent", b =>
+            modelBuilder.Entity("Stonks.Data.Models.AvgPriceCurrent", b =>
                 {
-                    b.HasOne("Stonks.Models.Stock", "Stock")
+                    b.HasOne("Stonks.Data.Models.Stock", "Stock")
                         .WithMany()
                         .HasForeignKey("StockId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -485,35 +500,63 @@ namespace Stonks.Data.Migrations
                     b.Navigation("Stock");
                 });
 
-            modelBuilder.Entity("Stonks.Models.Share", b =>
+            modelBuilder.Entity("Stonks.Data.Models.Share", b =>
                 {
-                    b.HasOne("Stonks.Models.Stock", "Stock")
+                    b.HasOne("Stonks.Data.Models.User", "Owner")
+                        .WithMany()
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Stonks.Data.Models.Stock", "Stock")
                         .WithMany()
                         .HasForeignKey("StockId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Owner");
 
                     b.Navigation("Stock");
                 });
 
-            modelBuilder.Entity("Stonks.Models.TradeOffer", b =>
+            modelBuilder.Entity("Stonks.Data.Models.TradeOffer", b =>
                 {
-                    b.HasOne("Stonks.Models.Stock", "Stock")
+                    b.HasOne("Stonks.Data.Models.Stock", "Stock")
                         .WithMany()
                         .HasForeignKey("StockId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("Stonks.Data.Models.User", "Writer")
+                        .WithMany()
+                        .HasForeignKey("WriterId");
 
                     b.Navigation("Stock");
+
+                    b.Navigation("Writer");
                 });
 
-            modelBuilder.Entity("Stonks.Models.Transaction", b =>
+            modelBuilder.Entity("Stonks.Data.Models.Transaction", b =>
                 {
-                    b.HasOne("Stonks.Models.Stock", "Stock")
+                    b.HasOne("Stonks.Data.Models.User", "Buyer")
+                        .WithMany()
+                        .HasForeignKey("BuyerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Stonks.Data.Models.User", "Seller")
+                        .WithMany()
+                        .HasForeignKey("SellerId");
+
+                    b.HasOne("Stonks.Data.Models.Stock", "Stock")
                         .WithMany()
                         .HasForeignKey("StockId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Buyer");
+
+                    b.Navigation("Seller");
 
                     b.Navigation("Stock");
                 });

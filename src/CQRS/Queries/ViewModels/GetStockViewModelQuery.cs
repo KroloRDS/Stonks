@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Stonks.CQRS.Queries.Common;
 using Stonks.Data;
+using Stonks.CQRS.Queries.Common;
 
 namespace Stonks.CQRS.Queries.ViewModels;
 
@@ -9,19 +9,13 @@ public record GetStockViewModelQuery(string StockSymbol, Guid UserId)
     : IRequest<GetStockViewModelResponse>;
 
 public class GetStockViewModelQueryHandler :
-    IRequestHandler<GetStockViewModelQuery, GetStockViewModelResponse>
+    BaseQuery<GetStockViewModelQuery, GetStockViewModelResponse>
 {
-    private readonly AppDbContext _ctx;
-    private readonly IMediator _mediator;
+    public GetStockViewModelQueryHandler(
+		ReadOnlyDbContext ctx, IMediator mediator) : base(ctx, mediator) {}
 
-    public GetStockViewModelQueryHandler(AppDbContext ctx, IMediator mediator)
-    {
-        _ctx = ctx;
-        _mediator = mediator;
-    }
-
-    public async Task<GetStockViewModelResponse> Handle(GetStockViewModelQuery request,
-        CancellationToken cancellationToken)
+    public override async Task<GetStockViewModelResponse> Handle(
+		GetStockViewModelQuery request, CancellationToken cancellationToken)
     {
         var stock = await _ctx.Stock.FirstAsync(
             x => x.Symbol == request.StockSymbol, cancellationToken);

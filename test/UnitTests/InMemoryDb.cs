@@ -1,7 +1,6 @@
-﻿using System;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using Microsoft.EntityFrameworkCore;
-
+using Microsoft.EntityFrameworkCore.Storage;
 using Stonks.Data;
 using Stonks.Data.Models;
 
@@ -10,28 +9,32 @@ namespace UnitTests;
 public class InMemoryDb
 {
 	protected readonly AppDbContext _ctx;
+	protected readonly ReadOnlyDbContext _readOnlyCtx;
 
 	public InMemoryDb()
 	{
 		var options = new DbContextOptionsBuilder<AppDbContext>()
-			.UseInMemoryDatabase(databaseName: "FakeDbContext")
+			.UseInMemoryDatabase("FakeDbContext", new InMemoryDatabaseRoot())
 			.EnableSensitiveDataLogging()
 			.Options;
 
 		_ctx = new AppDbContext(options);
+		_readOnlyCtx = new ReadOnlyDbContext(options);
 	}
 
 	[TearDown]
 	public void TearDown()
 	{
-		_ctx.Database.EnsureDeleted();
 		_ctx.ChangeTracker.Clear();
+		_ctx.Database.EnsureDeleted();
+		_readOnlyCtx.Database.EnsureDeleted();
 	}
 
 	[OneTimeTearDown]
 	public void OneTimeTearDown()
 	{
 		_ctx.Dispose();
+		_readOnlyCtx.Dispose();
 	}
 
 	protected Stock AddStock(int publicAmount = 100)

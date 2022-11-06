@@ -62,15 +62,14 @@ public class BattleRoyaleRoundTest : InMemoryDb
     [TestCase("8bc61de3-1cc0-45f7-81a4-75c5588c3f16")]
     public void Bankrupt_WrongStock_ShouldThrow(Guid id)
     {
-        Assert.ThrowsAsync<KeyNotFoundException>(
-            () => _repo.Bankrupt(id, CancellationToken.None));
-    }
+		Assert.ThrowsAsync<KeyNotFoundException>(() => _repo.Bankrupt(id));
+	}
 
     [Test]
     public void Bankrupt_PositiveTest()
     {
         var stock = AddStock();
-        _repo.Bankrupt(stock.Id, CancellationToken.None).Wait();
+        _repo.Bankrupt(stock.Id).Wait();
         Assert.IsTrue(stock.Bankrupt);
         Assert.Zero(stock.PublicallyOfferredAmount);
         Assert.NotNull(stock.BankruptDate);

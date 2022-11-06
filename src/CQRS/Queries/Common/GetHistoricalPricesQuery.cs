@@ -20,16 +20,11 @@ public class GetHistoricalPricesQuery : IRequest<GetHistoricalPricesResponse>
 }
 
 public class GetHistoricalPricesQueryHandler :
-	IRequestHandler<GetHistoricalPricesQuery, GetHistoricalPricesResponse>
+	BaseQuery<GetHistoricalPricesQuery, GetHistoricalPricesResponse>
 {
-	private readonly AppDbContext _ctx;
+	public GetHistoricalPricesQueryHandler(ReadOnlyDbContext ctx) : base(ctx) {}
 
-	public GetHistoricalPricesQueryHandler(AppDbContext ctx)
-	{
-		_ctx = ctx;
-	}
-
-	public async Task<GetHistoricalPricesResponse> Handle(
+	public override async Task<GetHistoricalPricesResponse> Handle(
 		GetHistoricalPricesQuery request, CancellationToken cancellationToken)
 	{
 		request.Validate();

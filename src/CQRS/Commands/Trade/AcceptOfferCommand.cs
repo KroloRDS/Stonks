@@ -9,19 +9,17 @@ namespace Stonks.CQRS.Commands.Trade;
 public record AcceptOfferCommand(Guid UserId,
     Guid OfferId, int? Amount = null) : IRequest;
 
-public class AcceptOfferCommandHandler : IRequestHandler<AcceptOfferCommand>
+public class AcceptOfferCommandHandler : BaseCommand<AcceptOfferCommand>
 {
-    private readonly AppDbContext _ctx;
 	private readonly AcceptOfferRepository _repo;
 
-    public AcceptOfferCommandHandler(AppDbContext ctx)
+    public AcceptOfferCommandHandler(AppDbContext ctx) : base(ctx)
     {
-        _ctx = ctx;
 		_repo = new AcceptOfferRepository(ctx,
 			new GiveMoney(ctx), new TransferShares(ctx));
     }
 
-    public async Task<Unit> Handle(AcceptOfferCommand request,
+    public override async Task<Unit> Handle(AcceptOfferCommand request,
         CancellationToken cancellationToken)
     {
         var task = _repo.AcceptOffer(request, cancellationToken);

@@ -14,7 +14,7 @@ public class GetHistoricalPricesTest :
 	protected override IRequestHandler<GetHistoricalPricesQuery,
 		GetHistoricalPricesResponse> GetHandler()
 	{
-		return new GetHistoricalPricesQueryHandler(_ctx);
+		return new GetHistoricalPricesQueryHandler(_readOnlyCtx);
 	}
 
 	[Test]

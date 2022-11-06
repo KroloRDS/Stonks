@@ -15,7 +15,7 @@ app.Run();
 static void AddServices(WebApplicationBuilder builder)
 {
 	var services = builder.Services;
-	services.AddScoped<Stonks.Util.IStonksLogger, StonksLogger>();
+	services.AddScoped<IStonksLogger, StonksLogger>();
 	services.AddScoped<IStonksConfiguration, StonksConfiguration>();
 	services.AddMediatR(Assembly.GetExecutingAssembly());
 	builder.Services.AddControllersWithViews();
@@ -23,6 +23,8 @@ static void AddServices(WebApplicationBuilder builder)
 	var connectionString = builder.Configuration
 		.GetConnectionString("DefaultConnection");
 	services.AddDbContext<AppDbContext>(options => 
+		options.UseSqlServer(connectionString), ServiceLifetime.Scoped);
+	services.AddDbContext<ReadOnlyDbContext>(options =>
 		options.UseSqlServer(connectionString), ServiceLifetime.Transient);
 
 	builder.Services.AddDatabaseDeveloperPageExceptionFilter();
@@ -63,9 +65,7 @@ static void UpdateSchema(IApplicationBuilder app)
 	using var serviceScope = app.ApplicationServices
 		.GetRequiredService<IServiceScopeFactory>()
 		.CreateScope();
-	using var context = serviceScope.ServiceProvider.GetService<AppDbContext>();
 
-	if (context is null) return;
-
-	context.Database.Migrate();
+	using var ctx = serviceScope.ServiceProvider.GetService<AppDbContext>();
+	if (ctx is not null) ctx.Database.Migrate();
 }

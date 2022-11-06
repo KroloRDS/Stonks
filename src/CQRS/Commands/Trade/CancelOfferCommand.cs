@@ -7,16 +7,11 @@ namespace Stonks.CQRS.Commands.Trade;
 
 public record CancelOfferCommand(Guid OfferId) : IRequest;
 
-public class CancelOfferCommandHandler : IRequestHandler<CancelOfferCommand>
+public class CancelOfferCommandHandler : BaseCommand<CancelOfferCommand>
 {
-    private readonly AppDbContext _ctx;
+	public CancelOfferCommandHandler(AppDbContext ctx) : base(ctx) {}
 
-    public CancelOfferCommandHandler(AppDbContext ctx)
-    {
-        _ctx = ctx;
-    }
-
-    public async Task<Unit> Handle(CancelOfferCommand request,
+	public override async Task<Unit> Handle(CancelOfferCommand request,
         CancellationToken cancellationToken)
     {
         var offer = await ValidateRequest(request);

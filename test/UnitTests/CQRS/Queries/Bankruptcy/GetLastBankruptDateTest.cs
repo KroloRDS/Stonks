@@ -11,7 +11,7 @@ public class GetLastBankruptDateTest :
 	protected override IRequestHandler<GetLastBankruptDateQuery,
 		GetLastBankruptDateResponse> GetHandler()
 	{
-		return new GetLastBankruptDateQueryHandler(_ctx);
+		return new GetLastBankruptDateQueryHandler(_readOnlyCtx);
 	}
 
 	[Test]

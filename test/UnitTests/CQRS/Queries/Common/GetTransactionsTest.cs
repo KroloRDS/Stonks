@@ -14,7 +14,7 @@ public class GetTransactionsTest
 	protected override IRequestHandler<GetTransactionsQuery,
 		GetTransactionsResponse> GetHandler()
 	{
-		return new GetTransactionsQueryHandler(_ctx);
+		return new GetTransactionsQueryHandler(_readOnlyCtx);
 	}
 
 	[Test]

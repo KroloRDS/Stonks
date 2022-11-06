@@ -14,6 +14,5 @@ public class Share
     [Required]
     public Stock Stock { get; set; }
 
-    [ConcurrencyCheck]
     public int Amount { get; set; }
 }

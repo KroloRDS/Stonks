@@ -12,7 +12,7 @@ public class GetTotalAmountOfSharesTest :
 	protected override IRequestHandler<GetTotalAmountOfSharesQuery,
 		GetTotalAmountOfSharesResponse> GetHandler()
 	{
-		return new GetTotalAmountOfSharesQueryHandler(_ctx);
+		return new GetTotalAmountOfSharesQueryHandler(_readOnlyCtx);
 	}
 
 	[Test]

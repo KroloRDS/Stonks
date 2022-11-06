@@ -12,7 +12,7 @@ public class GetPublicStockAmountTest :
 	protected override IRequestHandler<GetPublicStocksAmountQuery,
 		GetPublicStocksAmountResponse> GetHandler()
 	{
-		return new GetPublicStocksAmountQueryHandler(_ctx);
+		return new GetPublicStocksAmountQueryHandler(_readOnlyCtx);
 	}
 
 	[Test]

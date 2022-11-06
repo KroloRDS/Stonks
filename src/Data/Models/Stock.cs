@@ -12,7 +12,6 @@ public class Stock : HasId
     [MaxLength(5)]
     public string Symbol { get; set; }
 
-    [ConcurrencyCheck]
     public int PublicallyOfferredAmount { get; set; }
 
     public bool Bankrupt { get; set; }

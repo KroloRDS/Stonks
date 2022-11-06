@@ -7,16 +7,12 @@ namespace Stonks.CQRS.Queries.Bankruptcy;
 public record GetLastBankruptDateQuery : IRequest<GetLastBankruptDateResponse>;
 
 public class GetLastBankruptDateQueryHandler :
-	IRequestHandler<GetLastBankruptDateQuery, GetLastBankruptDateResponse>
+	BaseQuery<GetLastBankruptDateQuery, GetLastBankruptDateResponse>
 {
-	private readonly AppDbContext _ctx;
+	public GetLastBankruptDateQueryHandler(
+		ReadOnlyDbContext ctx) : base(ctx) {}
 
-	public GetLastBankruptDateQueryHandler(AppDbContext ctx)
-	{
-		_ctx = ctx;
-	}
-
-	public async Task<GetLastBankruptDateResponse> Handle(
+	public override async Task<GetLastBankruptDateResponse> Handle(
 		GetLastBankruptDateQuery request, CancellationToken cancellationToken)
 	{
 		var stocks = _ctx.Stock.Where(x => x.BankruptDate.HasValue)

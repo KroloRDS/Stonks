@@ -10,16 +10,11 @@ public record GetCurrentPriceQuery(Guid StockId)
 	: IRequest<GetCurrentPriceResponse>;
 
 public class GetCurrentPriceQueryHandler :
-	IRequestHandler<GetCurrentPriceQuery, GetCurrentPriceResponse>
+	BaseQuery<GetCurrentPriceQuery, GetCurrentPriceResponse>
 {
-	private readonly AppDbContext _ctx;
+	public GetCurrentPriceQueryHandler(ReadOnlyDbContext ctx) : base(ctx) {}
 
-	public GetCurrentPriceQueryHandler(AppDbContext ctx)
-	{
-		_ctx = ctx;
-	}
-
-	public async Task<GetCurrentPriceResponse> Handle(
+	public override async Task<GetCurrentPriceResponse> Handle(
 		GetCurrentPriceQuery request, CancellationToken cancellationToken)
 	{
 		var stock = await _ctx.GetById<Stock>(request.StockId);

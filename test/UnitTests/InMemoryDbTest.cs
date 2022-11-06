@@ -18,5 +18,6 @@ public class InMemoryDbTest : InMemoryDb
 		_ctx.AddRange(logs);
 		_ctx.SaveChanges();
 		Assert.AreEqual(count, _ctx.Log.Count());
+		Assert.AreEqual(count, _readOnlyCtx.Log.Count());
 	}
 }

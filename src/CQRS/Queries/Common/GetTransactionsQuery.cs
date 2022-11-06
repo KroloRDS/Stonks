@@ -8,16 +8,11 @@ public record GetTransactionsQuery(Guid StockId, DateTime? FromDate = null)
 	: IRequest<GetTransactionsResponse>;
 
 public class GetTransactionsQueryHandler :
-	IRequestHandler<GetTransactionsQuery, GetTransactionsResponse>
+	BaseQuery<GetTransactionsQuery, GetTransactionsResponse>
 {
-	private readonly AppDbContext _ctx;
+	public GetTransactionsQueryHandler(ReadOnlyDbContext ctx) : base(ctx) {}
 
-	public GetTransactionsQueryHandler(AppDbContext ctx)
-	{
-		_ctx = ctx;
-	}
-
-	public async Task<GetTransactionsResponse> Handle(
+	public override async Task<GetTransactionsResponse> Handle(
 		GetTransactionsQuery request, CancellationToken cancellationToken)
 	{
 		await _ctx.EnsureExist<Stock>(request.StockId, cancellationToken);

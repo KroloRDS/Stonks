@@ -12,20 +12,18 @@ namespace Stonks.CQRS.Commands;
 public record BattleRoyaleRoundCommand : IRequest;
 
 public class BattleRoyaleRoundCommandHandler :
-    IRequestHandler<BattleRoyaleRoundCommand>
+    BaseCommand<BattleRoyaleRoundCommand>
 {
-    private readonly AppDbContext _ctx;
     private readonly BattleRoyaleRoundRepository _repo;
 
     public BattleRoyaleRoundCommandHandler(AppDbContext ctx,
-        IMediator mediator, IStonksConfiguration config)
+        IMediator mediator, IStonksConfiguration config) : base(ctx)
     {
-        _ctx = ctx;
         _repo = new BattleRoyaleRoundRepository(ctx, mediator, config,
             new AddPublicOffers(ctx, mediator));
     }
 
-    public async Task<Unit> Handle(BattleRoyaleRoundCommand request,
+    public override async Task<Unit> Handle(BattleRoyaleRoundCommand request,
         CancellationToken cancellationToken)
     {
         var task = _repo.BattleRoyaleRound(cancellationToken);
@@ -58,13 +56,13 @@ public class BattleRoyaleRoundRepository
         var amount = _config.NewStocksAfterRound();
         var id = (await weakestStock).Id;
 
-        await Bankrupt(id, cancellationToken);
+        await Bankrupt(id);
         await _addPublicOffers.Handle(amount, id, cancellationToken);
         await RemoveSharesAndOffers(id, cancellationToken);
         await UpdatePublicallyOfferedAmount(amount, id, cancellationToken);
     }
 
-    public async Task Bankrupt(Guid id, CancellationToken cancellationToken)
+    public async Task Bankrupt(Guid id)
     {
         var stock = await _ctx.GetById<Stock>(id);
         stock.Bankrupt = true;

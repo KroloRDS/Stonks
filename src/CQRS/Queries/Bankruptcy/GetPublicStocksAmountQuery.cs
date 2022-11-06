@@ -8,16 +8,12 @@ public record GetPublicStocksAmountQuery(Guid StockId)
 	: IRequest<GetPublicStocksAmountResponse>;
 
 public class GetPublicStocksAmountQueryHandler :
-	IRequestHandler<GetPublicStocksAmountQuery, GetPublicStocksAmountResponse>
+	BaseQuery<GetPublicStocksAmountQuery, GetPublicStocksAmountResponse>
 {
-	private readonly AppDbContext _ctx;
+	public GetPublicStocksAmountQueryHandler(
+		ReadOnlyDbContext ctx) : base(ctx) {}
 
-	public GetPublicStocksAmountQueryHandler(AppDbContext ctx)
-	{
-		_ctx = ctx;
-	}
-
-	public async Task<GetPublicStocksAmountResponse> Handle(
+	public override async Task<GetPublicStocksAmountResponse> Handle(
 		GetPublicStocksAmountQuery request,
 		CancellationToken cancellationToken)
 	{
