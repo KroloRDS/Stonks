@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 using Stonks.Util;
 using Stonks.Data;
+using Stonks.Data.Models;
 using Stonks.CQRS.Queries.Common;
 
 namespace Stonks.CQRS.Queries.Bankruptcy.GetWeakestStock;
@@ -24,7 +25,6 @@ public class GetWeakestStockIdQueryHandler :
         GetWeakestStockIdQuery request, CancellationToken cancellationToken)
     {
         var stocks = await _ctx.Stock.Where(x => !x.Bankrupt)
-            .Select(x => x.Id)
             .ToListAsync(cancellationToken);
 
         if (!stocks.Any())
@@ -40,16 +40,16 @@ public class GetWeakestStockIdQueryHandler :
     }
 
     private async Task<StockIndicator> GetStockIndicator(
-        Guid stockId, CancellationToken cancellationToken)
+        Stock stock, CancellationToken cancellationToken)
     {
         var publicStocks = _mediator.Send(
-            new GetPublicStocksAmountQuery(stockId), cancellationToken);
-        var marketCap = GetMarketCap(stockId, cancellationToken);
-        var volatility = GetVolatility(stockId, cancellationToken);
+            new GetPublicStocksAmountQuery(stock.Id), cancellationToken);
+        var marketCap = GetMarketCap(stock, cancellationToken);
+        var volatility = GetVolatility(stock.Id, cancellationToken);
 
         return new StockIndicator
         {
-            StockId = stockId,
+            StockId = stock.Id,
             MarketCap = await marketCap,
             StocksAmount = (await publicStocks).Amount,
             Volatility = await volatility,
@@ -58,13 +58,11 @@ public class GetWeakestStockIdQueryHandler :
     }
 
     private async Task<decimal> GetMarketCap(
-        Guid stockId, CancellationToken cancellationToken)
+		Stock stock, CancellationToken cancellationToken)
     {
-        var price = _mediator.Send(
-            new GetCurrentPriceQuery(stockId), cancellationToken);
-        var shares = _mediator.Send(
-            new GetTotalAmountOfSharesQuery(stockId), cancellationToken);
-        return (await shares).Amount * (await price).Price;
+        var shares = _mediator.Send(new GetTotalAmountOfSharesQuery
+			(stock.Id), cancellationToken);
+        return (await shares).Amount * stock.Price;
     }
 
     private async Task<double> GetVolatility(
@@ -73,7 +71,7 @@ public class GetWeakestStockIdQueryHandler :
         var lastBankruptDate = await _mediator.Send(
             new GetLastBankruptDateQuery(), cancellationToken);
 
-        var result = await _mediator.Send(new GetHistoricalPricesQuery
+        var result = await _mediator.Send(new GetStockPricesQuery
         {
             FromDate = lastBankruptDate.DateTime,
             StockId = stockId
@@ -106,7 +104,6 @@ public class GetWeakestStockIdQueryHandler :
         var minStocksAvailable = indicators.Min(x => x.StocksAmount);
         var stocksAvailableMaxDiff = indicators.Max(x => x.StocksAmount) - minStocksAvailable;
 
-        var test = 1 - (Normalise(5, 5, 0) ?? 0);
         return indicators.Select(x => new StockIndicatorNormalised
         {
             StockId = x.StockId,

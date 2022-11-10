@@ -4,9 +4,9 @@ using Stonks.Data.Models;
 
 namespace Stonks.CQRS.Queries.Common;
 
-public class GetHistoricalPricesQuery : IRequest<GetHistoricalPricesResponse>
+public class GetStockPricesQuery : IRequest<GetStockPricesResponse>
 {
-	public Guid StockId { get; set; }
+	public Guid? StockId { get; set; }
 	public DateTime? FromDate { get; set; }
 	public DateTime? ToDate { get; set; }
 
@@ -19,18 +19,18 @@ public class GetHistoricalPricesQuery : IRequest<GetHistoricalPricesResponse>
 	}
 }
 
-public class GetHistoricalPricesQueryHandler :
-	BaseQuery<GetHistoricalPricesQuery, GetHistoricalPricesResponse>
+public class GetStockPricesQueryHandler :
+	BaseQuery<GetStockPricesQuery, GetStockPricesResponse>
 {
-	public GetHistoricalPricesQueryHandler(ReadOnlyDbContext ctx) : base(ctx) {}
+	public GetStockPricesQueryHandler(ReadOnlyDbContext ctx) : base(ctx) {}
 
-	public override async Task<GetHistoricalPricesResponse> Handle(
-		GetHistoricalPricesQuery request, CancellationToken cancellationToken)
+	public override async Task<GetStockPricesResponse> Handle(
+		GetStockPricesQuery request, CancellationToken cancellationToken)
 	{
 		request.Validate();
-		await _ctx.EnsureExist<Stock>(request.StockId, cancellationToken);
 
-		var query = (AvgPrice x) => x.StockId == request.StockId;
+		var query = (AvgPrice x) => !request.StockId.HasValue || 
+			x.StockId == request.StockId;
 
 		var queryFrom = request.FromDate is null ? query :
 			(AvgPrice x) => query(x) && x.DateTime >= request.FromDate;
@@ -43,6 +43,6 @@ public class GetHistoricalPricesQueryHandler :
 			.OrderBy(x => x.DateTime)
 			.ToList(), cancellationToken);
 
-		return new GetHistoricalPricesResponse(prices);
+		return new GetStockPricesResponse(prices);
 	}
 }

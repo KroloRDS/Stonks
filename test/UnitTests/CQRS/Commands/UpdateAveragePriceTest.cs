@@ -34,8 +34,9 @@ public class UpdateAveragePriceTest :
     [Test]
     public void UpdateAveragePrice_BankruptStock_ShouldDoNothing()
     {
-        Handle(new UpdateAveragePriceCommand(AddBankruptStock().Id));
-        Assert.False(_ctx.AvgPriceCurrent.Any());
+		var id = AddBankruptStock().Id;
+		Handle(new UpdateAveragePriceCommand(id));
+        Assert.Null(_ctx.GetById<Stock>(id).Result.LastPriceUpdate);
         _mediator.VerifyNoOtherCalls();
     }
 
@@ -43,49 +44,70 @@ public class UpdateAveragePriceTest :
     public void UpdateAveragePrice_NoData()
     {
         //Arrange
+		var now = DateTime.Now;
         var stockId = AddStock().Id;
         SetupTransactions(Array.Empty<(int, decimal)>());
 
         //Act
         Handle(new UpdateAveragePriceCommand(stockId));
-        var priceRecord = GetCurrentPrice(stockId);
+        var stock = _ctx.GetById<Stock>(stockId).Result;
+		var price = _ctx.AvgPrice.Single(x => x.StockId == stockId);
 
         //Assert
-        Assert.AreEqual(0UL, priceRecord.SharesTraded);
-        Assert.AreEqual(UpdateAveragePriceCommandHandler.DEFAULT_PRICE,
-            priceRecord.Price);
-        VerifyMediator(1);
+        Assert.AreEqual(0UL, stock.SharesTraded);
+        Assert.AreEqual(Stock.DEFAULT_PRICE, stock.Price);
+		Assert.Greater(stock.LastPriceUpdate, now);
+
+		Assert.AreEqual(0UL, price.SharesTraded);
+		Assert.AreEqual(Stock.DEFAULT_PRICE, price.Price);
+		Assert.Greater(price.DateTime, now);
+		VerifyMediator(1);
     }
 
     [Test]
     public void UpdateAveragePrice_NoNewTransactions()
     {
         //Arrange
-        var sharesTraded = 100;
+        ulong sharesTraded = 100;
         var averagePrice = 5M;
         Assert.Positive(sharesTraded);
         Assert.Positive(averagePrice);
 
-        var stockId = AddStock().Id;
-        AddCurrentPrice(stockId, (ulong)sharesTraded, averagePrice);
+		var now = DateTime.Now;
+
+        var stock = AddStock();
+		stock.SharesTraded = sharesTraded;
+		stock.LastPriceUpdate = now;
+		stock.Price = averagePrice;
+
+		_ctx.Add(new AvgPrice
+		{
+			StockId = stock.Id,
+			SharesTraded = sharesTraded,
+			Price = averagePrice,
+			DateTime = now
+		});
+
         SetupTransactions(Array.Empty<(int, decimal)>());
+		_ctx.SaveChanges();
 
-        //Act
-        Handle(new UpdateAveragePriceCommand(stockId));
-        var oldPriceRecord = _ctx.AvgPrice.FirstOrDefault();
-        var newPriceRecord = GetCurrentPrice(stockId);
+		//Act
+		Handle(new UpdateAveragePriceCommand(stock.Id));
+        var newPriceRecord = _ctx.AvgPrice
+			.OrderByDescending(x => x.DateTime).First();
 
-        //Assert
-        Assert.NotNull(oldPriceRecord);
-        Assert.NotNull(newPriceRecord);
+		//Assert
+		stock = _ctx.GetById<Stock>(stock.Id).Result;
 
-        Assert.AreNotEqual(newPriceRecord.Created, oldPriceRecord!.DateTime);
+		Assert.Greater(newPriceRecord.DateTime, now);
+        Assert.Greater(stock.LastPriceUpdate, now);
 
-        Assert.AreEqual(averagePrice, oldPriceRecord.Price);
         Assert.AreEqual(averagePrice, newPriceRecord.Price);
+        Assert.AreEqual(averagePrice, stock.Price);
 
-        Assert.AreEqual(sharesTraded, oldPriceRecord.SharesTraded);
+        Assert.AreEqual(sharesTraded, stock.SharesTraded);
         Assert.AreEqual(sharesTraded, newPriceRecord.SharesTraded);
+
         VerifyMediator(1);
     }
 
@@ -115,12 +137,16 @@ public class UpdateAveragePriceTest :
 
         //Act
         Handle(new UpdateAveragePriceCommand(stockId));
-        var priceRecord = GetCurrentPrice(stockId);
+		var priceRecord = _ctx.AvgPrice.First();
+		var stock = _ctx.GetById<Stock>(stockId).Result;
 
-        //Assert
-        Assert.AreEqual(expectedAmount, priceRecord.SharesTraded);
-        Assert.AreEqual(expectedAverage, priceRecord.Price);
-        VerifyMediator(1);
+		//Assert
+		Assert.AreEqual(expectedAmount, priceRecord.SharesTraded);
+		Assert.AreEqual(expectedAmount, stock.SharesTraded);
+
+		Assert.AreEqual(expectedAverage, priceRecord.Price);
+		Assert.AreEqual(expectedAverage, stock.Price);
+		VerifyMediator(1);
     }
 
     [Test]
@@ -158,20 +184,18 @@ public class UpdateAveragePriceTest :
 
         //Act
         Handle(new UpdateAveragePriceCommand(stockId));
-        var oldPriceRecord = _ctx.AvgPrice.FirstOrDefault();
-        var newPriceRecord = GetCurrentPrice(stockId);
+		var pricesRecords = _ctx.AvgPrice.OrderBy(x => x.DateTime).ToArray();
+		var oldPrice = pricesRecords[0];
+		var newPrice = pricesRecords[1];
+		var stock = _ctx.GetById<Stock>(stockId).Result;
 
-        //Assert
-        Assert.NotNull(oldPriceRecord);
-        Assert.NotNull(newPriceRecord);
+		//Assert
+		Assert.Greater(newPrice.DateTime, oldPrice.DateTime);
+        Assert.AreEqual(averagePrice, oldPrice.Price);
+        Assert.AreEqual(expectedAverage, newPrice.Price);
 
-        Assert.AreNotEqual(newPriceRecord.Created, oldPriceRecord!.DateTime);
-
-        Assert.AreEqual(averagePrice, oldPriceRecord.Price);
-        Assert.AreEqual(expectedAverage, newPriceRecord.Price);
-
-        Assert.AreEqual(amountTraded, oldPriceRecord.SharesTraded);
-        Assert.AreEqual(expectedAmount, newPriceRecord.SharesTraded);
+        Assert.AreEqual(amountTraded, oldPrice.SharesTraded);
+        Assert.AreEqual(expectedAmount, newPrice.SharesTraded);
         VerifyMediator(2);
     }
 
@@ -193,23 +217,5 @@ public class UpdateAveragePriceTest :
             It.IsAny<GetTransactionsQuery>(), CancellationToken.None),
             Times.Exactly(times));
         _mediator.VerifyNoOtherCalls();
-    }
-
-    private void AddCurrentPrice(Guid stockId,
-        ulong sharesTraded, decimal averagePrice)
-    {
-        _ctx.Add(new AvgPriceCurrent
-        {
-            StockId = stockId,
-            Created = DateTime.Now,
-            SharesTraded = sharesTraded,
-            Price = averagePrice,
-        });
-        _ctx.SaveChanges();
-    }
-
-    private AvgPriceCurrent GetCurrentPrice(Guid stockId)
-    {
-        return _ctx.AvgPriceCurrent.Single(x => x.StockId == stockId);
     }
 }

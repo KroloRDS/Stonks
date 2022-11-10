@@ -1,7 +1,5 @@
-﻿using MediatR;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Stonks.Data;
-using Stonks.CQRS.Queries.Common;
 using Stonks.Data.Models;
 
 namespace Stonks.CQRS.Helpers;
@@ -15,52 +13,44 @@ public interface IAddPublicOffers
 public class AddPublicOffers : IAddPublicOffers
 {
     private readonly AppDbContext _ctx;
-    private readonly IMediator _mediator;
 
-    public AddPublicOffers(AppDbContext ctx, IMediator mediator)
+    public AddPublicOffers(AppDbContext ctx)
     {
         _ctx = ctx;
-        _mediator = mediator;
     }
 
     public async Task Handle(int amount, Guid bankruptedId,
         CancellationToken cancellationToken)
     {
-        var ids = _ctx.Stock
-            .Where(x => !x.Bankrupt && x.Id != bankruptedId)
-            .Select(x => x.Id);
-
-        foreach (var id in ids)
+		var stocks = _ctx.Stock.Where(x => !x.Bankrupt && x.Id != bankruptedId);
+        foreach (var stock in stocks)
         {
-            await AddPublicOffer(id, amount, cancellationToken);
+            await AddPublicOffer(stock, amount, cancellationToken);
         }
     }
 
-    private async Task AddPublicOffer(Guid stockId, int amount,
+    private async Task AddPublicOffer(Stock stock, int amount,
         CancellationToken cancellationToken)
     {
         var offer = await _ctx.TradeOffer.FirstOrDefaultAsync(x =>
             x.Type == OfferType.PublicOfferring &&
-            x.StockId == stockId,
+            x.StockId == stock.Id,
             cancellationToken);
 
         if (offer == default)
-            await CreateNewPublicOffer(stockId, amount, cancellationToken);
+            await CreateNewPublicOffer(stock, amount, cancellationToken);
         else if (offer.Amount < amount)
             offer.Amount = amount;
     }
 
-    private async Task CreateNewPublicOffer(Guid stockId, int amount,
+    private async Task CreateNewPublicOffer(Stock stock, int amount,
         CancellationToken cancellationToken)
     {
-        var avgPrice = await _mediator.Send(
-            new GetCurrentPriceQuery(stockId), cancellationToken);
-
         await _ctx.AddAsync(new TradeOffer
         {
             Amount = amount,
-            Price = avgPrice.Price,
-            StockId = stockId,
+            Price = stock.Price,
+            StockId = stock.Id,
             Type = OfferType.PublicOfferring
         }, cancellationToken);
     }

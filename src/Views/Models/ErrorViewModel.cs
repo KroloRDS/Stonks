@@ -1,6 +1,6 @@
-namespace Stonks.CQRS.Queries.ViewModels;
+namespace Stonks.Views.Models;
 
-public record ErrorViewModel : BaseViewModel
+public record ErrorViewModel
 {
     public string? RequestId { get; set; }
     public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);

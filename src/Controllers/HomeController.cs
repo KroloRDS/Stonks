@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using Stonks.CQRS.Queries.ViewModels;
+using Stonks.Views.Models;
 
 namespace Stonks.Controllers;
 

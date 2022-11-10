@@ -1,11 +1,16 @@
 ﻿using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Stonks.Data;
 using Stonks.Data.Models;
 
 namespace Stonks.CQRS.Queries.Common;
 
-public record GetTransactionsQuery(Guid StockId, DateTime? FromDate = null)
-	: IRequest<GetTransactionsResponse>;
+public record GetTransactionsQuery : IRequest<GetTransactionsResponse>
+{
+	public Guid? StockId { get; set; }
+	public Guid? UserId { get; set; }
+	public DateTime? FromDate { get; set; }
+}
 
 public class GetTransactionsQueryHandler :
 	BaseQuery<GetTransactionsQuery, GetTransactionsResponse>
@@ -15,20 +20,25 @@ public class GetTransactionsQueryHandler :
 	public override async Task<GetTransactionsResponse> Handle(
 		GetTransactionsQuery request, CancellationToken cancellationToken)
 	{
-		await _ctx.EnsureExist<Stock>(request.StockId, cancellationToken);
-		var query = (Transaction x) => x.StockId == request.StockId;
+		var queryStock = (Transaction x) => !request.StockId.HasValue ||
+			x.StockId == request.StockId;
 
-		var queryFrom = request.FromDate is null ? query :
-			(Transaction x) => query(x) && x.Timestamp >= request.FromDate;
+		var queryUser = (Transaction x) => !request.UserId.HasValue ||
+			x.BuyerId == request.UserId || x.SellerId == request.UserId;
+
+		var queryFrom = (Transaction x) => !request.FromDate.HasValue ||
+			x.Timestamp >= request.FromDate;
+
+		var query = (Transaction x) => queryStock(x) &&
+			queryUser(x) && queryFrom(x);
 
 		var list = await Task.Run(() => _ctx.Transaction
-			.Where(queryFrom)
+			.Where(query)
 			.Select(x => new Transaction
 			{
 				Amount = x.Amount,
 				Price = x.Price
-			})
-			.ToList(), cancellationToken);
+			}).ToList(), cancellationToken);
 
 		return new GetTransactionsResponse(list);
 	}

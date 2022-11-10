@@ -12,12 +12,8 @@ public class AvgPrice : HasId
     [Required]
     public DateTime DateTime { get; set; }
 
-    public bool IsCurrent { get; set; }
     public ulong SharesTraded { get; set; }
 
     [Column(TypeName = "decimal(8,2)")]
     public decimal Price { get; set; }
-
-    [Column(TypeName = "decimal(8,2)")]
-    public decimal PriceNormalised { get; set; }
 }

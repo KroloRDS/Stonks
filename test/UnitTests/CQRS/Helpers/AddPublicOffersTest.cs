@@ -13,16 +13,11 @@ namespace UnitTests.CQRS.Helpers;
 
 public class AddPublicOffersTest : InMemoryDb
 {
-    private readonly Mock<IMediator> _mediator = new();
     private readonly AddPublicOffers _handler;
 
     public AddPublicOffersTest()
     {
-        _mediator.Setup(x => x.Send(
-            It.IsAny<GetCurrentPriceQuery>(),
-            It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new GetCurrentPriceResponse(0));
-        _handler = new AddPublicOffers(_ctx, _mediator.Object);
+        _handler = new AddPublicOffers(_ctx);
     }
 
     [Test]
@@ -69,10 +64,6 @@ public class AddPublicOffersTest : InMemoryDb
         _ctx.SaveChanges();
 
         //Assert
-        _mediator.Verify(x => x.Send(It.IsAny<GetCurrentPriceQuery>(),
-            It.IsAny<CancellationToken>()), Times.Once());
-        _mediator.VerifyNoOtherCalls();
-
         Assert.AreEqual(amount, GetPublicOffer(stock1.Id)?.Amount);
         Assert.AreEqual(amount, GetPublicOffer(stock2.Id)?.Amount);
         Assert.AreEqual(biggerAmount, GetPublicOffer(stock3.Id)?.Amount);

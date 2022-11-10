@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Stonks.Data;
 using Stonks.Util;
 using Stonks.Data.Models;
+using Stonks.CQRS.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 AddServices(builder);
@@ -17,6 +18,9 @@ static void AddServices(WebApplicationBuilder builder)
 	var services = builder.Services;
 	services.AddScoped<IStonksLogger, StonksLogger>();
 	services.AddScoped<IStonksConfiguration, StonksConfiguration>();
+	services.AddScoped<IAddPublicOffers, AddPublicOffers>();
+	services.AddScoped<IGiveMoney, GiveMoney>();
+	services.AddScoped<ITransferShares, TransferShares>();
 	services.AddMediatR(Assembly.GetExecutingAssembly());
 	builder.Services.AddControllersWithViews();
 

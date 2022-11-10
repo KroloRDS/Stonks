@@ -18,55 +18,70 @@ public class GetTransactionsTest
 	}
 
 	[Test]
-	[TestCase(default)]
-	[TestCase(_zeroGuid)]
-	[TestCase(_randomGuid)]
-	public void GetTransactions_WrongStock_ShouldThrow(Guid id)
-	{
-		AssertThrows<KeyNotFoundException>(new GetTransactionsQuery(id));
-	}
-
-	[Test]
 	public void GetTransactions_NoTransactions_ShouldReturnEmptyList()
 	{
-		Assert.False(Handle(new GetTransactionsQuery(AddStock().Id))
-			.Transactions.Any());
+		Assert.False(Handle(new GetTransactionsQuery()).Transactions.Any());
 	}
 
 	[Test]
-	public void GetTransactions_PositiveTest()
+	[TestCase(false, false, false, 5)]
+	[TestCase(true, false, false, 4)]
+	[TestCase(false, true, false, 4)]
+	[TestCase(false, false, true, 4)]
+	[TestCase(true, true, false, 3)]
+	[TestCase(true, false, true, 3)]
+	[TestCase(false, true, true, 3)]
+	[TestCase(true, true, true, 2)]
+	public void GetTransactions_PositiveTest(bool useStockId,
+		bool useDate, bool useUserId, int expectedCount)
 	{
 		//Arrange
-		var date1 = new DateTime(2001, 1, 1);
-		var date2 = new DateTime(2002, 1, 1);
-		Assert.Greater(date2, date1);
-
-		//Arrange
+		var date = new DateTime(2001, 1, 1);
 		var stockId = AddStock().Id;
-		var buyerId = AddUser().Id;
+		var userId = AddUser().Id;
 		_ctx.AddRange(new[]
 		{
 			new Transaction
 			{
 				StockId = stockId,
-				BuyerId = buyerId,
-				Timestamp = date1
+				BuyerId = userId,
+				Timestamp = date
+			},
+			new Transaction
+			{
+				StockId = AddStock().Id,
+				BuyerId = userId,
+				Timestamp = date
 			},
 			new Transaction
 			{
 				StockId = stockId,
-				BuyerId = buyerId,
-				Timestamp = date2
+				BuyerId = AddUser().Id,
+				SellerId = userId,
+				Timestamp = date
+			},
+			new Transaction
+			{
+				StockId = stockId,
+				BuyerId = AddUser().Id,
+				Timestamp = date
+			},
+			new Transaction
+			{
+				StockId = stockId,
+				BuyerId = userId,
+				Timestamp = date.AddDays(-1)
 			}
 		});
 		_ctx.SaveChanges();
 
-		//Assert
-		Assert.AreEqual(2, Handle(new GetTransactionsQuery(stockId))
-			.Transactions.Count());
-		Assert.AreEqual(1, Handle(new GetTransactionsQuery(stockId, date2))
-			.Transactions.Count());
-		Assert.False(Handle(new GetTransactionsQuery(stockId, date2.AddDays(1)))
-			.Transactions.Any());
+		//Act & Assert
+		var query = new GetTransactionsQuery
+		{
+			StockId = useStockId ? stockId : null,
+			FromDate = useDate ? date : null,
+			UserId = useUserId ? userId : null
+		};
+		Assert.AreEqual(expectedCount, Handle(query).Transactions.Count());
 	}
 }

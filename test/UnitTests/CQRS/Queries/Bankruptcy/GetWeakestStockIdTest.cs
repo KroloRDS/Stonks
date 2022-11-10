@@ -26,16 +26,14 @@ public class GetWeakestStockIdTest :
 	private void SetupMediator()
 	{
 		var token = It.IsAny<CancellationToken>();
-		_mediator.Setup(x => x.Send(It.IsAny<GetCurrentPriceQuery>(),
-			token)).ReturnsAsync(new GetCurrentPriceResponse(0));
 		_mediator.Setup(x => x.Send(It.IsAny<GetTotalAmountOfSharesQuery>(),
 			token)).ReturnsAsync(new GetTotalAmountOfSharesResponse(0));
 		_mediator.Setup(x => x.Send(It.IsAny<GetPublicStocksAmountQuery>(),
 			token)).ReturnsAsync(new GetPublicStocksAmountResponse(0));
 		_mediator.Setup(x => x.Send(It.IsAny<GetLastBankruptDateQuery>(),
 			token)).ReturnsAsync(new GetLastBankruptDateResponse(DateTime.Now));
-		_mediator.Setup(x => x.Send(It.IsAny<GetHistoricalPricesQuery>(),
-			token)).ReturnsAsync(new GetHistoricalPricesResponse(
+		_mediator.Setup(x => x.Send(It.IsAny<GetStockPricesQuery>(),
+			token)).ReturnsAsync(new GetStockPricesResponse(
 				new[]{ new AvgPrice{ Price = 0 } }));
 	}
 
@@ -73,13 +71,11 @@ public class GetWeakestStockIdTest :
 		var token = It.IsAny<CancellationToken>();
 		_mediator.Verify(x => x.Send(It.IsAny<GetPublicStocksAmountQuery>(),
 			token), Times.Once());
-		_mediator.Verify(x => x.Send(It.IsAny<GetCurrentPriceQuery>(),
-			token), Times.Once());
 		_mediator.Verify(x => x.Send(It.IsAny<GetTotalAmountOfSharesQuery>(),
 			token), Times.Once());
 		_mediator.Verify(x => x.Send(It.IsAny<GetLastBankruptDateQuery>(),
 			token), Times.Once());
-		_mediator.Verify(x => x.Send(It.IsAny<GetHistoricalPricesQuery>(),
+		_mediator.Verify(x => x.Send(It.IsAny<GetStockPricesQuery>(),
 			token), Times.Once());
 		_mediator.VerifyNoOtherCalls();
 	}

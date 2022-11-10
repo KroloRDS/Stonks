@@ -1,6 +1,5 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Stonks.CQRS.Queries.ViewModels;
 using Stonks.Data;
 using Stonks.Util;
 
@@ -37,7 +36,7 @@ public class BaseController : Controller
 
 	protected async Task<IActionResult> TryGetViewModel<T>(
 		IRequest<T> request, CancellationToken cancellationToken)
-		where T : BaseViewModel
+		where T : class
 	{
 		try
 		{
