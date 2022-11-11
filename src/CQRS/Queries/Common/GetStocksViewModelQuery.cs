@@ -54,9 +54,10 @@ public class GetStockViewModelQueryHandler :
 				into priceGroup
 			select new StockViewModel
 			{
-				StockName = stock.Name,
-				StockSymbol = stock.Symbol,
-				CurrentPrice = stock.Price,
+				Id = stock.Id,
+				Name = stock.Name,
+				Symbol = stock.Symbol,
+				Price = stock.Price,
 				OwnedAmount = share?.Amount ?? 0,
 				Offers = offerGroup,
 				Prices = priceGroup,
@@ -66,7 +67,7 @@ public class GetStockViewModelQueryHandler :
 		foreach (var model in viewModels)
 		{
 			model.Profit = GetProfit(model.Transactions, request.UserId,
-				model.CurrentPrice, model.OwnedAmount);
+				model.Price, model.OwnedAmount);
 		}
 
 		return new GetStocksViewModelResponse(viewModels);
@@ -90,6 +91,7 @@ public class GetStockViewModelQueryHandler :
 		return _ctx.TradeOffer.Where(x => x.WriterId == userId)
 			.Select(x => new TradeOffer
 			{
+				Id = x.Id,
 				Amount = x.Amount,
 				Price = x.Price,
 				StockId = x.StockId,

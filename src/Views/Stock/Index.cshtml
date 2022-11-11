@@ -1,41 +1,41 @@
-﻿@*@model GetStocksViewModelResponse
+﻿@model GetStocksViewModelResponse
 
 @{
-	ViewData["Title"] = "Index";
+	ViewData["Title"] = "Stocks";
+	var profit = Model.Stocks.Sum(x => x.Profit);
+	<h1>Profit: @profit</h1>
 }
-
-<h1>@Html.DisplayFor(model => model.Stock.Name)</h1>
-<h2>@Html.DisplayFor(model => model.Stock.Symbol)</h2>
-
-<span>@Html.DisplayFor(model => model.CurrentPrice)</span>
-<br />
-
-<span>BUY</span><span>SELL</span>
-<br />
-<br />
-<br />
-
 <table class="table">
-    <thead>
-        <tr>
-            <th>
-                <b>Date</b>
-            </th>
-            <th>
-                <b>Price</b>
-            </th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model.Prices) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.DateTime)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Price)
-            </td>
-        </tr>
+	<thead>
+		<tr>
+			<th><b>Symbol</b></th>
+			<th><b>Name</b></th>
+			<th><b>Price</b></th>
+			<th><b>Owned</b></th>
+			<th><b>Buy</b></th>
+			<th><b>Sell</b></th>
+		</tr>
+	</thead>
+	<tbody>
+		@foreach (var stock in Model.Stocks)
+		{
+			<tr>
+				<td>
+					<a href="stocks/@(stock.Symbol)">
+						@Html.DisplayFor(modelItem => stock.Symbol)
+					</a>
+				</td>
+				<td>@Html.DisplayFor(modelItem => stock.Name)</td>
+				<td>@Html.DisplayFor(modelItem => stock.Price)</td>
+				<td>@Html.DisplayFor(modelItem => stock.OwnedAmount)</td>
+				<td><a href="offers/@(stock.Symbol)/buy">BUY</a></td>
+				<td><a href="offers/@(stock.Symbol)/sell">SELL</a></td>
+			</tr>
+		}
+	</tbody>
+</table>
+
+@{
+	var offers = Model.Stocks.SelectMany(x => x.Offers);
+	@await Html.PartialAsync("Offers", offers);
 }
-    </tbody>
-</table>*@

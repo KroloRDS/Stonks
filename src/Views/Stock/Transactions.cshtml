@@ -1,0 +1,25 @@
+﻿@model IEnumerable<TransactionViewModel>
+
+<h1>Transactions</h1>
+<table class="table">
+	<thead>
+		<tr>
+			<th><b>Type</b></th>
+			<th><b>Amount</b></th>
+			<th><b>Price</b></th>
+			<th><b>Value</b></th>
+		</tr>
+	</thead>
+	<tbody>
+		@{
+		foreach (var offer in Model)
+		{
+			<tr>
+				<td>@Html.DisplayFor(modelItem => offer.Type)</td>
+				<td>@Html.DisplayFor(modelItem => offer.Amount)</td>
+				<td>@Html.DisplayFor(modelItem => offer.Price)</td>
+				<td>@Html.DisplayFor(modelItem => offer.Price * offer.Amount)</td>
+			</tr>
+		}
+	}</tbody>
+</table>

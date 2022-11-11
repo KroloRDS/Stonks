@@ -15,7 +15,8 @@ public class CancelOfferCommandHandler : BaseCommand<CancelOfferCommand>
         CancellationToken cancellationToken)
     {
         var offer = await ValidateRequest(request);
-        await Task.Run(() => _ctx.TradeOffer.Remove(offer), cancellationToken);
+        _ctx.TradeOffer.Remove(offer);
+		await _ctx.SaveChangesAsync(cancellationToken);
         return Unit.Value;
     }
 

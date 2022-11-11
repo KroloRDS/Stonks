@@ -46,20 +46,18 @@ public class GetStocksViewModelTest :
         //Arrange
         var userId = AddUser().Id;
 
-        var stock1 = AddStock();
-        stock1.Name = "stock1";
-		var stock2 = AddStock();
-		stock2.Name = "stock2";
-		SetupMediator(stock1.Id, stock2.Id, userId);
+        var stock1 = AddStock().Id;
+		var stock2 = AddStock().Id;
+		SetupMediator(stock1, stock2, userId);
 
-        var stock3 = AddStock();
-        stock3.Name = "stock3";
+        var stock3 = AddStock().Id;
         _ctx.AddRange(
-            new TradeOffer { StockId = stock3.Id, WriterId = userId },
-            new TradeOffer { StockId = stock3.Id, WriterId = userId });
+            new TradeOffer { StockId = stock3, WriterId = userId },
+            new TradeOffer { StockId = stock3, WriterId = userId });
 
         var stock4 = AddStock();
-        stock4.Name = "stock4";
+		var name = "stock4";
+		stock4.Name = name;
         stock4.Price = 5M;
         var stock4amount = 5;
         _ctx.Add(new Share
@@ -77,33 +75,34 @@ public class GetStocksViewModelTest :
         //Assert
         Assert.AreEqual(4, response.Count());
 
-        var model = response.First(x => x.StockName == stock1.Name);
+        var model = response.First(x => x.Id == stock1);
         Assert.AreEqual(2, model.Transactions.Count());
         Assert.False(model.Prices.Any());
         Assert.False(model.Offers.Any());
         Assert.Zero(model.OwnedAmount);
-        Assert.AreEqual(Stock.DEFAULT_PRICE, model.CurrentPrice);
+        Assert.AreEqual(Stock.DEFAULT_PRICE, model.Price);
 
-        model = response.First(x => x.StockName == stock2.Name);
+        model = response.First(x => x.Id == stock2);
         Assert.False(model.Transactions.Any());
         Assert.AreEqual(2, model.Prices.Count());
         Assert.False(model.Offers.Any());
         Assert.Zero(model.OwnedAmount);
-        Assert.AreEqual(Stock.DEFAULT_PRICE, model.CurrentPrice);
+        Assert.AreEqual(Stock.DEFAULT_PRICE, model.Price);
 
-        model = response.First(x => x.StockName == stock3.Name);
+        model = response.First(x => x.Id == stock3);
         Assert.False(model.Transactions.Any());
         Assert.False(model.Prices.Any());
         Assert.AreEqual(2, model.Offers.Count());
         Assert.Zero(model.OwnedAmount);
-        Assert.AreEqual(Stock.DEFAULT_PRICE, model.CurrentPrice);
+        Assert.AreEqual(Stock.DEFAULT_PRICE, model.Price);
 
-        model = response.First(x => x.StockName == stock4.Name);
+        model = response.First(x => x.Id == stock4.Id);
         Assert.False(model.Transactions.Any());
         Assert.False(model.Prices.Any());
         Assert.False(model.Offers.Any());
+		Assert.AreEqual(name, model.Name);
         Assert.AreEqual(stock4amount, model.OwnedAmount);
-        Assert.AreEqual(stock4.Price, model.CurrentPrice);
+        Assert.AreEqual(stock4.Price, model.Price);
     }
 
 	private void SetupMediator(Guid stock1, Guid stock2, Guid userId)

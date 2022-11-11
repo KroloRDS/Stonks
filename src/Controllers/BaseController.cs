@@ -1,13 +1,15 @@
 ﻿using MediatR;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Stonks.Data;
 using Stonks.Util;
+using Microsoft.EntityFrameworkCore;
 
 namespace Stonks.Controllers;
 
 public class BaseController : Controller
 {
-	private readonly IMediator _mediator;
+	protected readonly IMediator _mediator;
 	private readonly IStonksLogger _logger;
 	protected readonly AppDbContext _context;
 
@@ -25,7 +27,7 @@ public class BaseController : Controller
 		try
 		{
 			await _mediator.Send(request, cancellationToken);
-			return Ok();
+			return Ok("Success");
 		}
 		catch (Exception ex)
 		{
@@ -48,5 +50,19 @@ public class BaseController : Controller
 			_logger.Log(ex, request);
 			return Problem("Internal Server Error");
 		}
+	}
+
+	protected Guid GetUserId()
+	{
+		var id = User.FindFirstValue(ClaimTypes.NameIdentifier);
+		return Guid.Parse(id);
+	}
+
+	protected async Task<Guid> GetStockId(string symbol,
+		CancellationToken cancellationToken)
+	{
+		var stock = await _context.Stock
+			.FirstAsync(x => x.Symbol == symbol, cancellationToken);
+		return stock.Id;
 	}
 }

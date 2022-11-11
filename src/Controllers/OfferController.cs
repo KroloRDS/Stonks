@@ -1,5 +1,4 @@
 ﻿using MediatR;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 
@@ -7,36 +6,37 @@ using Stonks.Util;
 using Stonks.Data;
 using Stonks.Data.Models;
 using Stonks.Views.Models;
-using Stonks.CQRS.Queries.Common;
+using Stonks.CQRS.Commands.Trade;
+using System.Threading;
 
 namespace Stonks.Controllers;
 
 [Authorize]
-public class StockController : BaseController
+public class OfferController : BaseController
 {
-	public StockController(IMediator mediator, IStonksLogger logger,
+	public OfferController(IMediator mediator, IStonksLogger logger,
 		AppDbContext context) : base(mediator, logger, context) {}
 
-	[Route("stocks")]
-	public async Task<IActionResult> Index(
-		CancellationToken cancellationToken)
+	[Route("cancelOffer/{id}")]
+	public async Task<IActionResult> Cancel(
+		Guid id, CancellationToken cancellationToken)
 	{
-		return await TryGetViewModel(new GetStocksViewModelQuery(GetUserId()),
-			cancellationToken);
+		return await TryExecuteCommand(
+			new CancelOfferCommand(id), cancellationToken);
 	}
 
-	[Route("stocks/{symbol}")]
-	public async Task<IActionResult> Stock(string symbol,
+	[Route("placeOffer")]
+	[HttpPost]
+	public async Task<IActionResult> Place([Bind("stockId,amount,offerType,price")]
+		Guid stockId, int amount, OfferType offerType, decimal price,
 		CancellationToken cancellationToken)
 	{
-		//TODO: Pass model from previous view instead of querying again
-		var stockId = await GetStockId(symbol, cancellationToken);
-		var models = await _mediator.Send(
-			new GetStocksViewModelQuery(GetUserId()), cancellationToken);
-		return View(models.Stocks.First(x => x.Id == stockId));
+		var command = new PlaceOfferCommand(stockId,
+			GetUserId(), amount, offerType, price);
+		return await TryExecuteCommand(command, cancellationToken);
 	}
 
-	[Route("stocks/{symbol}/buy")]
+	[Route("offers/{symbol}/buy")]
 	public async Task<IActionResult> Buy(string symbol,
 		CancellationToken cancellationToken)
 	{
@@ -44,7 +44,7 @@ public class StockController : BaseController
 			symbol, OfferType.Buy, cancellationToken));
 	}
 
-	[Route("stocks/{symbol}/sell")]
+	[Route("offers/{symbol}/sell")]
 	public async Task<IActionResult> Sell(string symbol,
 		CancellationToken cancellationToken)
 	{
