@@ -5,7 +5,7 @@ using Stonks.CQRS.Queries.Common;
 
 namespace Stonks.CQRS.Commands;
 
-public record UpdateAveragePriceCommand(Guid StockId) : IRequest;
+public record UpdateAveragePriceCommand(Guid StockId) : IRequest<Unit>;
 
 public class UpdateAveragePriceCommandHandler :
     BaseCommand<UpdateAveragePriceCommand>

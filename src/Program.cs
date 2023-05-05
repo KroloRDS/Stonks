@@ -1,4 +1,3 @@
-using MediatR;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,8 +20,12 @@ static void AddServices(WebApplicationBuilder builder)
 	services.AddScoped<IAddPublicOffers, AddPublicOffers>();
 	services.AddScoped<IGiveMoney, GiveMoney>();
 	services.AddScoped<ITransferShares, TransferShares>();
-	services.AddMediatR(Assembly.GetExecutingAssembly());
-	builder.Services.AddControllersWithViews();
+
+	services.AddMediatR(config => config
+		.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()));
+
+	builder.Services.AddEndpointsApiExplorer();
+	builder.Services.AddSwaggerGen();
 
 	var connectionString = builder.Configuration
 		.GetConnectionString("DefaultConnection");
@@ -43,24 +46,21 @@ static void ConfigureApp(WebApplication app)
 	if (app.Environment.IsDevelopment())
 	{
 		app.UseMigrationsEndPoint();
+		app.UseSwagger();
+		app.UseSwaggerUI();
 	}
 	else
 	{
-		app.UseExceptionHandler("/Home/Error");
 		// The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
 		app.UseHsts();
 	}
 
-	app.UseHttpsRedirection();
-	app.UseStaticFiles();
-	app.UseRouting();
-	app.UseAuthentication();
-	app.UseAuthorization();
+	app.MapControllers();
+	app.UseHttpsRedirection()
+		.UseRouting()
+		.UseAuthentication()
+		.UseAuthorization();
 
-	app.MapControllerRoute(
-		name: "default",
-		pattern: "{controller=Home}/{action=Index}/{id?}");
-	app.MapRazorPages();
 	UpdateSchema(app);
 }
 

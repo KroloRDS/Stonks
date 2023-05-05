@@ -5,7 +5,7 @@ using Stonks.Data.Models;
 
 namespace Stonks.CQRS.Commands.Trade;
 
-public record CancelOfferCommand(Guid OfferId) : IRequest;
+public record CancelOfferCommand(Guid OfferId) : IRequest<Unit>;
 
 public class CancelOfferCommandHandler : BaseCommand<CancelOfferCommand>
 {

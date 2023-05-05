@@ -13,7 +13,7 @@ public record PlaceOfferCommand(
     int Amount,
     OfferType Type,
     decimal Price
-) : IRequest;
+) : IRequest<Unit>;
 
 public class PlaceOfferCommandHandler : BaseCommand<PlaceOfferCommand>
 {

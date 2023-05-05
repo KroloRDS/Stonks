@@ -4,7 +4,7 @@ using Stonks.Data;
 namespace Stonks.CQRS.Commands;
 
 public abstract class BaseCommand<Request> : BaseRequest<Request, Unit>
-	where Request : IRequest
+	where Request : IRequest<Unit>
 {
 	protected readonly AppDbContext _ctx;
 

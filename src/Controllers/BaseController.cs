@@ -21,34 +21,34 @@ public class BaseController : Controller
 		_context = context;
 	}
 
-	protected async Task<IActionResult> TryExecuteCommand(
-		IRequest request, CancellationToken cancellationToken)
+	protected async Task<bool> TryExecuteCommand(
+		IRequest<Unit> request, CancellationToken cancellationToken)
 	{
 		try
 		{
 			await _mediator.Send(request, cancellationToken);
-			return Ok("Success");
+			return true;
 		}
 		catch (Exception ex)
 		{
 			_logger.Log(ex, request);
-			return Problem("Internal Server Error");
+			throw;
 		}
 	}
 
-	protected async Task<IActionResult> TryGetViewModel<T>(
+	protected async Task<T> TryGetViewModel<T>(
 		IRequest<T> request, CancellationToken cancellationToken)
 		where T : class
 	{
 		try
 		{
 			var result = await _mediator.Send(request, cancellationToken);
-			return View(result);
+			return result;
 		}
 		catch (Exception ex)
 		{
 			_logger.Log(ex, request);
-			return Problem("Internal Server Error");
+			throw;
 		}
 	}
 

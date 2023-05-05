@@ -26,4 +26,8 @@ public class FakeMediator : IMediator
 
 	public Task<object?> Send(object o,
 		CancellationToken t = default) => throw _exception;
+
+	public Task Send<TRequest>(TRequest request,
+		CancellationToken cancellationToken = default)
+		where TRequest : IRequest => throw _exception;
 }

@@ -4,7 +4,7 @@ using System.Threading;
 namespace UnitTests.CQRS.Commands;
 
 public abstract class CommandTest<Request> : CQRSTest<Request, Unit>
-	where Request : IRequest
+	where Request : IRequest<Unit>
 {
 	protected void Handle(Request request)
 	{

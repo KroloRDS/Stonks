@@ -7,7 +7,7 @@ using Stonks.CQRS.Helpers;
 namespace Stonks.CQRS.Commands.Trade;
 
 public record AcceptOfferCommand(Guid UserId,
-    Guid OfferId, int? Amount = null) : IRequest;
+    Guid OfferId, int? Amount = null) : IRequest<Unit>;
 
 public class AcceptOfferCommandHandler : BaseCommand<AcceptOfferCommand>
 {

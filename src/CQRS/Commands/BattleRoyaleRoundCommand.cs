@@ -9,7 +9,7 @@ using Stonks.CQRS.Queries.Bankruptcy.GetWeakestStock;
 
 namespace Stonks.CQRS.Commands;
 
-public record BattleRoyaleRoundCommand : IRequest;
+public record BattleRoyaleRoundCommand : IRequest<Unit>;
 
 public class BattleRoyaleRoundCommandHandler :
     BaseCommand<BattleRoyaleRoundCommand>

@@ -1,12 +1,9 @@
 ﻿using MediatR;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 
 using Stonks.Util;
 using Stonks.Data;
-using Stonks.Data.Models;
-using Stonks.Views.Models;
 using Stonks.CQRS.Queries.Common;
 
 namespace Stonks.Controllers;
@@ -17,26 +14,25 @@ public class StockController : BaseController
 	public StockController(IMediator mediator, IStonksLogger logger,
 		AppDbContext context) : base(mediator, logger, context) {}
 
+	[HttpGet]
 	[Route("stocks")]
-	public async Task<IActionResult> Index(
+	public async Task<GetStocksViewModelResponse> GetStocks(
 		CancellationToken cancellationToken)
 	{
 		var userId = GetUserId();
-		if (userId is null) return Problem("Unauthorised");
+		if (userId is null) throw new Exception("Unauthorised");
 		return await TryGetViewModel(new GetStocksViewModelQuery(
 			userId.Value), cancellationToken);
 	}
 
-	[Route("stocks/{symbol}")]
-	public async Task<IActionResult> Stock(string symbol,
+	[HttpGet]
+	[AllowAnonymous]
+	[Route("echo")]
+	public async Task<string> Echo(string message,
 		CancellationToken cancellationToken)
 	{
-		//TODO: Pass model from previous view instead of querying again
-		var userId = GetUserId();
-		if (userId is null) return Problem("Unauthorised");
-		var stockId = await GetStockId(symbol, cancellationToken);
-		var models = await _mediator.Send(
-			new GetStocksViewModelQuery(userId.Value), cancellationToken);
-		return View(models.Stocks.First(x => x.Id == stockId));
+		//TODO: add user controller
+		//https://www.endpointdev.com/blog/2022/06/implementing-authentication-in-asp.net-core-web-apis/
+		return message;
 	}
 }

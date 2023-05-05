@@ -3,7 +3,7 @@ using Stonks.Data;
 
 namespace Stonks.CQRS.Commands;
 
-public record UpdateAveragePricesCommand : IRequest;
+public record UpdateAveragePricesCommand : IRequest<Unit>;
 
 public class UpdateAveragePricesCommandHandler :
     BaseCommand<UpdateAveragePricesCommand>
