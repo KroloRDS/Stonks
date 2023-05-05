@@ -21,8 +21,10 @@ public class StockController : BaseController
 	public async Task<IActionResult> Index(
 		CancellationToken cancellationToken)
 	{
-		return await TryGetViewModel(new GetStocksViewModelQuery(GetUserId()),
-			cancellationToken);
+		var userId = GetUserId();
+		if (userId is null) return Problem("Unauthorised");
+		return await TryGetViewModel(new GetStocksViewModelQuery(
+			userId.Value), cancellationToken);
 	}
 
 	[Route("stocks/{symbol}")]
@@ -30,37 +32,11 @@ public class StockController : BaseController
 		CancellationToken cancellationToken)
 	{
 		//TODO: Pass model from previous view instead of querying again
+		var userId = GetUserId();
+		if (userId is null) return Problem("Unauthorised");
 		var stockId = await GetStockId(symbol, cancellationToken);
 		var models = await _mediator.Send(
-			new GetStocksViewModelQuery(GetUserId()), cancellationToken);
+			new GetStocksViewModelQuery(userId.Value), cancellationToken);
 		return View(models.Stocks.First(x => x.Id == stockId));
-	}
-
-	[Route("stocks/{symbol}/buy")]
-	public async Task<IActionResult> Buy(string symbol,
-		CancellationToken cancellationToken)
-	{
-		return View("Trade", await GetPlaceOfferViewModel(
-			symbol, OfferType.Buy, cancellationToken));
-	}
-
-	[Route("stocks/{symbol}/sell")]
-	public async Task<IActionResult> Sell(string symbol,
-		CancellationToken cancellationToken)
-	{
-		return View("Trade", await GetPlaceOfferViewModel(
-			symbol, OfferType.Sell, cancellationToken));
-	}
-
-	private async Task<PlaceOfferViewModel> GetPlaceOfferViewModel(
-		string symbol, OfferType type, CancellationToken cancellationToken)
-	{
-		return new PlaceOfferViewModel
-		{
-			OfferType = type,
-			StockId = await GetStockId(symbol, cancellationToken),
-			StockSymbol = symbol,
-			UserId = GetUserId()
-		};
 	}
 }

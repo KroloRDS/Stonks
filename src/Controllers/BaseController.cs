@@ -52,10 +52,10 @@ public class BaseController : Controller
 		}
 	}
 
-	protected Guid GetUserId()
+	protected Guid? GetUserId()
 	{
 		var id = User.FindFirstValue(ClaimTypes.NameIdentifier);
-		return Guid.Parse(id);
+		return id is null ? default : Guid.Parse(id);
 	}
 
 	protected async Task<Guid> GetStockId(string symbol,

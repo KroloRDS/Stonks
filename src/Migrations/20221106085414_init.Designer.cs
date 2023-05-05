@@ -13,7 +13,7 @@ namespace Stonks.Migrations
 {
     [DbContext(typeof(ReadOnlyDbContext))]
     [Migration("20221106085414_init")]
-    partial class init
+    partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

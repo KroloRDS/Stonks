@@ -36,6 +36,7 @@
 </table>
 
 @{
-	var offers = Model.Stocks.SelectMany(x => x.Offers);
-	@await Html.PartialAsync("Offers", offers);
+	var offers = Model.Stocks.SelectMany(x => x.Offers) ?? 
+		Enumerable.Empty<TradeOffer>();
+	@await Html.PartialAsync("Offers", offers!);
 }

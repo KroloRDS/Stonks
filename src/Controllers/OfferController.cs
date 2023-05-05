@@ -31,8 +31,10 @@ public class OfferController : BaseController
 		Guid stockId, int amount, OfferType offerType, decimal price,
 		CancellationToken cancellationToken)
 	{
+		var userId = GetUserId();
+		if (userId is null) return Problem("Unauthorised");
 		var command = new PlaceOfferCommand(stockId,
-			GetUserId(), amount, offerType, price);
+			userId.Value, amount, offerType, price);
 		return await TryExecuteCommand(command, cancellationToken);
 	}
 
@@ -40,7 +42,9 @@ public class OfferController : BaseController
 	public async Task<IActionResult> Buy(string symbol,
 		CancellationToken cancellationToken)
 	{
-		return View("Trade", await GetPlaceOfferViewModel(
+		var userId = GetUserId();
+		if (userId is null) return Problem("Unauthorised");
+		return View("Trade", await GetPlaceOfferViewModel(userId.Value,
 			symbol, OfferType.Buy, cancellationToken));
 	}
 
@@ -48,11 +52,13 @@ public class OfferController : BaseController
 	public async Task<IActionResult> Sell(string symbol,
 		CancellationToken cancellationToken)
 	{
-		return View("Trade", await GetPlaceOfferViewModel(
+		var userId = GetUserId();
+		if (userId is null) return Problem("Unauthorised");
+		return View("Trade", await GetPlaceOfferViewModel(userId.Value,
 			symbol, OfferType.Sell, cancellationToken));
 	}
 
-	private async Task<PlaceOfferViewModel> GetPlaceOfferViewModel(
+	private async Task<PlaceOfferViewModel> GetPlaceOfferViewModel(Guid userId,
 		string symbol, OfferType type, CancellationToken cancellationToken)
 	{
 		return new PlaceOfferViewModel
@@ -60,7 +66,7 @@ public class OfferController : BaseController
 			OfferType = type,
 			StockId = await GetStockId(symbol, cancellationToken),
 			StockSymbol = symbol,
-			UserId = GetUserId()
+			UserId = userId
 		};
 	}
 }
