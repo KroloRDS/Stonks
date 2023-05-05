@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Stonks.Util;
 using Stonks.Data;
 using Stonks.CQRS.Queries.Common;
+using Stonks.Data.Models;
 
 namespace Stonks.Controllers;
 
@@ -15,8 +16,8 @@ public class StockController : BaseController
 		AppDbContext context) : base(mediator, logger, context) {}
 
 	[HttpGet]
-	[Route("stocks")]
-	public async Task<GetStocksViewModelResponse> GetStocks(
+	[Route("myStocks")]
+	public async Task<GetStocksViewModelResponse> MyStocks(
 		CancellationToken cancellationToken)
 	{
 		var userId = GetUserId();
@@ -25,14 +26,24 @@ public class StockController : BaseController
 			userId.Value), cancellationToken);
 	}
 
+	//Methods for debug purposes
+	//TODO: add user controller
+	//https://www.endpointdev.com/blog/2022/06/implementing-authentication-in-asp.net-core-web-apis/
 	[HttpGet]
 	[AllowAnonymous]
 	[Route("echo")]
 	public async Task<string> Echo(string message,
 		CancellationToken cancellationToken)
 	{
-		//TODO: add user controller
-		//https://www.endpointdev.com/blog/2022/06/implementing-authentication-in-asp.net-core-web-apis/
 		return message;
+	}
+
+	[HttpGet]
+	[AllowAnonymous]
+	[Route("getStocks")]
+	public async Task<IEnumerable<Stock>> GetStocks(
+		CancellationToken cancellationToken)
+	{
+		return _context.Stock.ToList();
 	}
 }
