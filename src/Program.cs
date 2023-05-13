@@ -24,20 +24,25 @@ static void AddServices(WebApplicationBuilder builder)
 	services.AddMediatR(config => config
 		.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()));
 
-	builder.Services.AddEndpointsApiExplorer();
-	builder.Services.AddSwaggerGen();
-
-	var connectionString = builder.Configuration
-		.GetConnectionString("DefaultConnection");
-	services.AddDbContext<AppDbContext>(options => 
-		options.UseSqlServer(connectionString), ServiceLifetime.Scoped);
-	services.AddDbContext<ReadOnlyDbContext>(options =>
-		options.UseSqlServer(connectionString), ServiceLifetime.Transient);
+	services.AddEndpointsApiExplorer();
+	services.AddSwaggerGen();
+	AddDb(builder);
 
 	builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 	builder.Services.AddDefaultIdentity<User>(options =>
 		options.SignIn.RequireConfirmedAccount = true)
 		.AddEntityFrameworkStores<AppDbContext>();
+}
+
+static void AddDb(WebApplicationBuilder builder)
+{
+	var connectionString = builder.Configuration
+		.GetConnectionString("DefaultConnection") ?? string.Empty;
+	connectionString = connectionString.Replace("***", Environment.GetEnvironmentVariable("DB_PW"));
+	builder.Services.AddDbContext<AppDbContext>(options =>
+		options.UseSqlServer(connectionString), ServiceLifetime.Scoped);
+	builder.Services.AddDbContext<ReadOnlyDbContext>(options =>
+		options.UseSqlServer(connectionString), ServiceLifetime.Transient);
 }
 
 static void ConfigureApp(WebApplication app)
