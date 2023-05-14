@@ -4,8 +4,7 @@
 # https://docs.microsoft.com/azure/devops/pipelines/apps/aspnet/build-aspnet-4
 pool: Default
 
-trigger:
-  - master
+trigger: none #triggered by pull request azure branch policy
 
 steps:
 - task: UseDotNet@2
