@@ -1,7 +1,4 @@
-# ASP.NET
-# Build and test ASP.NET projects.
-# Add steps that publish symbols, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/apps/aspnet/build-aspnet-4
+# Pipeline to check if solution builds and passes all unit tests
 pool: Default
 
 trigger: none #triggered by pull request azure branch policy
