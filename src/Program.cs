@@ -36,9 +36,7 @@ static void AddServices(WebApplicationBuilder builder)
 
 static void AddDb(WebApplicationBuilder builder)
 {
-	var connectionString = builder.Configuration
-		.GetConnectionString("DefaultConnection") ?? string.Empty;
-	connectionString = connectionString.Replace("***", Environment.GetEnvironmentVariable("DB_PW"));
+	var connectionString = GetConnectionString(builder);
 	builder.Services.AddDbContext<AppDbContext>(options =>
 		options.UseSqlServer(connectionString), ServiceLifetime.Scoped);
 	builder.Services.AddDbContext<ReadOnlyDbContext>(options =>
@@ -47,18 +45,8 @@ static void AddDb(WebApplicationBuilder builder)
 
 static void ConfigureApp(WebApplication app)
 {
-	// Configure the HTTP request pipeline.
-	if (app.Environment.IsDevelopment())
-	{
-		app.UseMigrationsEndPoint();
-		app.UseSwagger();
-		app.UseSwaggerUI();
-	}
-	else
-	{
-		// The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-		app.UseHsts();
-	}
+	app.UseSwagger();
+	app.UseSwaggerUI();
 
 	app.MapControllers();
 	app.UseHttpsRedirection()
@@ -77,4 +65,17 @@ static void UpdateSchema(IApplicationBuilder app)
 
 	using var ctx = serviceScope.ServiceProvider.GetService<AppDbContext>();
 	ctx?.Database.Migrate();
+}
+
+static string GetConnectionString(WebApplicationBuilder builder)
+{
+	var connectionString = builder.Configuration
+		.GetConnectionString("DefaultConnection") ?? string.Empty;
+	var dbServer = Environment.GetEnvironmentVariable("DB_SERVER") ??
+		string.Empty;
+	var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD") ??
+		string.Empty;
+	connectionString = connectionString.Replace("<DB_SERVER>", dbServer);
+	connectionString = connectionString.Replace("<DB_PASSWORD>", dbPassword);
+	return connectionString;
 }

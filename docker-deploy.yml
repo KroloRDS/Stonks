@@ -1,0 +1,38 @@
+#Pipeline to build and run new docker image removing the previous one
+pool: Default
+
+trigger:
+- master
+
+resources:
+- repo: self
+
+variables:
+  repoName: stonks
+
+steps:
+- task: Docker@2
+  displayName: Build an image
+  inputs:
+    command: build
+    tags: latest
+    dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
+    repository: $(repoName)
+
+- task: Bash@3
+  displayName: Remove old images
+  inputs:
+    targetType: inline
+    script: docker system prune -f
+
+- task: Bash@3
+  displayName: Remove old container
+  inputs:
+    targetType: inline
+    script: docker rm -f $(repoName) || true
+
+- task: Bash@3
+  displayName: Deploy
+  inputs:
+    targetType: inline
+    script: docker run -d -e DB_SERVER='$(DB_SERVER)' -e DB_PASSWORD='$(DB_PASSWORD)' -p 8001:80 --name $(repoName) $(repoName)
