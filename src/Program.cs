@@ -52,7 +52,13 @@ static void ConfigureApp(WebApplication app)
 	app.UseHttpsRedirection()
 		.UseRouting()
 		.UseAuthentication()
-		.UseAuthorization();
+		.UseAuthorization()
+		.UseStaticFiles();
+
+	app.MapControllerRoute(
+		name: "default",
+		pattern: "{controller=Home}/{action=Index}/{id?}");
+	app.MapRazorPages();
 
 	UpdateSchema(app);
 }

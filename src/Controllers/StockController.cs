@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Authorization;
 using Stonks.Util;
 using Stonks.Data;
 using Stonks.CQRS.Queries.Common;
-using Stonks.Data.Models;
 
 namespace Stonks.Controllers;
 
@@ -20,30 +19,8 @@ public class StockController : BaseController
 	public async Task<GetStocksViewModelResponse> MyStocks(
 		CancellationToken cancellationToken)
 	{
-		var userId = GetUserId();
-		if (userId is null) throw new Exception("Unauthorised");
+		var userId = GetUserId() ?? throw new Exception("Unauthorised");
 		return await TryGetViewModel(new GetStocksViewModelQuery(
-			userId.Value), cancellationToken);
-	}
-
-	//Methods for debug purposes
-	//TODO: add user controller
-	//https://www.endpointdev.com/blog/2022/06/implementing-authentication-in-asp.net-core-web-apis/
-	[HttpGet]
-	[AllowAnonymous]
-	[Route("echo")]
-	public async Task<string> Echo(string message,
-		CancellationToken cancellationToken)
-	{
-		return message;
-	}
-
-	[HttpGet]
-	[AllowAnonymous]
-	[Route("getStocks")]
-	public async Task<IEnumerable<Stock>> GetStocks(
-		CancellationToken cancellationToken)
-	{
-		return _context.Stock.ToList();
+			userId), cancellationToken);
 	}
 }

@@ -31,10 +31,9 @@ public class OfferController : BaseController
 		Guid stockId, int amount, OfferType offerType, decimal price,
 		CancellationToken cancellationToken)
 	{
-		var userId = GetUserId();
-		if (userId is null) throw new Exception("Unauthorised");
+		var userId = GetUserId() ?? throw new Exception("Unauthorised");
 		var command = new PlaceOfferCommand(stockId,
-			userId.Value, amount, offerType, price);
+			userId, amount, offerType, price);
 		return await TryExecuteCommand(command, cancellationToken);
 	}
 
@@ -43,9 +42,8 @@ public class OfferController : BaseController
 	public async Task<PlaceOfferViewModel> Buy(string symbol,
 		CancellationToken cancellationToken)
 	{
-		var userId = GetUserId();
-		if (userId is null) throw new Exception("Unauthorised");
-		return await GetPlaceOfferViewModel(userId.Value,
+		var userId = GetUserId() ?? throw new Exception("Unauthorised");
+		return await GetPlaceOfferViewModel(userId,
 			symbol, OfferType.Buy, cancellationToken);
 	}
 
@@ -54,9 +52,8 @@ public class OfferController : BaseController
 	public async Task<PlaceOfferViewModel> Sell(string symbol,
 		CancellationToken cancellationToken)
 	{
-		var userId = GetUserId();
-		if (userId is null) throw new Exception("Unauthorised");
-		return await GetPlaceOfferViewModel(userId.Value,
+		var userId = GetUserId() ?? throw new Exception("Unauthorised");
+		return await GetPlaceOfferViewModel(userId,
 			symbol, OfferType.Sell, cancellationToken);
 	}
 
