@@ -1,12 +1,12 @@
 {
   "profiles": {
-    "Stonks": {
+    "Stonks.Common.WebApp": {
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "https://localhost:53698;http://localhost:53699"
+      "applicationUrl": "https://localhost:53700;http://localhost:53701"
     }
   }
 }
