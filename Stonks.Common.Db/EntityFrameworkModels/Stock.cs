@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Stonks.Common.Db.EntityFrameworkModels;
 
-[Index(nameof(Symbol), IsUnique = true)]
+[Index(nameof(Ticker), IsUnique = true)]
 public class Stock : HasId
 {
 	public const decimal DEFAULT_PRICE = 1M;
@@ -13,7 +13,7 @@ public class Stock : HasId
 	public string Name { get; set; } = string.Empty;
 
 	[MaxLength(5)]
-	public string Symbol { get; set; } = string.Empty;
+	public string Ticker { get; set; } = string.Empty;
 
 	public DateTime? BankruptDate { get; set; }
 }

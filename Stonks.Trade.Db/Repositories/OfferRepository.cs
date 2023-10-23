@@ -86,6 +86,17 @@ public class OfferRepository : IOfferRepository
 		await _writeCtx.AddAsync(mapped, cancellationToken);
 	}
 
+	public async Task<bool> DecreaseOfferAmount(Guid offerId, int amount)
+	{
+		var offer = await _writeCtx.GetById<EF.TradeOffer>(offerId);
+		if (offer is null) return false;
+
+		if (offer.Amount < amount) return false;
+		offer.Amount -= amount;
+
+		return true;
+	}
+
 	public bool Cancel(Guid offerId)
 	{
 		var offer = _writeCtx.GetById<EF.TradeOffer>(offerId);

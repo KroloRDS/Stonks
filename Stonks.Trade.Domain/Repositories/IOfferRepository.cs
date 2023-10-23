@@ -12,5 +12,6 @@ public interface IOfferRepository
 	IEnumerable<TradeOffer> FindBuyOffers(Guid stockId, decimal price);
 	IEnumerable<TradeOffer> FindSellOffers(Guid stockId, decimal price);
 	Task Add(TradeOffer offer, CancellationToken cancellationToken = default);
+	Task<bool> DecreaseOfferAmount(Guid offerId, int amount);
 	bool Cancel(Guid offerId);
 }

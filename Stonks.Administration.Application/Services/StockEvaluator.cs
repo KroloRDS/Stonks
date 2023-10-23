@@ -2,7 +2,7 @@
 using Stonks.Administration.Domain.Repositories;
 using Stonks.Common.Utils;
 
-namespace Stonks.Administration.Application.Helpers;
+namespace Stonks.Administration.Application.Services;
 
 public interface IStockEvaluator
 {

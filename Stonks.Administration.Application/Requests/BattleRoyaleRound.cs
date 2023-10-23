@@ -1,5 +1,5 @@
 ﻿using MediatR;
-using Stonks.Administration.Application.Helpers;
+using Stonks.Administration.Application.Services;
 using Stonks.Administration.Db;
 using Stonks.Administration.Domain.Repositories;
 using Stonks.Common.Utils;
@@ -63,6 +63,7 @@ public class BattleRoyaleRoundHandler
 		await _stock.Bankrupt(id);
 		_share.RemoveShares(id);
 		_tradeOffer.RemoveOffers(id);
-		await _tradeOffer.AddPublicOffers(amount, cancellationToken);
+		_tradeOffer.SetExistingPublicOffersAmount(amount);
+		await _tradeOffer.AddNewPublicOffers(amount, cancellationToken);
 	}
 }

@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using Stonks.Common.Utils;
 using Stonks.Common.Utils.Response;
-using Stonks.Trade.Application.Helpers;
+using Stonks.Trade.Application.Services;
 using Stonks.Trade.Db;
 using Stonks.Trade.Domain.Models;
 using Stonks.Trade.Domain.Repositories;
@@ -24,7 +24,7 @@ public class PlaceOfferHandler
 	private readonly IUserRepository _users;
 
 	private readonly IDbWriter _writer;
-	private readonly IOfferHelper _offerHelper;
+	private readonly IOfferService _offerHelper;
 	private readonly IStonksLogger<PlaceOfferHandler> _logger;
 
 	public PlaceOfferHandler(IOfferRepository offers,
@@ -32,7 +32,7 @@ public class PlaceOfferHandler
 		IStockRepository stocks,
 		IUserRepository users,
 		IDbWriter writer,
-		IOfferHelper offerHelper,
+		IOfferService offerHelper,
 		IStonksLogger<PlaceOfferHandler> logger)
 	{
 		_offers = offers;

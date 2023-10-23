@@ -1,6 +1,7 @@
 ﻿using Stonks.Common.Utils;
 using Stonks.Common.Utils.Response;
 using Stonks.Trade.Application.DTOs;
+using Stonks.Trade.Domain.Models;
 using Stonks.Trade.Domain.Repositories;
 
 namespace Stonks.Trade.Application.Requests;
@@ -45,7 +46,7 @@ public class GetStocksHandler
 	public async Task<IEnumerable<StockDTO>> GetStocks(
 		CancellationToken cancellationToken)
 	{
-		var tickers = await _stock.GetTickers(cancellationToken);
+		var tickers = _stock.GetStockNames();
 		var tasks = tickers.Select(x =>
 			GetStockDTO(x.Key, x.Value, cancellationToken));
 
@@ -54,7 +55,7 @@ public class GetStocksHandler
 	}
 
 	private async Task<StockDTO> GetStockDTO(Guid stockId,
-		string ticker, CancellationToken cancellationToken)
+		Stock stock, CancellationToken cancellationToken)
 	{
 		var volatility = GetVolatility(stockId, cancellationToken);
 		var price = await _price.Current(stockId);
@@ -64,7 +65,8 @@ public class GetStocksHandler
 
 		return new StockDTO
 		{
-			Ticker = ticker,
+			Name = stock.Name,
+			Ticker = stock.Ticker,
 			AvgPrice = price,
 			MarketCap = await marketCap,
 			Volatility = await volatility,

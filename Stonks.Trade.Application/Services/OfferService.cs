@@ -1,29 +1,29 @@
 ﻿using Stonks.Trade.Domain.Models;
 using Stonks.Trade.Domain.Repositories;
 
-namespace Stonks.Trade.Application.Helpers;
+namespace Stonks.Trade.Application.Services;
 
-public interface IOfferHelper
+public interface IOfferService
 {
-	Task Accept(Guid userId, Guid offerId, int amount,
+	Task<bool> Accept(Guid userId, Guid offerId, int amount,
 		CancellationToken cancellationToken = default);
 }
 
-public class OfferHelper : IOfferHelper
+public class OfferService : IOfferService
 {
 	private readonly IUserRepository _user;
 	private readonly IOfferRepository _offer;
-	private readonly ISharesHelper _shares;
+	private readonly ISharesService _shares;
 
-	public OfferHelper(IUserRepository user,
-		IOfferRepository offer, ISharesHelper shares)
+	public OfferService(IUserRepository user,
+		IOfferRepository offer, ISharesService shares)
 	{
 		_user = user;
 		_offer = offer;
 		_shares = shares;
 	}
 
-	public async Task Accept(Guid userId, Guid offerId, int amount,
+	public async Task<bool> Accept(Guid userId, Guid offerId, int amount,
 		CancellationToken cancellationToken = default)
 	{
 		var offer = await _offer.Get(offerId);
@@ -32,8 +32,8 @@ public class OfferHelper : IOfferHelper
 		await _shares.Transfer(userId, offer, amount, cancellationToken);
 		await SettleMoney(userId, offer, amount);
 
-		offer.Amount -= amount;
-		if (offer.Amount <= 0) _offer.Cancel(offerId);
+		return amount == offer.Amount ? _offer.Cancel(offerId) :
+			await _offer.DecreaseOfferAmount(offerId, amount);
 	}
 
 	private async Task SettleMoney(Guid clientId, TradeOffer offer, int amount)

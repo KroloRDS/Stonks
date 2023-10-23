@@ -27,7 +27,7 @@ public class GetUserOffersHandler
 	{
 		try
 		{
-			var offers = await GetOffers(request, cancellationToken);
+			var offers = GetOffers(request);
 			return Response<IEnumerable<OfferDTO>>.Ok(offers);
 		}
 		catch (Exception ex)
@@ -37,19 +37,18 @@ public class GetUserOffersHandler
 		}
 	}
 
-	private async Task<IEnumerable<OfferDTO>> GetOffers(
-		GetUserOffers request, CancellationToken cancellationToken)
+	private IEnumerable<OfferDTO> GetOffers(GetUserOffers request)
 	{
 		var buyOffers = _offers.GetUserBuyOffers(request.UserId);
 		var sellOffers = _offers.GetUserSellOffers(request.UserId);
-		var tickers = await _stocks.GetTickers(cancellationToken);
+		var stocks = _stocks.GetStockNames();
 
 		var mappedOffers = buyOffers.Select(x => new OfferDTO
 		{
 			Amount = x.Amount,
 			Price = x.Price,
 			Type = OfferType.Buy,
-			Ticker = tickers[x.StockId]
+			Ticker = stocks[x.StockId].Ticker
 		}).ToList();
 
 		mappedOffers.AddRange(buyOffers.Select(x => new OfferDTO
@@ -57,7 +56,7 @@ public class GetUserOffersHandler
 			Amount = x.Amount,
 			Price = x.Price,
 			Type = OfferType.Buy,
-			Ticker = tickers[x.StockId]
+			Ticker = stocks[x.StockId].Ticker
 		}));
 		return mappedOffers;
 	}

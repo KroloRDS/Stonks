@@ -1,11 +1,29 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Stonks.Common.Db.EntityFrameworkModels;
-public class User : IdentityUser<Guid>, IHasId
+public class User : HasId
 {
 	[Column(TypeName = "decimal(11,2)")]
 	public decimal Funds { get; set; }
 
-	Guid IHasId.Id => Id;
+	[Required]
+	public string Login { get; set; } = string.Empty;
+
+	[Required]
+	[MaxLength(32)]
+	public byte[] PasswordHash { get; set; } = Array.Empty<byte>();
+
+	[Required]
+	public short Salt { get; set; }
+
+	public Guid? Token { get; set; }
+	public DateTime? TokenExpiration { get; set; }
+	public IEnumerable<Role> Roles { get; set; } = Enumerable.Empty<Role>();
+}
+
+public enum Role
+{
+	Trader,
+	Admin
 }

@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Stonks.Administration.Domain.Repositories;
+﻿using Stonks.Administration.Domain.Repositories;
 using Stonks.Common.Db;
 using Stonks.Common.Db.EntityFrameworkModels;
 using CommonRepositories = Stonks.Common.Db.Repositories;
@@ -25,46 +24,39 @@ public class OfferRepository : IOfferRepository
 		CancellationToken cancellationToken = default) =>
 		await _offer.PublicallyOfferdAmount(stockId, cancellationToken);
 
-	public async Task AddPublicOffers(int amount,
+	public async Task AddNewPublicOffers(int amount,
 		CancellationToken cancellationToken = default)
 	{
-		var stocks = _ctx.Stock.Where(x => x.BankruptDate == null);
+		var stocks = _ctx.Stock.Where(stock => stock.BankruptDate == null &&
+			!_ctx.TradeOffer.Any(offer => offer.StockId == stock.Id));
+
 		foreach (var stock in stocks)
 		{
-			await AddPublicOffer(stock, amount, cancellationToken);
+			var price = await _price.Current(stock.Id);
+			await _ctx.AddAsync(new TradeOffer
+			{
+				Amount = amount,
+				Price = price.Price,
+				StockId = stock.Id,
+				Type = OfferType.PublicOfferring
+			}, cancellationToken);
 		}
+	}
+
+	public void SetExistingPublicOffersAmount(int amount)
+	{
+		var offers = _ctx.TradeOffer.Where(x =>
+			x.Type == OfferType.PublicOfferring &&
+			x.Amount < amount &&
+			x.Stock.BankruptDate == null);
+
+		foreach (var offer in offers)
+			offer.Amount = amount;
 	}
 
 	public void RemoveOffers(Guid stockId)
 	{
 		_ctx.TradeOffer.RemoveRange(
 			_ctx.TradeOffer.Where(x => x.StockId == stockId));
-	}
-
-	private async Task AddPublicOffer(Stock stock, int amount,
-		CancellationToken cancellationToken)
-	{
-		var offer = await _ctx.TradeOffer.FirstOrDefaultAsync(x =>
-			x.Type == OfferType.PublicOfferring &&
-			x.StockId == stock.Id,
-			cancellationToken);
-
-		if (offer == default)
-			await CreateNewPublicOffer(stock, amount, cancellationToken);
-		else if (offer.Amount < amount)
-			offer.Amount = amount;
-	}
-
-	private async Task CreateNewPublicOffer(Stock stock, int amount,
-		CancellationToken cancellationToken)
-	{
-		var price = await _price.Current(stock.Id);
-		await _ctx.AddAsync(new TradeOffer
-		{
-			Amount = amount,
-			Price = price.Price,
-			StockId = stock.Id,
-			Type = OfferType.PublicOfferring
-		}, cancellationToken);
 	}
 }

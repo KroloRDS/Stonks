@@ -1,15 +1,10 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Stonks.Common.Utils;
 using Stonks.Common.Db.EntityFrameworkModels;
-using System.Data.Common;
-using System.Threading.Tasks;
-using System.Threading;
 
 namespace Stonks.Common.Db;
 
-public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
+public class AppDbContext : DbContext
 {
 	public AppDbContext(DbContextOptions<AppDbContext> options)
 		: base(options) {}
@@ -27,6 +22,7 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
 	public DbSet<Share> Share { get; set; }
 	public DbSet<TradeOffer> TradeOffer { get; set; }
 	public DbSet<Transaction> Transaction { get; set; }
+	public DbSet<User> User { get; set; }
 
 	public async Task<T?> GetById<T>(Guid? id) where T : class, IHasId
 	{

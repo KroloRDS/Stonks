@@ -9,7 +9,9 @@ public class MapperProfile : Profile
 	public MapperProfile()
 	{
 		CreateMap<EF.Stock, Stock>();
+		CreateMap<EF.User, User>();
 		CreateMap<EF.AvgPrice, AvgPrice>();
 		CreateMap<EF.Transaction, Transaction>();
+		CreateMap<EF.Role, Role>();
 	}
 }

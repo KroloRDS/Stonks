@@ -1,10 +1,11 @@
-﻿namespace Stonks.Trade.Domain.Repositories;
+﻿using Stonks.Trade.Domain.Models;
+
+namespace Stonks.Trade.Domain.Repositories;
 
 public interface IStockRepository
 {
 	Task<bool> IsBankrupt(Guid stockId);
-	Task<Dictionary<Guid, string>> GetTickers(
-		CancellationToken cancellationToken = default);
+	Dictionary<Guid, Stock> GetStockNames();
 	Task<DateTime?> LastBankruptDate(
 		CancellationToken cancellationToken = default);
 }

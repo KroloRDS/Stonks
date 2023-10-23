@@ -1,20 +1,20 @@
 ﻿using Stonks.Trade.Domain.Models;
 using Stonks.Trade.Domain.Repositories;
 
-namespace Stonks.Trade.Application.Helpers;
+namespace Stonks.Trade.Application.Services;
 
-public interface ISharesHelper
+public interface ISharesService
 {
 	Task Transfer(Guid userId, TradeOffer offer,
 		int amount, CancellationToken cancellationToken);
 }
 
-public class SharesHelper : ISharesHelper
+public class SharesService : ISharesService
 {
 	private readonly IShareRepository _shares;
 	private readonly ITransactionRepository _transaction;
 
-	public SharesHelper(IShareRepository shares,
+	public SharesService(IShareRepository shares,
 		ITransactionRepository transaction)
 	{
 		_shares = shares;

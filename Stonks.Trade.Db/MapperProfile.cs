@@ -9,6 +9,7 @@ public class MapperProfile : Profile
 	public MapperProfile()
 	{
 		CreateMap<EF.AvgPrice, AvgPrice>();
+		CreateMap<EF.Stock, Stock>();
 		CreateMap<EF.TradeOffer, TradeOffer>();
 		CreateMap<TradeOffer, EF.TradeOffer>();
 	}

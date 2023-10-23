@@ -42,6 +42,12 @@ public class ExtraRefToSellerException : ArgumentException
 	public ExtraRefToSellerException() : base(Desc) { }
 }
 
+public class LoginAlreadyUsedException : InvalidOperationException
+{
+	private const string Desc = "This login is already in use by someone else";
+	public LoginAlreadyUsedException() : base(Desc) { }
+}
+
 public class DbTransactionException : SystemException
 {
 	public DbTransactionException(Exception inner)
