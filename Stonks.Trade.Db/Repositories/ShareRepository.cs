@@ -21,8 +21,8 @@ public class ShareRepository : IShareRepository
 		_share = share;
 	}
 
-	public async Task<int> GetOwnedAmount(Guid stockId,
-		Guid userId, CancellationToken cancellationToken)
+	public async Task<int> GetOwnedAmount(Guid stockId, Guid userId,
+		CancellationToken cancellationToken = default)
 	{
 		var ownership = await _readCtx.GetShares(
 			userId, stockId, cancellationToken);
@@ -35,7 +35,7 @@ public class ShareRepository : IShareRepository
 		await _share.TotalAmountOfShares(stockId, cancellationToken);
 
 	public async Task GiveSharesToUser(Guid stockId, Guid userId,
-		int amount, CancellationToken cancellationToken)
+		int amount, CancellationToken cancellationToken = default)
 	{
 		var ownership = await _writeCtx.GetShares(
 			userId, stockId, cancellationToken);
@@ -55,7 +55,7 @@ public class ShareRepository : IShareRepository
 	}
 
 	public async Task TakeSharesFromUser(Guid stockId, Guid userId,
-		int amount, CancellationToken cancellationToken)
+		int amount, CancellationToken cancellationToken = default)
 	{
 		await _writeCtx.EnsureExist<User>(userId, cancellationToken);
 		var ownership = await _writeCtx.GetShares(userId,

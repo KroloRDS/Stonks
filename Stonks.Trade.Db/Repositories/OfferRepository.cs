@@ -4,6 +4,7 @@ using Stonks.Trade.Domain.Repositories;
 using Stonks.Common.Db;
 using EF = Stonks.Common.Db.EntityFrameworkModels;
 using CommonRepositories = Stonks.Common.Db.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace Stonks.Trade.Db.Repositories;
 
@@ -33,48 +34,50 @@ public class OfferRepository : IOfferRepository
 		return offer is null ? null : _mapper.Map<TradeOffer>(offer);
 	}
 
-	public IEnumerable<TradeOffer> GetUserBuyOffers(Guid userId)
+	public async Task<IEnumerable<TradeOffer>> GetUserBuyOffers(
+		Guid userId, CancellationToken cancellationToken = default)
 	{
-		var offers = _readCtx.TradeOffer.Where(x =>
+		var offers = await _readCtx.TradeOffer.Where(x =>
 		   x.Type == EF.OfferType.Buy &&
 		   x.WriterId == userId)
-			.ToList();
+			.ToListAsync(cancellationToken);
 
 		return offers.Select(_mapper.Map<TradeOffer>);
 	}
 
-	public IEnumerable<TradeOffer> GetUserSellOffers(Guid userId)
+	public async Task<IEnumerable<TradeOffer>> GetUserSellOffers(
+		Guid userId, CancellationToken cancellationToken = default)
 	{
-		var offers = _readCtx.TradeOffer.Where(x =>
+		var offers = await _readCtx.TradeOffer.Where(x =>
 		   x.Type == EF.OfferType.Sell &&
 		   x.WriterId == userId)
-			.ToList();
+			.ToListAsync(cancellationToken);
 
 		return offers.Select(_mapper.Map<TradeOffer>);
 	}
 
-	public IEnumerable<TradeOffer> FindBuyOffers(
-		Guid stockId, decimal price)
+	public async Task<IEnumerable<TradeOffer>> FindBuyOffers(Guid stockId,
+		decimal price, CancellationToken cancellationToken = default)
 	{
-		var offers = _readCtx.TradeOffer.Where(x =>
+		var offers = await _readCtx.TradeOffer.Where(x =>
 		   x.Type == EF.OfferType.Buy &&
 		   x.StockId == stockId &&
 		   x.Price >= price)
 			.OrderByDescending(x => x.Price)
-			.ToList();
+			.ToListAsync(cancellationToken);
 
 		return offers.Select(_mapper.Map<TradeOffer>);
 	}
 
-	public IEnumerable<TradeOffer> FindSellOffers(
-		Guid stockId, decimal price)
+	public async Task<IEnumerable<TradeOffer>> FindSellOffers(Guid stockId,
+		decimal price, CancellationToken cancellationToken = default)
 	{
-		var offers = _readCtx.TradeOffer.Where(x =>
+		var offers = await _readCtx.TradeOffer.Where(x =>
 			x.Type != EF.OfferType.Buy &&
 			x.StockId == stockId &&
 			x.Price <= price)
 			.OrderBy(x => x.Price)
-			.ToList();
+			.ToListAsync(cancellationToken);
 
 		return offers.Select(_mapper.Map<TradeOffer>);
 	}

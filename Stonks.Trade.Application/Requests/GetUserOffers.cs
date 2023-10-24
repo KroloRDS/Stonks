@@ -1,46 +1,51 @@
-﻿using Stonks.Common.Utils;
+﻿using MediatR;
+using Stonks.Common.Utils;
 using Stonks.Common.Utils.Response;
 using Stonks.Trade.Application.DTOs;
 using Stonks.Trade.Domain.Repositories;
 
 namespace Stonks.Trade.Application.Requests;
 
-public record GetUserOffers(Guid UserId);
+public record GetUserOffers(Guid UserId) : 
+	IRequest<Response<IEnumerable<OfferDTO>>>;
 
-public class GetUserOffersHandler
+public class GetUserOffersHandler :
+	IRequestHandler<GetUserOffers, Response<IEnumerable<OfferDTO>>>
 {
 	private readonly IOfferRepository _offers;
 	private readonly IStockRepository _stocks;
-	private readonly IStonksLogger<GetUserOffersHandler> _logger;
+	private readonly IStonksLogger _logger;
 
 	public GetUserOffersHandler(IOfferRepository offers,
-		IStockRepository stocks,
-		IStonksLogger<GetUserOffersHandler> logger)
+		IStockRepository stocks, ILogProvider logProvider)
 	{
 		_offers = offers;
 		_stocks = stocks;
-		_logger = logger;
+		_logger = new StonksLogger(logProvider, GetType().Name);
 	}
 
 	public async Task<Response<IEnumerable<OfferDTO>>> Handle(
-		GetUserOffers request, CancellationToken cancellationToken)
+		GetUserOffers request, CancellationToken cancellationToken = default)
 	{
 		try
 		{
-			var offers = GetOffers(request);
-			return Response<IEnumerable<OfferDTO>>.Ok(offers);
+			var offers = await GetOffers(request, cancellationToken);
+			return Response.Ok(offers);
 		}
 		catch (Exception ex)
 		{
 			_logger.Log(ex);
-			return Response<IEnumerable<OfferDTO>>.Error(ex);
+			return Response.Error(ex);
 		}
 	}
 
-	private IEnumerable<OfferDTO> GetOffers(GetUserOffers request)
+	private async Task<IEnumerable<OfferDTO>> GetOffers(GetUserOffers request,
+		CancellationToken cancellationToken = default)
 	{
-		var buyOffers = _offers.GetUserBuyOffers(request.UserId);
-		var sellOffers = _offers.GetUserSellOffers(request.UserId);
+		var buyOffers = await _offers.GetUserBuyOffers(
+			request.UserId, cancellationToken);
+		var sellOffers = await _offers.GetUserSellOffers(
+			request.UserId, cancellationToken);
 		var stocks = _stocks.GetStockNames();
 
 		var mappedOffers = buyOffers.Select(x => new OfferDTO

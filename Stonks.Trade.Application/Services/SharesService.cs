@@ -6,7 +6,7 @@ namespace Stonks.Trade.Application.Services;
 public interface ISharesService
 {
 	Task Transfer(Guid userId, TradeOffer offer,
-		int amount, CancellationToken cancellationToken);
+		int amount, CancellationToken cancellationToken = default);
 }
 
 public class SharesService : ISharesService
@@ -22,7 +22,7 @@ public class SharesService : ISharesService
 	}
 
 	public async Task Transfer(Guid userId, TradeOffer offer,
-		int amount, CancellationToken cancellationToken)
+		int amount, CancellationToken cancellationToken = default)
 	{
 		Guid writerId;
 		if (offer.Type != OfferType.PublicOfferring && offer.WriterId is null)
@@ -36,7 +36,7 @@ public class SharesService : ISharesService
 	}
 
 	private async Task ProcessOfferSide(Guid writerId, TradeOffer offer,
-		int amount, CancellationToken cancellationToken)
+		int amount, CancellationToken cancellationToken = default)
 	{
 		if (offer.Type == OfferType.Buy)
 			await _shares.GiveSharesToUser(offer.StockId,
@@ -48,7 +48,7 @@ public class SharesService : ISharesService
 	}
 
 	private async Task ProcessClientSide(Guid userId, TradeOffer offer,
-		int amount, CancellationToken cancellationToken)
+		int amount, CancellationToken cancellationToken = default)
 	{
 		if (offer.Type == OfferType.Buy)
 			await _shares.TakeSharesFromUser(offer.StockId,
@@ -59,8 +59,9 @@ public class SharesService : ISharesService
 				userId, amount, cancellationToken);
 	}
 
-	private async Task AddTransactionLog(Guid clientId, Guid writerId,
-		TradeOffer offer, int amount, CancellationToken cancellationToken)
+	private async Task AddTransactionLog(Guid clientId,
+		Guid writerId, TradeOffer offer, int amount,
+		CancellationToken cancellationToken = default)
 	{
 		Guid? sellerId = offer.Type switch
 		{

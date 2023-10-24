@@ -12,19 +12,19 @@ public class ReadOnlyDbContext : AppDbContext
 		base.OnModelCreating(modelBuilder);
 	}
 
-	public DbTransaction BeginTransaction() =>
+	public new static DbTransaction BeginTransaction() =>
 		throw GetReadOnlyException();
 
-	public void RollbackTransaction(DbTransaction transaction) =>
+	public new static void RollbackTransaction(DbTransaction transaction) =>
 		throw GetReadOnlyException();
 
-	public async Task CommitTransaction(DbTransaction transaction,
+	public new static Task CommitTransaction(DbTransaction transaction,
 		CancellationToken cancellationToken = default) =>
 		throw GetReadOnlyException();
 
 	public override int SaveChanges() => throw GetReadOnlyException();
 
-	public override Task<int> SaveChangesAsync(CancellationToken t) =>
+	public override Task<int> SaveChangesAsync(CancellationToken t = default) =>
 		throw GetReadOnlyException();
 
 	private static InvalidOperationException GetReadOnlyException() =>

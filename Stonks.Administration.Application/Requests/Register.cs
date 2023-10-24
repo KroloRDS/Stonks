@@ -9,22 +9,22 @@ namespace Stonks.Administration.Application.Requests;
 public record Register(string Login, string Password) :
 	IRequest<Response<Guid>>;
 
-public class RegisterHandler
+public class RegisterHandler : IRequestHandler<Register, Response<Guid>>
 {
 	private readonly IAuthService _authService;
 	private readonly IUserRepository _user;
-	private readonly IStonksLogger<RegisterHandler> _logger;
+	private readonly IStonksLogger _logger;
 
-	public RegisterHandler(IAuthService authService, IUserRepository user,
-		IStonksLogger<RegisterHandler> logger)
+	public RegisterHandler(IAuthService authService,
+		IUserRepository user, ILogProvider logProvider)
 	{
 		_authService = authService;
 		_user = user;
-		_logger = logger;
+		_logger = new StonksLogger(logProvider, GetType().Name);
 	}
 
 	public async Task<Response<Guid>> Handle(Register request,
-		CancellationToken cancellationToken)
+		CancellationToken cancellationToken = default)
 	{
 		try
 		{
@@ -32,18 +32,18 @@ public class RegisterHandler
 		}
 		catch (Exception ex)
 		{
-			return Response<Guid>.BadRequest(ex.Message);
+			return Response.BadRequest(ex.Message);
 		}
 
 		try
 		{
 			var token = await Register(request, cancellationToken);
-			return Response<Guid>.Ok(token);
+			return Response.Ok(token);
 		}
 		catch (Exception ex)
 		{
 			_logger.Log(ex);
-			return Response<Guid>.Error(ex);
+			return Response.Error(ex);
 		}
 	}
 
@@ -60,7 +60,7 @@ public class RegisterHandler
 	}
 
 	private async Task<Guid> Register(Register request,
-		CancellationToken cancellationToken)
+		CancellationToken cancellationToken = default)
 	{
 		var rng = new Random();
 		var salt = (short)rng.Next(short.MaxValue);

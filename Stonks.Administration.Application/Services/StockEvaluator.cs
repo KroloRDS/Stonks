@@ -6,7 +6,7 @@ namespace Stonks.Administration.Application.Services;
 
 public interface IStockEvaluator
 {
-	Task<Guid> FindWeakest(CancellationToken cancellationToken);
+	Task<Guid> FindWeakest(CancellationToken cancellationToken = default);
 }
 
 public class StockEvaluator : IStockEvaluator
@@ -30,7 +30,8 @@ public class StockEvaluator : IStockEvaluator
 		_tradeOfferRepository = tradeOfferRepository;
 	}
 
-	public async Task<Guid> FindWeakest(CancellationToken cancellationToken)
+	public async Task<Guid> FindWeakest(
+		CancellationToken cancellationToken = default)
 	{
 		var stocks = await _stock.GetActive(cancellationToken);
 		if (!stocks.Any()) throw new NoStocksToBankruptException();
@@ -42,8 +43,8 @@ public class StockEvaluator : IStockEvaluator
 		return weakest.StockId;
 	}
 
-	private async Task<StockIndicator> GetStockIndicator(
-		Stock stock, CancellationToken cancellationToken)
+	private async Task<StockIndicator> GetStockIndicator(Stock stock,
+		CancellationToken cancellationToken = default)
 	{
 		var publicStocks = _tradeOfferRepository.PublicallyOfferdAmount(
 			stock.Id, cancellationToken);
@@ -60,16 +61,16 @@ public class StockEvaluator : IStockEvaluator
 		};
 	}
 
-	private async Task<decimal> GetMarketCap(
-		Stock stock, CancellationToken cancellationToken)
+	private async Task<decimal> GetMarketCap(Stock stock,
+		CancellationToken cancellationToken = default)
 	{
 		var shares = _share.TotalAmountOfShares(stock.Id, cancellationToken);
 		var price = await _price.Current(stock.Id);
 		return await shares * price.Price;
 	}
 
-	private async Task<double> GetVolatility(
-		Guid stockId, CancellationToken cancellationToken)
+	private async Task<double> GetVolatility(Guid stockId,
+		CancellationToken cancellationToken = default)
 	{
 		var lastBankruptDate = await _stock.LastBankruptDate(cancellationToken);
 		var prices = _price.Prices(stockId, lastBankruptDate);

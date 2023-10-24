@@ -1,10 +1,8 @@
-using System.Reflection;
 using Microsoft.EntityFrameworkCore;
-
-using Stonks.Data;
-using Stonks.Util;
-using Stonks.Data.Models;
-using Stonks.CQRS.Helpers;
+using Stonks.Administration.WebApi;
+using Stonks.Common.Db;
+using Stonks.Common.Utils;
+using Stonks.Trade.WebApi;
 
 var builder = WebApplication.CreateBuilder(args);
 AddServices(builder);
@@ -15,23 +13,10 @@ app.Run();
 static void AddServices(WebApplicationBuilder builder)
 {
 	var services = builder.Services;
-	services.AddScoped<IStonksLogger, StonksLogger>();
-	services.AddScoped<IStonksConfiguration, StonksConfiguration>();
-	services.AddScoped<IAddPublicOffers, AddPublicOffers>();
-	services.AddScoped<IGiveMoney, GiveMoney>();
-	services.AddScoped<ITransferShares, TransferShares>();
-
-	services.AddMediatR(config => config
-		.RegisterServicesFromAssemblies(Assembly.GetExecutingAssembly()));
-
-	services.AddEndpointsApiExplorer();
-	services.AddSwaggerGen();
+	services.AddScoped<ILogProvider, DbLogProvider>()
+		.AddAdministrationEndpoints()
+		.AddTradeEndpoints();
 	AddDb(builder);
-
-	builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-	builder.Services.AddDefaultIdentity<User>(options =>
-		options.SignIn.RequireConfirmedAccount = true)
-		.AddEntityFrameworkStores<AppDbContext>();
 }
 
 static void AddDb(WebApplicationBuilder builder)
@@ -45,22 +30,8 @@ static void AddDb(WebApplicationBuilder builder)
 
 static void ConfigureApp(WebApplication app)
 {
-	app.UseSwagger();
-	app.UseSwaggerUI();
-
-	app.MapControllers();
-	app.UseHttpsRedirection()
-		.UseRouting()
-		.UseAuthentication()
-		.UseAuthorization()
-		.UseStaticFiles();
-
-	app.MapControllerRoute(
-		name: "default",
-		pattern: "{controller=Home}/{action=Index}/{id?}");
-	app.MapRazorPages();
-
-	UpdateSchema(app);
+	app.UseAdministrationEndpoints()
+		.UseTradeEndpoints();
 }
 
 static void UpdateSchema(IApplicationBuilder app)

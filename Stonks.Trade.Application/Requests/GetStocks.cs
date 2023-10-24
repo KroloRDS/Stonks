@@ -1,4 +1,5 @@
-﻿using Stonks.Common.Utils;
+﻿using MediatR;
+using Stonks.Common.Utils;
 using Stonks.Common.Utils.Response;
 using Stonks.Trade.Application.DTOs;
 using Stonks.Trade.Domain.Models;
@@ -6,45 +7,48 @@ using Stonks.Trade.Domain.Repositories;
 
 namespace Stonks.Trade.Application.Requests;
 
-public class GetStocksHandler
+public record GetStocks : IRequest<Response<IEnumerable<StockDTO>>>;
+
+public class GetStocksHandler : 
+	IRequestHandler<GetStocks, Response<IEnumerable<StockDTO>>>
 {
 	private readonly IOfferRepository _offer;
 	private readonly IShareRepository _share;
 	private readonly IStockRepository _stock;
 	private readonly IPriceRepository _price;
-	private readonly IStonksLogger<GetUserOffersHandler> _logger;
+	private readonly IStonksLogger _logger;
 
 	public GetStocksHandler(
 		IOfferRepository offer,
 		IShareRepository share,
 		IStockRepository stock,
 		IPriceRepository price,
-		IStonksLogger<GetUserOffersHandler> logger)
+		ILogProvider logProvider)
 	{
 		_offer = offer;
 		_share = share;
 		_stock = stock;
 		_price = price;
-		_logger = logger;
+		_logger = new StonksLogger(logProvider, GetType().Name);
 	}
 
 	public async Task<Response<IEnumerable<StockDTO>>> Handle(
-		CancellationToken cancellationToken)
+		GetStocks request, CancellationToken cancellationToken = default)
 	{
 		try
 		{
 			var stocks = await GetStocks(cancellationToken);
-			return Response<IEnumerable<StockDTO>>.Ok(stocks);
+			return Response.Ok(stocks);
 		}
 		catch (Exception ex)
 		{
 			_logger.Log(ex);
-			return Response<IEnumerable<StockDTO>>.Error(ex);
+			return Response.Error(ex);
 		}
 	}
 
 	public async Task<IEnumerable<StockDTO>> GetStocks(
-		CancellationToken cancellationToken)
+		CancellationToken cancellationToken = default)
 	{
 		var tickers = _stock.GetStockNames();
 		var tasks = tickers.Select(x =>
@@ -54,8 +58,8 @@ public class GetStocksHandler
 		return stocks;
 	}
 
-	private async Task<StockDTO> GetStockDTO(Guid stockId,
-		Stock stock, CancellationToken cancellationToken)
+	private async Task<StockDTO> GetStockDTO(Guid stockId, Stock stock,
+		CancellationToken cancellationToken = default)
 	{
 		var volatility = GetVolatility(stockId, cancellationToken);
 		var price = await _price.Current(stockId);
@@ -74,15 +78,15 @@ public class GetStocksHandler
 		};
 	}
 
-	private async Task<decimal> GetMarketCap(Guid stockId,
-		decimal price, CancellationToken cancellationToken)
+	private async Task<decimal> GetMarketCap(Guid stockId, decimal price,
+		CancellationToken cancellationToken = default)
 	{
 		var shares = await _share.TotalAmountOfShares(stockId, cancellationToken);
 		return shares * price;
 	}
 
-	private async Task<double> GetVolatility(
-		Guid stockId, CancellationToken cancellationToken)
+	private async Task<double> GetVolatility(Guid stockId,
+		CancellationToken cancellationToken = default)
 	{
 		var lastBankruptDate = await _stock.LastBankruptDate(cancellationToken);
 		var prices = _price.Prices(stockId, lastBankruptDate);

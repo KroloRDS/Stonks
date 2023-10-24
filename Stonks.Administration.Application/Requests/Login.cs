@@ -9,22 +9,22 @@ namespace Stonks.Administration.Application.Requests;
 public record Login(string UserLogin, string Password) :
 	IRequest<Response<Guid>>;
 
-public class LoginHandler
+public class LoginHandler : IRequestHandler<Login, Response<Guid>>
 {
 	private readonly IUserRepository _user;
 	private readonly IAuthService _authService;
-	private readonly IStonksLogger<LoginHandler> _logger;
+	private readonly IStonksLogger _logger;
 
-	public LoginHandler(IUserRepository user, IAuthService authService,
-		IStonksLogger<LoginHandler> logger)
+	public LoginHandler(IUserRepository user,
+		IAuthService authService, ILogProvider logProvider)
 	{
 		_user = user;
 		_authService = authService;
-		_logger = logger;
+		_logger = new StonksLogger(logProvider, GetType().Name);
 	}
 
 	public async Task<Response<Guid>> Handle(Login request,
-		CancellationToken cancellationToken)
+		CancellationToken cancellationToken = default)
 	{
 		try
 		{
@@ -33,26 +33,26 @@ public class LoginHandler
 		catch (Exception ex)
 		{
 			_logger.Log(ex);
-			return Response<Guid>.Error(ex);
+			return Response.Error(ex);
 		}
 	}
 
 	private async Task<Response<Guid>> Login(Login request,
-		CancellationToken cancellationToken)
+		CancellationToken cancellationToken = default)
 	{
 		var userExist = await _user.LoginExist(
 			request.UserLogin, cancellationToken);
 		if (!userExist)
-			return Response<Guid>.BadRequest("User does not exist");
+			return Response.BadRequest("User does not exist");
 
 		var user = await _user.GetUserFromLogin(
 			request.UserLogin, cancellationToken);
 
 		var hash = AuthService.Hash(request.Password, user.Salt);
 		if (!hash.SequenceEqual(user.PasswordHash))
-			return Response<Guid>.BadRequest("Wrong password");
+			return Response.BadRequest("Wrong password");
 
 		var token = await _authService.RefreshToken(user.Id, cancellationToken);
-		return Response<Guid>.Ok(token);
+		return Response.Ok(token);
 	}
 }

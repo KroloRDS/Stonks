@@ -58,4 +58,11 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Stonks.Administration.WebApi\Stonks.Administration.WebApi.csproj" />
+    <ProjectReference Include="..\Stonks.Common.Db\Stonks.Common.Db.csproj" />
+    <ProjectReference Include="..\Stonks.Common.Utils\Stonks.Common.Utils.csproj" />
+    <ProjectReference Include="..\Stonks.Trade.WebApi\Stonks.Trade.WebApi.csproj" />
+  </ItemGroup>
+
 </Project>

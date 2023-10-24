@@ -10,31 +10,32 @@ namespace Stonks.Administration.Application.Requests;
 public record UpdateAveragePrices : IRequest<Response>;
 
 public class UpdateAveragePricesHandler
+	: IRequestHandler<UpdateAveragePrices, Response>
 {
 	private readonly IDbWriter _writer;
 	private readonly ICurrentTime _currentTime;
 	private readonly IStockRepository _stock;
 	private readonly IPriceRepository _price;
 	private readonly ITransactionRepository _transaction;
-	private readonly IStonksLogger<UpdateAveragePricesHandler> _logger;
+	private readonly IStonksLogger _logger;
 
 	public UpdateAveragePricesHandler(IDbWriter writer,
 		ICurrentTime currentTime,
 		IStockRepository stock,
 		IPriceRepository price,
 		ITransactionRepository transaction,
-		IStonksLogger<UpdateAveragePricesHandler> logger)
+		ILogProvider logProvider)
 	{
 		_stock = stock;
 		_price = price;
 		_writer = writer;
-		_logger = logger;
 		_currentTime = currentTime;
 		_transaction = transaction;
+		_logger = new StonksLogger(logProvider, GetType().Name);
 	}
 
 	public async Task<Response> Handle(UpdateAveragePrices request,
-		CancellationToken cancellationToken)
+		CancellationToken cancellationToken = default)
 	{
 		try
 		{

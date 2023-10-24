@@ -9,12 +9,13 @@ namespace Stonks.Administration.Application.Requests;
 
 public record BattleRoyaleRound : IRequest<Response>;
 
-public class BattleRoyaleRoundHandler
+public class BattleRoyaleRoundHandler : 
+	IRequestHandler<BattleRoyaleRound, Response>
 {
 	private readonly IDbWriter _writer;
 	private readonly IStockEvaluator _evaluator;
 	private readonly IStonksConfiguration _config;
-	private readonly IStonksLogger<BattleRoyaleRoundHandler> _logger;
+	private readonly IStonksLogger _logger;
 
 	private readonly IStockRepository _stock;
 	private readonly IShareRepository _share;
@@ -23,15 +24,15 @@ public class BattleRoyaleRoundHandler
 	public BattleRoyaleRoundHandler(IDbWriter writer,
 		IStockEvaluator evaluator,
 		IStonksConfiguration config,
-		IStonksLogger<BattleRoyaleRoundHandler> logger,
+		ILogProvider logProvider,
 		IStockRepository stock,
 		IShareRepository share,
 		IOfferRepository tradeOffer)
 	{
 		_writer = writer;
 		_config = config;
-		_logger = logger;
 		_evaluator = evaluator;
+		_logger = new StonksLogger(logProvider, GetType().Name);
 
 		_stock = stock;
 		_share = share;
@@ -39,7 +40,7 @@ public class BattleRoyaleRoundHandler
 	}
 
 	public async Task<Response> Handle(BattleRoyaleRound request,
-		CancellationToken cancellationToken)
+		CancellationToken cancellationToken = default)
 	{
 		try
 		{
@@ -55,7 +56,8 @@ public class BattleRoyaleRoundHandler
 		}
 	}
 
-	private async Task BattleRoyaleRound(CancellationToken cancellationToken)
+	private async Task BattleRoyaleRound(
+		CancellationToken cancellationToken = default)
 	{
 		var id = await _evaluator.FindWeakest(cancellationToken);
 		var amount = _config.NewStocksAfterRound();

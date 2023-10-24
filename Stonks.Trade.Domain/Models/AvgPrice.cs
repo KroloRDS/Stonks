@@ -2,6 +2,5 @@
 
 public class AvgPrice
 {
-	public Guid StockId { get; set; }
 	public decimal Price { get; set; }
 }

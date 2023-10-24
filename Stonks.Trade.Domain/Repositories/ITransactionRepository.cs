@@ -4,5 +4,6 @@ namespace Stonks.Trade.Domain.Repositories;
 
 public interface ITransactionRepository
 {
-	Task AddLog(Transaction transaction, CancellationToken cancellationToken);
+	Task AddLog(Transaction transaction,
+		CancellationToken cancellationToken = default);
 }

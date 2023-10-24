@@ -14,6 +14,6 @@ public class TransactionRepository : ITransactionRepository
 	}
 
 	public async Task AddLog(Transaction transaction,
-		CancellationToken cancellationToken) =>
+		CancellationToken cancellationToken = default) =>
 		await _ctx.AddAsync(transaction, cancellationToken);
 }

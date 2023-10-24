@@ -8,22 +8,22 @@ namespace Stonks.Trade.Application.Requests;
 
 public record CancelOffer(Guid OfferId) : IRequest<Response>;
 
-public class CancelOfferHandler
+public class CancelOfferHandler : IRequestHandler<CancelOffer, Response>
 {
 	private readonly IOfferRepository _offer;
 	private readonly IDbWriter _writer;
-	private readonly IStonksLogger<CancelOfferHandler> _logger;
+	private readonly IStonksLogger _logger;
 
 	public CancelOfferHandler(IOfferRepository offer,
-		IStonksLogger<CancelOfferHandler> logger,
-		IDbWriter writer)
+		IDbWriter writer, ILogProvider logProvider)
 	{
 		_offer = offer;
-		_logger = logger;
 		_writer = writer;
+		_logger = new StonksLogger(logProvider, GetType().Name);
 	}
 
-	public Response Handle(CancelOffer request)
+	public async Task<Response> Handle(CancelOffer request,
+		CancellationToken cancellationToken = default)
 	{
 		var id = request.OfferId;
 		try
@@ -31,7 +31,7 @@ public class CancelOfferHandler
 			if (!_offer.Cancel(id))
 				return Response.BadRequest($"Offer with ID {id} does not exist");
 
-			_writer.SaveChanges();
+			await _writer.SaveChanges(cancellationToken);
 			return Response.Ok();
 
 		}
