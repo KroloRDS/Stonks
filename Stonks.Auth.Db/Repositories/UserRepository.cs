@@ -1,11 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using Stonks.Administration.Domain.Models;
-using Stonks.Administration.Domain.Repositories;
+using Stonks.Auth.Domain.Models;
+using Stonks.Auth.Domain.Repositories;
 using Stonks.Common.Db;
 using EF = Stonks.Common.Db.EntityFrameworkModels;
 
-namespace Stonks.Administration.Db.Repositories;
+namespace Stonks.Auth.Db.Repositories;
 
 public class UserRepository : IUserRepository
 {

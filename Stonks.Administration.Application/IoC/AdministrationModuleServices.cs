@@ -15,15 +15,13 @@ public static class AdministrationModuleServices
 		var assembly = Assembly.GetExecutingAssembly();
 
 		services.AddMediatR(a => a.RegisterServicesFromAssemblies(assembly))
-			.AddScoped<IAuthService, AuthService>()
 			.AddScoped<IStockEvaluator, StockEvaluator>()
 			.AddScoped<IDbWriter, DbWriter>()
 			.AddScoped<IOfferRepository, OfferRepository>()
 			.AddScoped<IPriceRepository, PriceRepository>()
 			.AddScoped<IShareRepository, ShareRepository>()
 			.AddScoped<IStockRepository, StockRepository>()
-			.AddScoped<ITransactionRepository, TransactionRepository>()
-			.AddScoped<IUserRepository, UserRepository>();
+			.AddScoped<ITransactionRepository, TransactionRepository>();
 
 		return services;
 	}

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Stonks.Administration.WebApi;
+using Stonks.Auth.WebApi;
 using Stonks.Common.Db;
 using Stonks.Common.Utils;
 using Stonks.Trade.WebApi;
@@ -15,6 +16,7 @@ static void AddServices(WebApplicationBuilder builder)
 	var services = builder.Services;
 	services.AddScoped<ILogProvider, DbLogProvider>()
 		.AddAdministrationEndpoints()
+		.AddAuthEndpoints()
 		.AddTradeEndpoints();
 	AddDb(builder);
 }
@@ -31,7 +33,10 @@ static void AddDb(WebApplicationBuilder builder)
 static void ConfigureApp(WebApplication app)
 {
 	app.UseAdministrationEndpoints()
+		.UseAuthEndpoints()
 		.UseTradeEndpoints();
+
+	UpdateSchema(app);
 }
 
 static void UpdateSchema(IApplicationBuilder app)

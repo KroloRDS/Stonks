@@ -1,10 +1,10 @@
 ﻿using MediatR;
-using Stonks.Administration.Application.Services;
-using Stonks.Administration.Domain.Repositories;
+using Stonks.Auth.Application.Services;
+using Stonks.Auth.Domain.Repositories;
 using Stonks.Common.Utils;
 using Stonks.Common.Utils.Response;
 
-namespace Stonks.Administration.Application.Requests;
+namespace Stonks.Auth.Application.Requests;
 
 public record Login(string UserLogin, string Password) :
 	IRequest<Response<Guid>>;

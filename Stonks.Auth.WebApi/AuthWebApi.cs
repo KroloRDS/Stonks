@@ -1,47 +1,48 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
-using Stonks.Administration.Application.IoC;
-using Stonks.Administration.Application.Requests;
+using Stonks.Auth.Application.IoC;
+using Stonks.Auth.Application.Requests;
 using Stonks.Common.Utils.Response;
 
-namespace Stonks.Administration.WebApi;
+namespace Stonks.Auth.WebApi;
 
-public static class AdministrationEndpoints
+public static class AuthEndpoints
 {
-	public static IServiceCollection AddAdministrationEndpoints(
+	public static IServiceCollection AddAuthEndpoints(
 		this IServiceCollection services)
 	{
-		services.AddAdministrationModule()
+		services.AddAuthModule()
 			.AddSwaggerGen();
 
 		return services;
 	}
 
-	public static IApplicationBuilder UseAdministrationEndpoints(
+	public static IApplicationBuilder UseAuthEndpoints(
 		this IApplicationBuilder app)
 	{
 		app.UseEndpoints(app =>
 		{
-			app.MapGet("admin/battleRoyale", BattleRoyale);
-			app.MapGet("admin/updatePrices", UpdatePrices);
+			app.MapPost("auth/login", Login);
+			app.MapPost("auth/register", Register);
 		});
 
 		return app;
 	}
 
-	private static async Task<IResult> BattleRoyale(
-		ISender sender, Guid? token)
+	private static async Task<IResult> Login(ISender sender,
+		[FromBody] Login request)
 	{
-		var response = await sender.Send(new BattleRoyaleRound());
+		var response = await sender.Send(request);
 		return response.ToHttpResult();
 	}
 
-	private static async Task<IResult> UpdatePrices(
-		ISender sender, Guid? token)
+	private static async Task<IResult> Register(ISender sender,
+		[FromBody] Register request)
 	{
-		var response = await sender.Send(new UpdateAveragePrices());
+		var response = await sender.Send(request);
 		return response.ToHttpResult();
 	}
 

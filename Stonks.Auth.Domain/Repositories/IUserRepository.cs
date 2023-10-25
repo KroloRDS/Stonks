@@ -1,6 +1,6 @@
-﻿using Stonks.Administration.Domain.Models;
+﻿using Stonks.Auth.Domain.Models;
 
-namespace Stonks.Administration.Domain.Repositories;
+namespace Stonks.Auth.Domain.Repositories;
 
 public interface IUserRepository
 {

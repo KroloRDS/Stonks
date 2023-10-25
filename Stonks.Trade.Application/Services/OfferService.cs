@@ -26,7 +26,7 @@ public class OfferService : IOfferService
 	public async Task<bool> Accept(Guid userId, Guid offerId, int amount,
 		CancellationToken cancellationToken = default)
 	{
-		var offer = await _offer.Get(offerId);
+		var offer = await _offer.Get(offerId, cancellationToken);
 		if (amount > offer!.Amount) amount = offer.Amount;
 
 		await _shares.Transfer(userId, offer, amount, cancellationToken);

@@ -6,7 +6,7 @@ using Stonks.Trade.Domain.Repositories;
 
 namespace Stonks.Trade.Application.Requests;
 
-public record CancelOffer(Guid OfferId) : IRequest<Response>;
+public record CancelOffer(Guid UserId, Guid OfferId) : IRequest<Response>;
 
 public class CancelOfferHandler : IRequestHandler<CancelOffer, Response>
 {
@@ -28,12 +28,15 @@ public class CancelOfferHandler : IRequestHandler<CancelOffer, Response>
 		var id = request.OfferId;
 		try
 		{
-			if (!_offer.Cancel(id))
+			var offer = await _offer.Get(request.OfferId, cancellationToken);
+			if (offer is null)
 				return Response.BadRequest($"Offer with ID {id} does not exist");
+			if (offer.WriterId != request.UserId)
+				return Response.BadRequest($"You can only cancel your own offers");
 
+			_offer.Cancel(id);
 			await _writer.SaveChanges(cancellationToken);
 			return Response.Ok();
-
 		}
 		catch (Exception ex)
 		{

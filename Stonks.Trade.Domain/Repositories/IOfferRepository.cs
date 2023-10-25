@@ -6,7 +6,8 @@ public interface IOfferRepository
 {
 	Task<int> PublicallyOfferdAmount(Guid stockId,
 		CancellationToken cancellationToken = default);
-	Task<TradeOffer?> Get(Guid offerId);
+	Task<TradeOffer?> Get(Guid offerId,
+		CancellationToken cancellationToken = default);
 	Task<IEnumerable<TradeOffer>> GetUserBuyOffers(Guid userId,
 		CancellationToken cancellationToken = default);
 	Task<IEnumerable<TradeOffer>> GetUserSellOffers(Guid userId,

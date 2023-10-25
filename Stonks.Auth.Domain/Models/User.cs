@@ -1,4 +1,4 @@
-﻿namespace Stonks.Administration.Domain.Models;
+﻿namespace Stonks.Auth.Domain.Models;
 
 public class User
 {

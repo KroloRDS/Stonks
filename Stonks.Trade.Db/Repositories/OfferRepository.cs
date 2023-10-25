@@ -28,7 +28,8 @@ public class OfferRepository : IOfferRepository
 		CancellationToken cancellationToken = default) =>
 		await _offer.PublicallyOfferdAmount(stockId, cancellationToken);
 
-	public async Task<TradeOffer?> Get(Guid offerId)
+	public async Task<TradeOffer?> Get(Guid offerId,
+		CancellationToken cancellationToken = default)
 	{
 		var offer = await _readCtx.GetById<EF.TradeOffer>(offerId);
 		return offer is null ? null : _mapper.Map<TradeOffer>(offer);

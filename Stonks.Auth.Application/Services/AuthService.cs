@@ -1,9 +1,9 @@
-﻿using Stonks.Administration.Db;
-using Stonks.Administration.Domain.Repositories;
+﻿using Stonks.Auth.Db;
+using Stonks.Auth.Domain.Repositories;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Stonks.Administration.Application.Services;
+namespace Stonks.Auth.Application.Services;
 
 public interface IAuthService
 {
