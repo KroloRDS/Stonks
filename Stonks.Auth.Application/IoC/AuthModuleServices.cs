@@ -15,7 +15,6 @@ public static class AuthModuleServices
 		var assembly = Assembly.GetExecutingAssembly();
 
 		services.AddMediatR(a => a.RegisterServicesFromAssemblies(assembly))
-			.AddScoped<IAuthService, AuthService>()
 			.AddScoped<IDbWriter, DbWriter>()
 			.AddScoped<IUserRepository, UserRepository>();
 

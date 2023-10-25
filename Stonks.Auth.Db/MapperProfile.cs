@@ -9,6 +9,8 @@ public class MapperProfile : Profile
 	public MapperProfile()
 	{
 		CreateMap<EF.User, User>();
+		CreateMap<User, EF.User>();
 		CreateMap<EF.Role, Role>();
+		CreateMap<Role, EF.Role>();
 	}
 }

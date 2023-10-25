@@ -8,13 +8,14 @@ using Stonks.Trade.Domain.Repositories;
 
 namespace Stonks.Trade.Application.Requests;
 
-public record PlaceOffer(
-	Guid StockId,
-	Guid WriterId,
-	int Amount,
-	OfferType Type,
-	decimal Price
-) : IRequest<Response>;
+public class PlaceOffer : IRequest<Response>
+{
+	public Guid StockId { get; init; }
+	public Guid WriterId { get; set; }
+	public int Amount { get; init; }
+	public OfferType Type { get; init; }
+	public decimal Price { get; init; }
+}
 
 public class PlaceOfferHandler :
 	IRequestHandler<PlaceOffer, Response>

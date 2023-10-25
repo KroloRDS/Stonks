@@ -17,8 +17,6 @@ public class User : HasId
 	[Required]
 	public short Salt { get; set; }
 
-	public Guid? Token { get; set; }
-	public DateTime? TokenExpiration { get; set; }
 	public IEnumerable<Role> Roles { get; set; } = Enumerable.Empty<Role>();
 }
 

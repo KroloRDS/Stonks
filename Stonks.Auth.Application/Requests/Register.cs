@@ -1,5 +1,7 @@
 ﻿using MediatR;
 using Stonks.Auth.Application.Services;
+using Stonks.Auth.Db;
+using Stonks.Auth.Domain.Models;
 using Stonks.Auth.Domain.Repositories;
 using Stonks.Common.Utils;
 using Stonks.Common.Utils.Response;
@@ -7,23 +9,25 @@ using Stonks.Common.Utils.Response;
 namespace Stonks.Auth.Application.Requests;
 
 public record Register(string Login, string Password) :
-	IRequest<Response<Guid>>;
+	IRequest<Response<string>>;
 
-public class RegisterHandler : IRequestHandler<Register, Response<Guid>>
+public class RegisterHandler : IRequestHandler<Register, Response<string>>
 {
-	private readonly IAuthService _authService;
 	private readonly IUserRepository _user;
+	private readonly IDbWriter _dbWriter;
 	private readonly IStonksLogger _logger;
+	private readonly IAuthService _auth;
 
-	public RegisterHandler(IAuthService authService,
-		IUserRepository user, ILogProvider logProvider)
+	public RegisterHandler(IUserRepository user, IDbWriter dbWriter,
+		ILogProvider logProvider, IAuthService auth)
 	{
-		_authService = authService;
 		_user = user;
+		_dbWriter = dbWriter;
+		_auth = auth;
 		_logger = new StonksLogger(logProvider, GetType().Name);
 	}
 
-	public async Task<Response<Guid>> Handle(Register request,
+	public async Task<Response<string>> Handle(Register request,
 		CancellationToken cancellationToken = default)
 	{
 		try
@@ -59,19 +63,25 @@ public class RegisterHandler : IRequestHandler<Register, Response<Guid>>
 			throw new LoginAlreadyUsedException();
 	}
 
-	private async Task<Guid> Register(Register request,
+	private async Task<string> Register(Register request,
 		CancellationToken cancellationToken = default)
 	{
 		var rng = new Random();
 		var salt = (short)rng.Next(short.MaxValue);
 		var hash = AuthService.Hash(request.Password, salt);
 
-		var userId = await _user.Add(
-			request.Login,
-			salt,
-			hash,
-			cancellationToken);
-		var token = await _authService.RefreshToken(userId, cancellationToken);
+		var user = new User
+		{
+			Id = Guid.NewGuid(),
+			Login = request.Login,
+			PasswordHash = hash,
+			Salt = salt
+		};
+		await _user.Add(user, cancellationToken);
+		await _dbWriter.SaveChanges(cancellationToken);
+
+		var token = _auth.CreateAccessToken(user.Id,
+			user.Login, Enumerable.Empty<string>());
 		return token;
 	}
 }

@@ -3,6 +3,7 @@ using Stonks.Administration.Application.Services;
 using Stonks.Administration.Db;
 using Stonks.Administration.Domain.Repositories;
 using Stonks.Common.Utils;
+using Stonks.Common.Utils.Configuration;
 using Stonks.Common.Utils.Response;
 
 namespace Stonks.Administration.Application.Requests;
@@ -14,7 +15,7 @@ public class BattleRoyaleRoundHandler :
 {
 	private readonly IDbWriter _writer;
 	private readonly IStockEvaluator _evaluator;
-	private readonly IStonksConfiguration _config;
+	private readonly BattleRoyaleConfiguration _config;
 	private readonly IStonksLogger _logger;
 
 	private readonly IStockRepository _stock;
@@ -23,7 +24,7 @@ public class BattleRoyaleRoundHandler :
 
 	public BattleRoyaleRoundHandler(IDbWriter writer,
 		IStockEvaluator evaluator,
-		IStonksConfiguration config,
+		BattleRoyaleConfiguration config,
 		ILogProvider logProvider,
 		IStockRepository stock,
 		IShareRepository share,
@@ -60,7 +61,7 @@ public class BattleRoyaleRoundHandler :
 		CancellationToken cancellationToken = default)
 	{
 		var id = await _evaluator.FindWeakest(cancellationToken);
-		var amount = _config.NewStocksAfterRound();
+		var amount = _config.NewStocksAfterRound;
 
 		await _stock.Bankrupt(id);
 		_share.RemoveShares(id);

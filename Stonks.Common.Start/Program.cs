@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Stonks.Administration.WebApi;
+using Stonks.Auth.Application.Services;
 using Stonks.Auth.WebApi;
 using Stonks.Common.Db;
 using Stonks.Common.Utils;
+using Stonks.Common.Utils.Configuration;
 using Stonks.Trade.WebApi;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,11 +16,30 @@ app.Run();
 static void AddServices(WebApplicationBuilder builder)
 {
 	var services = builder.Services;
-	services.AddScoped<ILogProvider, DbLogProvider>()
-		.AddAdministrationEndpoints()
-		.AddAuthEndpoints()
-		.AddTradeEndpoints();
+	var currentTime = new CurrentTime();
+	var jwtConfiguration = GetJwtConfiguration(builder);
+
 	AddDb(builder);
+	AddConfigurations(builder)
+		.AddSingleton(currentTime)
+		.AddScoped<ILogProvider, DbLogProvider>()
+		.AddSingleton(new AuthService(jwtConfiguration, currentTime))
+		.AddAdministrationEndpoints()
+		.AddAuthEndpoints(jwtConfiguration)
+		.AddTradeEndpoints();
+}
+
+static JwtConfiguration GetJwtConfiguration(WebApplicationBuilder builder)
+{
+	var jwtConfiguration = builder.Configuration
+		.GetSection("JwtConfiguration")
+		.Get<JwtConfiguration>() ??
+		throw new Exception("Missing JwtConfiguration in appsettings.js");
+	jwtConfiguration.SigningKey =
+		Environment.GetEnvironmentVariable(Consts.JWT_SIGNING_KEY) ??
+		throw new Exception($"Missing {Consts.JWT_SIGNING_KEY} env variable");
+
+	return jwtConfiguration;
 }
 
 static void AddDb(WebApplicationBuilder builder)
@@ -28,6 +49,34 @@ static void AddDb(WebApplicationBuilder builder)
 		options.UseSqlServer(connectionString), ServiceLifetime.Scoped);
 	builder.Services.AddDbContext<ReadOnlyDbContext>(options =>
 		options.UseSqlServer(connectionString), ServiceLifetime.Transient);
+}
+
+static string GetConnectionString(WebApplicationBuilder builder)
+{
+	var connectionString = builder.Configuration
+		.GetConnectionString("DefaultConnection") ??
+		throw new Exception("Missing DefaultConnection connection string in appsettings.json");
+
+	var dbServer = Environment.GetEnvironmentVariable("DB_SERVER") ??
+		throw new Exception("Missing DB_SERVER env variable");
+	var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD") ??
+		throw new Exception("Missing DB_PASSWORD env variable");
+
+	connectionString = connectionString.Replace("<DB_SERVER>", dbServer);
+	connectionString = connectionString.Replace("<DB_PASSWORD>", dbPassword);
+
+	return connectionString;
+}
+
+static IServiceCollection AddConfigurations(WebApplicationBuilder builder)
+{
+	var battleRoyaleConfiguration = builder.Configuration
+		.GetSection("BattleRoyaleConfiguration")
+		.Get<BattleRoyaleConfiguration>() ??
+		throw new Exception("Missing BattleRoyaleConfiguration in appsettings.json");
+
+	builder.Services.AddSingleton(battleRoyaleConfiguration);
+	return builder.Services;
 }
 
 static void ConfigureApp(WebApplication app)
@@ -47,17 +96,4 @@ static void UpdateSchema(IApplicationBuilder app)
 
 	using var ctx = serviceScope.ServiceProvider.GetService<AppDbContext>();
 	ctx?.Database.Migrate();
-}
-
-static string GetConnectionString(WebApplicationBuilder builder)
-{
-	var connectionString = builder.Configuration
-		.GetConnectionString("DefaultConnection") ?? string.Empty;
-	var dbServer = Environment.GetEnvironmentVariable("DB_SERVER") ??
-		string.Empty;
-	var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD") ??
-		string.Empty;
-	connectionString = connectionString.Replace("<DB_SERVER>", dbServer);
-	connectionString = connectionString.Replace("<DB_PASSWORD>", dbPassword);
-	return connectionString;
 }

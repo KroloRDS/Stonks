@@ -1,6 +1,7 @@
 ﻿using Stonks.Administration.Domain.Models;
 using Stonks.Administration.Domain.Repositories;
 using Stonks.Common.Utils;
+using Stonks.Common.Utils.Configuration;
 
 namespace Stonks.Administration.Application.Services;
 
@@ -15,12 +16,12 @@ public class StockEvaluator : IStockEvaluator
 	private readonly IShareRepository _share;
 	private readonly IPriceRepository _price;
 	private readonly IOfferRepository _tradeOfferRepository;
-	private readonly IStonksConfiguration _config;
+	private readonly BattleRoyaleConfiguration _config;
 
 	public StockEvaluator(IStockRepository stock,
 		IShareRepository share,
 		IPriceRepository price,
-		IStonksConfiguration config,
+		BattleRoyaleConfiguration config,
 		IOfferRepository tradeOfferRepository)
 	{
 		_stock = stock;
@@ -79,10 +80,10 @@ public class StockEvaluator : IStockEvaluator
 
 	private double GetScore(StockIndicatorNormalised indicator)
 	{
-		return _config.MarketCapWeight() * indicator.MarketCap +
-			_config.StockAmountWeight() * indicator.StocksAmount +
-			_config.VolatilityWeight() * indicator.Volatility +
-			_config.FunWeight() * indicator.Fun;
+		return _config.MarketCapWeight * indicator.MarketCap +
+			_config.StockAmountWeight * indicator.StocksAmount +
+			_config.VolatilityWeight * indicator.Volatility +
+			_config.FunWeight * indicator.Fun;
 	}
 
 	private static IEnumerable<StockIndicatorNormalised> Normalise(

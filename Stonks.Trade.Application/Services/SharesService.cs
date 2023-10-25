@@ -1,4 +1,5 @@
-﻿using Stonks.Trade.Domain.Models;
+﻿using Stonks.Common.Utils;
+using Stonks.Trade.Domain.Models;
 using Stonks.Trade.Domain.Repositories;
 
 namespace Stonks.Trade.Application.Services;
@@ -11,12 +12,14 @@ public interface ISharesService
 
 public class SharesService : ISharesService
 {
+	private readonly ICurrentTime _currentTime;
 	private readonly IShareRepository _shares;
 	private readonly ITransactionRepository _transaction;
 
-	public SharesService(IShareRepository shares,
+	public SharesService(IShareRepository shares, ICurrentTime currentTime,
 		ITransactionRepository transaction)
 	{
+		_currentTime = currentTime;
 		_shares = shares;
 		_transaction = transaction;
 	}
@@ -78,7 +81,7 @@ public class SharesService : ISharesService
 			SellerId = sellerId,
 			Amount = amount,
 			Price = offer.Price,
-			Timestamp = DateTime.Now
+			Timestamp = _currentTime.Get()
 		}, cancellationToken);
 	}
 }

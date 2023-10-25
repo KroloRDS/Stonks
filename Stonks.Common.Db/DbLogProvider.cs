@@ -6,10 +6,12 @@ namespace Stonks.Common.Db;
 public class DbLogProvider : ILogProvider
 {
 	private readonly AppDbContext _ctx;
+	private readonly ICurrentTime _currentTime;
 
-	public DbLogProvider(AppDbContext ctx)
+	public DbLogProvider(AppDbContext ctx, ICurrentTime currentTime)
 	{
 		_ctx = ctx;
+		_currentTime = currentTime;
 	}
 
 	public bool Log(string className, string message,
@@ -23,7 +25,7 @@ public class DbLogProvider : ILogProvider
 				Message = message,
 				ObjectDump = objectDump,
 				Exception = exception,
-				Timestamp = DateTime.Now
+				Timestamp = _currentTime.Get()
 			});
 			_ctx.SaveChanges();
 			return true;

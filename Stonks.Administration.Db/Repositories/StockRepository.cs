@@ -5,20 +5,26 @@ using Stonks.Administration.Domain.Repositories;
 using Stonks.Common.Db;
 using EF = Stonks.Common.Db.EntityFrameworkModels;
 using CommonRepositories = Stonks.Common.Db.Repositories;
+using Stonks.Common.Utils;
 
 namespace Stonks.Administration.Db.Repositories;
 
 public class StockRepository : IStockRepository
 {
 	private readonly IMapper _mapper;
+	private readonly ICurrentTime _currentTime;
 	private readonly AppDbContext _writeCtx;
 	private readonly ReadOnlyDbContext _readCtx;
 	private readonly CommonRepositories.IStockRepository _stock;
 
-	public StockRepository(IMapper mapper, AppDbContext writeCtx,
-		ReadOnlyDbContext readCtx, CommonRepositories.IStockRepository stock)
+	public StockRepository(IMapper mapper,
+		ICurrentTime currentTime,
+		AppDbContext writeCtx,
+		ReadOnlyDbContext readCtx,
+		CommonRepositories.IStockRepository stock)
 	{
 		_mapper = mapper;
+		_currentTime = currentTime;
 		_writeCtx = writeCtx;
 		_readCtx = readCtx;
 		_stock = stock;
@@ -48,7 +54,7 @@ public class StockRepository : IStockRepository
 		var stock = await _writeCtx.GetById<EF.Stock>(stockId);
 		if (stock is null) return false;
 
-		stock.BankruptDate = DateTime.Now;
+		stock.BankruptDate = _currentTime.Get();
 		return true;
 	}
 }

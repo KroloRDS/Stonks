@@ -1,8 +1,10 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using Stonks.Auth.Application.Services;
 using Stonks.Common.Utils.Response;
 using Stonks.Trade.Application.IoC;
 using Stonks.Trade.Application.Requests;
@@ -35,9 +37,12 @@ public static class TradeWebApi
 	}
 
 	private static async Task<IResult> CancelOffer(
-		ISender sender, Guid offerId, Guid? token)
+		ISender sender, Guid offerId, HttpContext ctx)
 	{
-		var response = await sender.Send(new CancelOffer(offerId));
+		var userId = await GetUserId(ctx);
+		if (!userId.HasValue) return TypedResults.Unauthorized();
+
+		var response = await sender.Send(new CancelOffer(userId.Value, offerId));
 		return response.ToHttpResult();
 	}
 
@@ -48,17 +53,31 @@ public static class TradeWebApi
 	}
 
 	private static async Task<IResult> GetUserOffers(
-		ISender sender, Guid? token)
+		ISender sender, HttpContext ctx)
 	{
-		var response = await sender.Send(new GetUserOffers());
+		var userId = await GetUserId(ctx);
+		if (!userId.HasValue) return TypedResults.Unauthorized();
+
+		var response = await sender.Send(new GetUserOffers(userId.Value));
 		return response.ToHttpResult();
 	}
 
 	private static async Task<IResult> PlaceOffer(ISender sender,
-		[FromBody] PlaceOffer request, Guid? token)
+		[FromBody] PlaceOffer request, HttpContext ctx)
 	{
+		var userId = await GetUserId(ctx);
+		if (!userId.HasValue) return TypedResults.Unauthorized();
+
+		request.WriterId = userId.Value;
 		var response = await sender.Send(request);
 		return response.ToHttpResult();
+	}
+
+	private static async Task<Guid?> GetUserId(HttpContext ctx)
+	{
+		var token = await ctx.GetTokenAsync("access_token");
+		(var id, _) = AuthService.ReadToken(token);
+		return id;
 	}
 
 	public static IResult ToHttpResult<T>(this Response<T> response)

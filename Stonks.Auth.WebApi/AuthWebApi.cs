@@ -1,21 +1,50 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 using Stonks.Auth.Application.IoC;
 using Stonks.Auth.Application.Requests;
+using Stonks.Common.Utils.Configuration;
 using Stonks.Common.Utils.Response;
+using System.Text;
 
 namespace Stonks.Auth.WebApi;
 
 public static class AuthEndpoints
 {
 	public static IServiceCollection AddAuthEndpoints(
-		this IServiceCollection services)
+		this IServiceCollection services, JwtConfiguration jwtConfiguration)
 	{
 		services.AddAuthModule()
-			.AddSwaggerGen();
+			.AddSwaggerGen()
+			.AddJwtAuth(jwtConfiguration);
+
+		return services;
+	}
+
+	private static IServiceCollection AddJwtAuth(
+		this IServiceCollection services, JwtConfiguration jwtConfiguration)
+	{
+		services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+			.AddJwtBearer(opts =>
+			{
+				byte[] signingKeyBytes = Encoding.UTF8
+					.GetBytes(jwtConfiguration.SigningKey);
+
+				opts.TokenValidationParameters = new TokenValidationParameters
+				{
+					ValidateIssuer = true,
+					ValidateAudience = true,
+					ValidateLifetime = true,
+					ValidateIssuerSigningKey = true,
+					ValidIssuer = jwtConfiguration.Issuer,
+					ValidAudience = jwtConfiguration.Audience,
+					IssuerSigningKey = new SymmetricSecurityKey(signingKeyBytes)
+				};
+			});
 
 		return services;
 	}
