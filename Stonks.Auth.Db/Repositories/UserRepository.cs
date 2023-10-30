@@ -33,11 +33,10 @@ public class UserRepository : IUserRepository
 		return _mapper.Map<User>(user);
 	}
 
-	public async Task<bool> Add(User user,
+	public async Task Add(User user,
 		CancellationToken cancellationToken = default)
 	{
 		await _writeCtx.AddAsync(
 			_mapper.Map<EF.User>(user), cancellationToken);
-		return true;
 	}
 }

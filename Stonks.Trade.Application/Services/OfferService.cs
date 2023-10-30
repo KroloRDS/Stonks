@@ -5,7 +5,7 @@ namespace Stonks.Trade.Application.Services;
 
 public interface IOfferService
 {
-	Task<bool> Accept(Guid userId, Guid offerId, int amount,
+	Task Accept(Guid userId, Guid offerId, int amount,
 		CancellationToken cancellationToken = default);
 }
 
@@ -23,20 +23,27 @@ public class OfferService : IOfferService
 		_shares = shares;
 	}
 
-	public async Task<bool> Accept(Guid userId, Guid offerId, int amount,
+	public async Task Accept(Guid userId, Guid offerId, int amount,
 		CancellationToken cancellationToken = default)
 	{
-		var offer = await _offer.Get(offerId, cancellationToken);
-		if (amount > offer!.Amount) amount = offer.Amount;
+		if (amount < 1)
+			throw new ArgumentOutOfRangeException(nameof(amount));
+
+		var offer = await _offer.Get(offerId, cancellationToken) ??
+			throw new KeyNotFoundException($"Offer: {offerId}");
+
+		if (amount > offer.Amount) amount = offer.Amount;
 
 		await _shares.Transfer(userId, offer, amount, cancellationToken);
 		await SettleMoney(userId, offer, amount);
 
-		return amount == offer.Amount ? _offer.Cancel(offerId) :
+		if (amount == offer.Amount)
+			_offer.Cancel(offerId);
+		else
 			await _offer.DecreaseOfferAmount(offerId, amount);
 	}
 
-	private async Task SettleMoney(Guid clientId, TradeOffer offer, int amount)
+	public async Task SettleMoney(Guid clientId, TradeOffer offer, int amount)
 	{
 		var offerValue = offer.Price * amount;
 		var task = offer.Type switch
@@ -46,7 +53,7 @@ public class OfferService : IOfferService
 			OfferType.Buy => TransferMoney(offer.WriterId,
 				clientId, offerValue),
 			OfferType.PublicOfferring =>
-				_user.ChangeBalance(clientId, -amount),
+				_user.ChangeBalance(clientId, -offerValue),
 			_ => throw new ArgumentOutOfRangeException(nameof(offer.Type))
 		};
 		await task;

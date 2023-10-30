@@ -14,7 +14,7 @@ public class DbLogProvider : ILogProvider
 		_currentTime = currentTime;
 	}
 
-	public bool Log(string className, string message,
+	public void Log(string className, string message,
 		string? exception, string? objectDump)
 	{
 		try
@@ -28,11 +28,7 @@ public class DbLogProvider : ILogProvider
 				Timestamp = _currentTime.Get()
 			});
 			_ctx.SaveChanges();
-			return true;
 		}
-		catch
-		{
-			return false;
-		}
+		catch {}
 	}
 }

@@ -18,6 +18,6 @@ public interface IOfferRepository
 		CancellationToken cancellationToken = default);
 
 	Task Add(TradeOffer offer, CancellationToken cancellationToken = default);
-	Task<bool> DecreaseOfferAmount(Guid offerId, int amount);
-	bool Cancel(Guid offerId);
+	Task DecreaseOfferAmount(Guid offerId, int amount);
+	void Cancel(Guid offerId);
 }

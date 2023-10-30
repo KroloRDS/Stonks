@@ -49,12 +49,10 @@ public class StockRepository : IStockRepository
 		CancellationToken cancellationToken = default) =>
 		await _stock.LastBankruptDate(cancellationToken);
 
-	public async Task<bool> Bankrupt(Guid stockId)
+	public async Task Bankrupt(Guid stockId)
 	{
-		var stock = await _writeCtx.GetById<EF.Stock>(stockId);
-		if (stock is null) return false;
-
+		var stock = await _writeCtx.GetById<EF.Stock>(stockId) ??
+			throw new KeyNotFoundException($"Stock: {stockId}");
 		stock.BankruptDate = _currentTime.Get();
-		return true;
 	}
 }

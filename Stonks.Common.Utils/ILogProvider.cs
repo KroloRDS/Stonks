@@ -2,6 +2,6 @@
 
 public interface ILogProvider
 {
-	bool Log(string className, string message,
+	void Log(string className, string message,
 		string? exception, string? objectDump);
 }

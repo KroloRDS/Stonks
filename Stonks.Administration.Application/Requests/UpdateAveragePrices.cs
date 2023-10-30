@@ -37,10 +37,10 @@ public class UpdateAveragePricesHandler
 	public async Task<Response> Handle(UpdateAveragePrices request,
 		CancellationToken cancellationToken = default)
 	{
+		var transaction = _writer.BeginTransaction();
 		try
 		{
 			var stocks = await _stock.GetActive(cancellationToken);
-			var transaction = _writer.BeginTransaction();
 			var updates = stocks.Select(x => UpdateSingle(
 				x.Id, cancellationToken));
 			await Task.WhenAll(updates);
@@ -49,6 +49,7 @@ public class UpdateAveragePricesHandler
 		}
 		catch (Exception ex)
 		{
+			_writer.RollbackTransaction(transaction);
 			_logger.Log(ex);
 			return Response.Error(ex);
 		}

@@ -90,22 +90,22 @@ public class OfferRepository : IOfferRepository
 		await _writeCtx.AddAsync(mapped, cancellationToken);
 	}
 
-	public async Task<bool> DecreaseOfferAmount(Guid offerId, int amount)
+	public async Task DecreaseOfferAmount(Guid offerId, int amount)
 	{
-		var offer = await _writeCtx.GetById<EF.TradeOffer>(offerId);
-		if (offer is null) return false;
+		var offer = await _writeCtx.GetById<EF.TradeOffer>(offerId)
+			?? throw new KeyNotFoundException($"Offer: {offerId}");
 
-		if (offer.Amount < amount) return false;
+		if (offer.Amount < amount)
+			throw new ArgumentOutOfRangeException($"Offer: {offerId}");
+
 		offer.Amount -= amount;
-
-		return true;
 	}
 
-	public bool Cancel(Guid offerId)
+	public void Cancel(Guid offerId)
 	{
-		var offer = _writeCtx.GetById<EF.TradeOffer>(offerId);
-		if (offer is null) return false;
+		var offer = _writeCtx.GetById<EF.TradeOffer>(offerId) ??
+			throw new KeyNotFoundException($"Offer: {offerId}");
+
 		_writeCtx.Remove(offer);
-		return true;
 	}
 }

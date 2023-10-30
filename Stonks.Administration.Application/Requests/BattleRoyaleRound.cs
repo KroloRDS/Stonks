@@ -43,15 +43,16 @@ public class BattleRoyaleRoundHandler :
 	public async Task<Response> Handle(BattleRoyaleRound request,
 		CancellationToken cancellationToken = default)
 	{
+		var transaction = _writer.BeginTransaction();
 		try
 		{
-			var transaction = _writer.BeginTransaction();
 			await BattleRoyaleRound(cancellationToken);
 			await _writer.CommitTransaction(transaction, cancellationToken);
 			return Response.Ok();
 		}
 		catch (Exception ex)
 		{
+			_writer.RollbackTransaction(transaction);
 			_logger.Log(ex);
 			return Response.Error(ex);
 		}

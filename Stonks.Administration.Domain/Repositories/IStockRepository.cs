@@ -10,5 +10,5 @@ public interface IStockRepository
 	Task<DateTime?> LastBankruptDate(
 		CancellationToken cancellationToken = default);
 
-	Task<bool> Bankrupt(Guid stockId);
+	Task Bankrupt(Guid stockId);
 }

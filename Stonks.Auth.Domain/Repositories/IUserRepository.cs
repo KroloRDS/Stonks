@@ -10,6 +10,5 @@ public interface IUserRepository
 	Task<User> GetUserFromLogin(string login,
 		CancellationToken cancellationToken = default);
 
-	Task<bool> Add(User user,
-		CancellationToken cancellationToken = default);
+	Task Add(User user, CancellationToken cancellationToken = default);
 }

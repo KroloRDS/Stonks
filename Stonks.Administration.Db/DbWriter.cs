@@ -8,6 +8,8 @@ public interface IDbWriter
 	DbTransaction BeginTransaction();
 	Task CommitTransaction(DbTransaction transaction,
 		CancellationToken cancellationToken = default);
+
+	void RollbackTransaction(DbTransaction transaction);
 }
 
 public class DbWriter : IDbWriter
@@ -18,6 +20,8 @@ public class DbWriter : IDbWriter
 	{
 		_ctx = ctx;
 	}
+	public async Task<int> SaveChanges(CancellationToken cancellationToken = default) =>
+		await _ctx.SaveChangesAsync(cancellationToken);
 
 	public DbTransaction BeginTransaction() => _ctx.BeginTransaction();
 
@@ -25,6 +29,6 @@ public class DbWriter : IDbWriter
 		CancellationToken cancellationToken = default) =>
 		await _ctx.CommitTransaction(transaction, cancellationToken);
 
-	public async Task<int> SaveChanges(CancellationToken cancellationToken = default) =>
-		await _ctx.SaveChangesAsync(cancellationToken);
+	public void RollbackTransaction(DbTransaction transaction) =>
+		_ctx.RollbackTransaction(transaction);
 }

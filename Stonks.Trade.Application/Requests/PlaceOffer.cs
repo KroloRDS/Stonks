@@ -58,15 +58,16 @@ public class PlaceOfferHandler :
 			return Response.BadRequest(ex.Message);
 		}
 
+		var transaction = _writer.BeginTransaction();
 		try
 		{
-			var transaction = _writer.BeginTransaction();
 			await PlaceOffer(request, cancellationToken);
 			await _writer.CommitTransaction(transaction, cancellationToken);
 			return Response.Ok();
 		}
 		catch (Exception ex)
 		{
+			_writer.RollbackTransaction(transaction);
 			_logger.Log(ex);
 			return Response.Error(ex);
 		}
@@ -132,18 +133,14 @@ public class PlaceOfferHandler :
 		var requestAmount = request.Amount;
 		foreach (var offer in offers)
 		{
-			if (offer.Amount < requestAmount)
-			{
-				await _offerHelper.Accept(request.WriterId,
-					offer.Id, offer.Amount, cancellationToken);
-				requestAmount -= offer.Amount;
-			}
-			else
-			{
-				await _offerHelper.Accept(request.WriterId,
-					offer.Id, requestAmount, cancellationToken);
-				return;
-			}
+			var acceptAmount = offer.Amount < requestAmount ?
+				offer.Amount : requestAmount;
+
+			await _offerHelper.Accept(request.WriterId,
+					offer.Id, acceptAmount, cancellationToken);
+
+			requestAmount -= acceptAmount;
+			if (requestAmount == 0) return;
 		}
 
 		// If there are still stocks to sell / buy

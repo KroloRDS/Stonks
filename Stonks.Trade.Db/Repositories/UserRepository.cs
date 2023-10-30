@@ -20,16 +20,18 @@ public class UserRepository : IUserRepository
 	public async Task<decimal> GetBalance(Guid userId,
 		CancellationToken cancellationToken = default)
 	{
-		var user = await _readCtx.GetById<EF.User>(userId);
-		if (user is null) throw new KeyNotFoundException(nameof(user));
+		var user = await _readCtx.GetById<EF.User>(userId) ??
+			throw new KeyNotFoundException($"User: {userId}");
+
 		return user.Funds;
 	}
 
 	public async Task ChangeBalance(Guid userId, decimal balance,
 		CancellationToken cancellationToken = default)
 	{
-		var user = await _writeCtx.GetById<EF.User>(userId);
-		if (user is null) throw new KeyNotFoundException(nameof(user));
+		var user = await _writeCtx.GetById<EF.User>(userId) ??
+			throw new KeyNotFoundException($"User: {userId}");
+
 		if (user.Funds + balance < 0) throw new InsufficientFundsException();
 		user.Funds += balance;
 	}
