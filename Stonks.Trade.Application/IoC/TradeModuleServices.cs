@@ -16,7 +16,7 @@ public static class TradeModuleServices
 
 		services.AddMediatR(a => a.RegisterServicesFromAssemblies(assembly))
 			.AddScoped<IOfferService, OfferService>()
-			.AddScoped<ISharesService, SharesService>()
+			.AddScoped<IShareService, ShareService>()
 			.AddScoped<IDbWriter, DbWriter>()
 			.AddScoped<IOfferRepository, OfferRepository>()
 			.AddScoped<IPriceRepository, PriceRepository>()

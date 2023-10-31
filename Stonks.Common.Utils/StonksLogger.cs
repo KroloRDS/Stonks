@@ -4,11 +4,11 @@ namespace Stonks.Common.Utils;
 
 public interface IStonksLogger
 {
-	bool Log(string message);
-	bool Log(string message, object obj);
-	bool Log(Exception exception);
-	bool Log(Exception exception, object obj);
-	bool Log(string message, Exception exception, object obj);
+	void Log(string message);
+	void Log(string message, object obj);
+	void Log(Exception exception);
+	void Log(Exception exception, object obj);
+	void Log(string message, Exception exception, object obj);
 }
 
 public class StonksLogger : IStonksLogger
@@ -22,19 +22,19 @@ public class StonksLogger : IStonksLogger
 		_className = className;
 	}
 
-	public bool Log(string message) =>
+	public void Log(string message) =>
 		_logger.Log(_className, message, null, null);
 
-	public bool Log(string message, object obj) =>
+	public void Log(string message, object obj) =>
 		_logger.Log(_className, message, null, GetObjectDump(obj));
 
-	public bool Log(Exception exception) =>
+	public void Log(Exception exception) =>
 		_logger.Log(_className, exception.Message, exception.ToString(), null);
 
-	public bool Log(Exception exception, object obj) =>
+	public void Log(Exception exception, object obj) =>
 		_logger.Log(_className, exception.Message, exception.ToString(), GetObjectDump(obj));
 
-	public bool Log(string message, Exception exception, object obj) =>
+	public void Log(string message, Exception exception, object obj) =>
 		_logger.Log(_className, message, exception.ToString(), GetObjectDump(obj));
 
 	private static string GetObjectDump(object obj)

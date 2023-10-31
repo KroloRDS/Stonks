@@ -20,7 +20,7 @@ public class NoPublicStocksException : InvalidOperationException
 
 public class BankruptStockException : InvalidOperationException
 {
-	private const string Desc = "Invalid operation for bankrupt stock";
+	private const string Desc = "Stock is bankrupt or does not exist";
 	public BankruptStockException() : base(Desc) { }
 }
 

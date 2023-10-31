@@ -20,29 +20,29 @@ public class PlaceOffer : IRequest<Response>
 public class PlaceOfferHandler :
 	IRequestHandler<PlaceOffer, Response>
 {
-	private readonly IOfferRepository _offers;
-	private readonly IShareRepository _shares;
-	private readonly IStockRepository _stocks;
-	private readonly IUserRepository _users;
+	private readonly IOfferRepository _offer;
+	private readonly IShareRepository _share;
+	private readonly IStockRepository _stock;
+	private readonly IUserRepository _user;
 
 	private readonly IDbWriter _writer;
-	private readonly IOfferService _offerHelper;
+	private readonly IOfferService _offerService;
 	private readonly IStonksLogger _logger;
 
-	public PlaceOfferHandler(IOfferRepository offers,
-		IShareRepository shares,
-		IStockRepository stocks,
-		IUserRepository users,
+	public PlaceOfferHandler(IOfferRepository offer,
+		IShareRepository share,
+		IStockRepository stock,
+		IUserRepository user,
 		IDbWriter writer,
-		IOfferService offerHelper,
+		IOfferService offerService,
 		ILogProvider logProvider)
 	{
-		_offers = offers;
-		_shares = shares;
-		_stocks = stocks;
-		_users = users;
+		_offer = offer;
+		_share = share;
+		_stock = stock;
+		_user = user;
 		_writer = writer;
-		_offerHelper = offerHelper;
+		_offerService = offerService;
 		_logger = new StonksLogger(logProvider, GetType().Name);
 	}
 
@@ -79,7 +79,7 @@ public class PlaceOfferHandler :
 		if (request.Type == OfferType.PublicOfferring)
 			throw new PublicOfferingException();
 
-		if (await _stocks.IsBankrupt(request.StockId))
+		if (await _stock.IsBankrupt(request.StockId))
 			throw new BankruptStockException();
 
 		if (request.Amount < 1)
@@ -103,8 +103,8 @@ public class PlaceOfferHandler :
 	private async Task CheckOwnedShares(Guid writerId, Guid stockId,
 		int amount, CancellationToken cancellationToken = default)
 	{
-		var ownedAmount = await _shares.GetOwnedAmount(writerId,
-			stockId, cancellationToken);
+		var ownedAmount = await _share.GetOwnedAmount(stockId,
+			writerId, cancellationToken);
 		if (ownedAmount < amount)
 			throw new NoStocksOnSellerException();
 	}
@@ -112,8 +112,8 @@ public class PlaceOfferHandler :
 	private async Task CheckAvailableFunds(decimal amount, Guid userId,
 		CancellationToken cancellationToken = default)
 	{
-		var funds = _users.GetBalance(userId, cancellationToken);
-		var offers = await _offers.GetUserBuyOffers(userId, cancellationToken);
+		var funds = _user.GetBalance(userId, cancellationToken);
+		var offers = await _offer.GetUserBuyOffers(userId, cancellationToken);
 		var inOtherOffers = offers.Sum(x => x.Price * x.Amount);
 
 		if ((await funds) - inOtherOffers < amount)
@@ -125,9 +125,9 @@ public class PlaceOfferHandler :
 	{
 		// Try to match with existin offers first
 		var offers = request.Type == OfferType.Buy ?
-			await _offers.FindSellOffers(request.StockId,
+			await _offer.FindSellOffers(request.StockId,
 				request.Price, cancellationToken) :
-			await _offers.FindBuyOffers(request.StockId,
+			await _offer.FindBuyOffers(request.StockId,
 				request.Price, cancellationToken);
 		
 		var requestAmount = request.Amount;
@@ -136,7 +136,7 @@ public class PlaceOfferHandler :
 			var acceptAmount = offer.Amount < requestAmount ?
 				offer.Amount : requestAmount;
 
-			await _offerHelper.Accept(request.WriterId,
+			await _offerService.Accept(request.WriterId,
 					offer.Id, acceptAmount, cancellationToken);
 
 			requestAmount -= acceptAmount;
@@ -153,6 +153,6 @@ public class PlaceOfferHandler :
 			Price = request.Price
 		};
 
-		await _offers.Add(newOffer, cancellationToken);
+		await _offer.Add(newOffer, cancellationToken);
 	}
 }

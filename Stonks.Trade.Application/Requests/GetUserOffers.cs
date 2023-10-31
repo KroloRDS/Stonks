@@ -12,15 +12,15 @@ public record GetUserOffers(Guid UserId) :
 public class GetUserOffersHandler :
 	IRequestHandler<GetUserOffers, Response<IEnumerable<OfferDTO>>>
 {
-	private readonly IOfferRepository _offers;
-	private readonly IStockRepository _stocks;
+	private readonly IOfferRepository _offer;
+	private readonly IStockRepository _stock;
 	private readonly IStonksLogger _logger;
 
-	public GetUserOffersHandler(IOfferRepository offers,
-		IStockRepository stocks, ILogProvider logProvider)
+	public GetUserOffersHandler(IOfferRepository offer,
+		IStockRepository stock, ILogProvider logProvider)
 	{
-		_offers = offers;
-		_stocks = stocks;
+		_offer = offer;
+		_stock = stock;
 		_logger = new StonksLogger(logProvider, GetType().Name);
 	}
 
@@ -42,11 +42,11 @@ public class GetUserOffersHandler :
 	private async Task<IEnumerable<OfferDTO>> GetOffers(GetUserOffers request,
 		CancellationToken cancellationToken = default)
 	{
-		var buyOffers = await _offers.GetUserBuyOffers(
+		var buyOffers = await _offer.GetUserBuyOffers(
 			request.UserId, cancellationToken);
-		var sellOffers = await _offers.GetUserSellOffers(
+		var sellOffers = await _offer.GetUserSellOffers(
 			request.UserId, cancellationToken);
-		var stocks = _stocks.GetStockNames();
+		var stocks = _stock.GetStockNames();
 
 		var mappedOffers = buyOffers.Select(x => new OfferDTO
 		{
@@ -56,11 +56,11 @@ public class GetUserOffersHandler :
 			Ticker = stocks[x.StockId].Ticker
 		}).ToList();
 
-		mappedOffers.AddRange(buyOffers.Select(x => new OfferDTO
+		mappedOffers.AddRange(sellOffers.Select(x => new OfferDTO
 		{
 			Amount = x.Amount,
 			Price = x.Price,
-			Type = OfferType.Buy,
+			Type = OfferType.Sell,
 			Ticker = stocks[x.StockId].Ticker
 		}));
 		return mappedOffers;
