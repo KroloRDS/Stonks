@@ -53,10 +53,10 @@ public class RegisterHandler : IRequestHandler<Register, Response<string>>
 
 	private async Task Validate(Register request)
 	{
-		if (request?.Login is null)
+		if (string.IsNullOrWhiteSpace(request?.Login))
 			throw new ArgumentNullException(nameof(request.Login));
 
-		if (request?.Password is null)
+		if (string.IsNullOrWhiteSpace(request?.Password))
 			throw new ArgumentNullException(nameof(request.Password));
 
 		if (await _user.LoginExist(request.Login))
