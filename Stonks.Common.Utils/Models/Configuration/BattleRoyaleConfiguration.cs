@@ -1,4 +1,4 @@
-﻿namespace Stonks.Common.Utils.Configuration;
+﻿namespace Stonks.Common.Utils.Models.Configuration;
 
 public record BattleRoyaleConfiguration(
     double FunWeight,

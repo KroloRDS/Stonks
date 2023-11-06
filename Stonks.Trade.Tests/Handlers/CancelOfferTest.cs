@@ -1,7 +1,7 @@
 ﻿using Moq;
 using NUnit.Framework;
-using Stonks.Common.Utils;
-using Stonks.Common.Utils.Response;
+using Stonks.Common.Utils.Models;
+using Stonks.Common.Utils.Services;
 using Stonks.Trade.Application.Requests;
 using Stonks.Trade.Db;
 using Stonks.Trade.Domain.Models;
@@ -9,6 +9,7 @@ using Stonks.Trade.Domain.Repositories;
 
 namespace Stonks.Trade.Tests.Handlers;
 
+[TestFixture]
 public class CancelOfferTest
 {
 	private readonly Mock<IOfferRepository> _offer = new();

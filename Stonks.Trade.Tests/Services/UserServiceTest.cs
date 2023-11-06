@@ -6,6 +6,7 @@ using Stonks.Trade.Domain.Repositories;
 
 namespace Stonks.Trade.Tests.Services;
 
+[TestFixture]
 public class UserServiceTest
 {
 	private readonly Mock<IUserRepository> _user = new();

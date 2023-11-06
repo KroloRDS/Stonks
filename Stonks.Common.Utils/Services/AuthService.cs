@@ -1,15 +1,16 @@
 ﻿using Microsoft.IdentityModel.Tokens;
-using Stonks.Common.Utils;
-using Stonks.Common.Utils.Configuration;
+using Stonks.Common.Utils.Models.Configuration;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Stonks.Auth.Application.Services;
+namespace Stonks.Common.Utils.Services;
 
 public interface IAuthService
 {
+	(Guid?, IEnumerable<string>) ReadToken(string? token);
+
 	string CreateAccessToken(Guid userId, string login,
 		IEnumerable<string> roles);
 }
@@ -17,13 +18,13 @@ public interface IAuthService
 public class AuthService : IAuthService
 {
 	private readonly JwtConfiguration _jwtConfiguration;
-	private readonly ICurrentTime _currentTime;
+	private readonly IStonksLogger _logger;
 
 	public AuthService(JwtConfiguration jwtConfiguration,
-		ICurrentTime currentTime)
+		ILogProvider logProvider)
 	{
 		_jwtConfiguration = jwtConfiguration;
-		_currentTime = currentTime;
+		_logger = new StonksLogger(logProvider, GetType().Name);
 	}
 
 	public static byte[] Hash(string text, short salt)
@@ -34,38 +35,51 @@ public class AuthService : IAuthService
 		return hash;
 	}
 
-	public static (Guid?, IEnumerable<string>) ReadToken(string? token)
+	public (Guid?, IEnumerable<string>) ReadToken(string? token)
 	{
 		if (token is null)
 			return (null, Enumerable.Empty<string>());
 
-		var key = Environment.GetEnvironmentVariable(Consts.JWT_SIGNING_KEY) ??
-			throw new Exception($"Missing {Consts.JWT_SIGNING_KEY} env variable");
+		var claims = GetTokenClaims(token);
+		var nameId = claims.FirstOrDefault(x => x.Type.EndsWith("nameidentifier"))?.Value;
+		Guid? userId = nameId is null ? null : Guid.Parse(nameId);
+		var roles = claims.Where(x => x.Type.EndsWith("role"))
+			.Select(x => x.Value);
 
-		var keyBytes = Encoding.ASCII.GetBytes(key);
-		var handler = new JwtSecurityTokenHandler();
+		return (userId, roles);
+	}
+
+	private IEnumerable<Claim> GetTokenClaims(string token)
+	{
+		var keyBytes = Encoding.ASCII.GetBytes(_jwtConfiguration.SigningKey);
 		var validations = new TokenValidationParameters
 		{
 			ValidateIssuerSigningKey = true,
 			IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
+			ValidIssuer = _jwtConfiguration.Issuer,
 			ValidateIssuer = true,
+			ValidAudience = _jwtConfiguration.Audience,
 			ValidateAudience = true
 		};
 
-		var decrypted = handler.ValidateToken(token, validations, out _);
-		var sub = decrypted.Claims.FirstOrDefault(x => x.Type == "sub")?.Value;
-		Guid? userId = sub is null ? null : Guid.Parse(sub);
-		var roles = decrypted.Claims.Where(x => x.Type == "role")
-			.Select(x => x.Value);
-
-		return (userId, roles);
+		try
+		{
+			var result = new JwtSecurityTokenHandler()
+				.ValidateToken(token, validations, out _);
+			return result?.Claims ?? Enumerable.Empty<Claim>();
+		}
+		catch (Exception ex)
+		{
+			_logger.Log("JWT decode error", ex, token);
+			return Enumerable.Empty<Claim>();
+		}
 	}
 
 	public string CreateAccessToken(Guid userId,
 		string login, IEnumerable<string> roles)
 	{
 		var claims = GetClaims(userId, login, roles);
-		var credentials = GetSigningCredentials(_jwtConfiguration.SigningKey);
+		var credentials = GetSigningCredentials();
 
 		var token = new JwtSecurityToken(
 			issuer: _jwtConfiguration.Issuer,
@@ -78,7 +92,7 @@ public class AuthService : IAuthService
 		return rawToken;
 	}
 
-	private SigningCredentials GetSigningCredentials(string key)
+	private SigningCredentials GetSigningCredentials()
 	{
 		var bytes = Encoding.UTF8.GetBytes(_jwtConfiguration.SigningKey);
 		var symmetricKey = new SymmetricSecurityKey(bytes);
@@ -105,5 +119,5 @@ public class AuthService : IAuthService
 	}
 
 	private DateTime GetExpirationTime() =>
-		_currentTime.Get().AddMinutes(_jwtConfiguration.ExpirationMinutes);
+		DateTime.Now.AddMinutes(_jwtConfiguration.ExpirationMinutes);
 }

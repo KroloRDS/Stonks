@@ -1,5 +1,5 @@
 ﻿using Stonks.Common.Db.EntityFrameworkModels;
-using Stonks.Common.Utils;
+using Stonks.Common.Utils.Services;
 
 namespace Stonks.Common.Db;
 

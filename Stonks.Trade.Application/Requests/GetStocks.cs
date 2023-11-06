@@ -1,6 +1,7 @@
 ﻿using MediatR;
-using Stonks.Common.Utils;
-using Stonks.Common.Utils.Response;
+using Stonks.Common.Utils.ExtensionMethods;
+using Stonks.Common.Utils.Models;
+using Stonks.Common.Utils.Services;
 using Stonks.Trade.Application.DTOs;
 using Stonks.Trade.Domain.Models;
 using Stonks.Trade.Domain.Repositories;

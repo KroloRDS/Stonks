@@ -5,8 +5,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Stonks.Administration.Application.IoC;
 using Stonks.Administration.Application.Requests;
-using Stonks.Auth.Application.Services;
-using Stonks.Common.Utils.Response;
+using Stonks.Common.Utils.Models;
+using Stonks.Common.Utils.Services;
 
 namespace Stonks.Administration.WebApi;
 
@@ -34,9 +34,9 @@ public static class AdministrationEndpoints
 	}
 
 	private static async Task<IResult> BattleRoyale(
-		ISender sender, HttpContext ctx)
+		ISender sender, IAuthService auth, HttpContext ctx)
 	{
-		if (!await IsAdmin(ctx))
+		if (!await IsAdmin(ctx, auth))
 			return TypedResults.Unauthorized();
 
 		var response = await sender.Send(new BattleRoyaleRound());
@@ -44,19 +44,20 @@ public static class AdministrationEndpoints
 	}
 
 	private static async Task<IResult> UpdatePrices(
-		ISender sender, HttpContext ctx)
+		ISender sender, IAuthService auth, HttpContext ctx)
 	{
-		if (!await IsAdmin(ctx))
+		if (!await IsAdmin(ctx, auth))
 			return TypedResults.Unauthorized();
 
 		var response = await sender.Send(new UpdateAveragePrices());
 		return response.ToHttpResult();
 	}
 
-	private static async Task<bool> IsAdmin(HttpContext ctx)
+	private static async Task<bool> IsAdmin(
+		HttpContext ctx, IAuthService auth)
 	{
 		var token = await ctx.GetTokenAsync("access_token");
-		(_, var roles) = AuthService.ReadToken(token);
+		(_, var roles) = auth.ReadToken(token);
 		return roles.Contains("Admin");
 	}
 

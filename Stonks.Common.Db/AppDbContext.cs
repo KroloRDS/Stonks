@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Stonks.Common.Utils;
 using Stonks.Common.Db.EntityFrameworkModels;
+using Stonks.Common.Utils.Models.Constants;
 
 namespace Stonks.Common.Db;
 

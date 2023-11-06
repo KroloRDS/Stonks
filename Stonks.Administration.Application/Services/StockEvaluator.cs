@@ -1,7 +1,8 @@
 ﻿using Stonks.Administration.Domain.Models;
 using Stonks.Administration.Domain.Repositories;
-using Stonks.Common.Utils;
-using Stonks.Common.Utils.Configuration;
+using Stonks.Common.Utils.ExtensionMethods;
+using Stonks.Common.Utils.Models.Configuration;
+using Stonks.Common.Utils.Models.Constants;
 
 namespace Stonks.Administration.Application.Services;
 

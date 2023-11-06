@@ -1,8 +1,8 @@
 ﻿using Stonks.Common.Db;
 using Stonks.Common.Db.EntityFrameworkModels;
 using CommonRepositories = Stonks.Common.Db.Repositories;
-using Stonks.Common.Utils;
 using Stonks.Trade.Domain.Repositories;
+using Stonks.Common.Utils.Models.Constants;
 
 namespace Stonks.Trade.Db.Repositories;
 

@@ -6,6 +6,7 @@ using Stonks.Trade.Domain.Repositories;
 
 namespace Stonks.Trade.Tests.Services;
 
+[TestFixture]
 public class OfferSerivceTest
 {
 	private readonly Mock<IOfferRepository> _offer = new();

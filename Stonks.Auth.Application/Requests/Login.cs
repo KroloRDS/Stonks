@@ -1,9 +1,7 @@
 ﻿using MediatR;
-using Stonks.Auth.Application.Services;
 using Stonks.Auth.Domain.Repositories;
-using Stonks.Common.Utils;
-using Stonks.Common.Utils.Configuration;
-using Stonks.Common.Utils.Response;
+using Stonks.Common.Utils.Models;
+using Stonks.Common.Utils.Services;
 
 namespace Stonks.Auth.Application.Requests;
 

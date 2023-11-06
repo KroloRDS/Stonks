@@ -1,7 +1,7 @@
 ﻿using Stonks.Common.Db;
 using EF = Stonks.Common.Db.EntityFrameworkModels;
 using Stonks.Trade.Domain.Repositories;
-using Stonks.Common.Utils;
+using Stonks.Common.Utils.Models.Constants;
 
 namespace Stonks.Trade.Db.Repositories;
 

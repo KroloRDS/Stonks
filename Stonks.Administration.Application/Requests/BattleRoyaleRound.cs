@@ -2,9 +2,9 @@
 using Stonks.Administration.Application.Services;
 using Stonks.Administration.Db;
 using Stonks.Administration.Domain.Repositories;
-using Stonks.Common.Utils;
-using Stonks.Common.Utils.Configuration;
-using Stonks.Common.Utils.Response;
+using Stonks.Common.Utils.Models;
+using Stonks.Common.Utils.Models.Configuration;
+using Stonks.Common.Utils.Services;
 
 namespace Stonks.Administration.Application.Requests;
 

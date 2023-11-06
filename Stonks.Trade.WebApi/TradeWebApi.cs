@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
-using Stonks.Auth.Application.Services;
-using Stonks.Common.Utils.Response;
+using Stonks.Common.Utils.Models;
+using Stonks.Common.Utils.Services;
 using Stonks.Trade.Application.IoC;
 using Stonks.Trade.Application.Requests;
 
@@ -36,10 +36,10 @@ public static class TradeWebApi
 		return app;
 	}
 
-	private static async Task<IResult> CancelOffer(
-		ISender sender, Guid offerId, HttpContext ctx)
+	private static async Task<IResult> CancelOffer(ISender sender,
+		IAuthService auth, Guid offerId, HttpContext ctx)
 	{
-		var userId = await GetUserId(ctx);
+		var userId = await GetUserId(ctx, auth);
 		if (!userId.HasValue) return TypedResults.Unauthorized();
 
 		var response = await sender.Send(new CancelOffer(userId.Value, offerId));
@@ -53,9 +53,9 @@ public static class TradeWebApi
 	}
 
 	private static async Task<IResult> GetUserOffers(
-		ISender sender, HttpContext ctx)
+		ISender sender, IAuthService auth, HttpContext ctx)
 	{
-		var userId = await GetUserId(ctx);
+		var userId = await GetUserId(ctx, auth);
 		if (!userId.HasValue) return TypedResults.Unauthorized();
 
 		var response = await sender.Send(new GetUserOffers(userId.Value));
@@ -63,9 +63,9 @@ public static class TradeWebApi
 	}
 
 	private static async Task<IResult> PlaceOffer(ISender sender,
-		[FromBody] PlaceOffer request, HttpContext ctx)
+		IAuthService auth, [FromBody] PlaceOffer request, HttpContext ctx)
 	{
-		var userId = await GetUserId(ctx);
+		var userId = await GetUserId(ctx, auth);
 		if (!userId.HasValue) return TypedResults.Unauthorized();
 
 		request.WriterId = userId.Value;
@@ -73,10 +73,11 @@ public static class TradeWebApi
 		return response.ToHttpResult();
 	}
 
-	private static async Task<Guid?> GetUserId(HttpContext ctx)
+	private static async Task<Guid?> GetUserId(
+		HttpContext ctx, IAuthService auth)
 	{
 		var token = await ctx.GetTokenAsync("access_token");
-		(var id, _) = AuthService.ReadToken(token);
+		(var id, _) = auth.ReadToken(token);
 		return id;
 	}
 

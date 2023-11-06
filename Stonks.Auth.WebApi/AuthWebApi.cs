@@ -7,8 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Stonks.Auth.Application.IoC;
 using Stonks.Auth.Application.Requests;
-using Stonks.Common.Utils.Configuration;
-using Stonks.Common.Utils.Response;
+using Stonks.Common.Utils.Models;
+using Stonks.Common.Utils.Models.Configuration;
 using System.Text;
 
 namespace Stonks.Auth.WebApi;

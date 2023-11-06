@@ -1,12 +1,13 @@
 ﻿using Moq;
 using NUnit.Framework;
-using Stonks.Common.Utils;
+using Stonks.Common.Utils.Services;
 using Stonks.Trade.Application.Services;
 using Stonks.Trade.Domain.Models;
 using Stonks.Trade.Domain.Repositories;
 
 namespace Stonks.Trade.Tests.Services;
 
+[TestFixture]
 public class ShareServiceTest
 {
 	private readonly Mock<ICurrentTime> _currentTime = new();

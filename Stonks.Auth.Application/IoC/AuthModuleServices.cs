@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Stonks.Auth.Application.Services;
 using Stonks.Auth.Db;
 using Stonks.Auth.Db.Repositories;
 using Stonks.Auth.Domain.Repositories;

@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Stonks.Administration.WebApi;
-using Stonks.Auth.Application.Services;
 using Stonks.Auth.WebApi;
 using Stonks.Common.Db;
-using Stonks.Common.Utils;
-using Stonks.Common.Utils.Configuration;
+using Stonks.Common.Utils.Models.Configuration;
+using Stonks.Common.Utils.Models.Constants;
+using Stonks.Common.Utils.Services;
 using Stonks.Trade.WebApi;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,14 +16,14 @@ app.Run();
 static void AddServices(WebApplicationBuilder builder)
 {
 	var services = builder.Services;
-	var currentTime = new CurrentTime();
 	var jwtConfiguration = GetJwtConfiguration(builder);
 
 	AddDb(builder);
 	AddConfigurations(builder)
-		.AddSingleton(currentTime)
+		.AddSingleton(jwtConfiguration)
 		.AddScoped<ILogProvider, DbLogProvider>()
-		.AddSingleton(new AuthService(jwtConfiguration, currentTime))
+		.AddSingleton<ICurrentTime, CurrentTime>()
+		.AddSingleton<IAuthService, AuthService>()
 		.AddAdministrationEndpoints()
 		.AddAuthEndpoints(jwtConfiguration)
 		.AddTradeEndpoints();
@@ -36,8 +36,8 @@ static JwtConfiguration GetJwtConfiguration(WebApplicationBuilder builder)
 		.Get<JwtConfiguration>() ??
 		throw new Exception("Missing JwtConfiguration in appsettings.js");
 	jwtConfiguration.SigningKey =
-		Environment.GetEnvironmentVariable(Consts.JWT_SIGNING_KEY) ??
-		throw new Exception($"Missing {Consts.JWT_SIGNING_KEY} env variable");
+		Environment.GetEnvironmentVariable(Constants.JWT_SIGNING_KEY) ??
+		throw new Exception($"Missing {Constants.JWT_SIGNING_KEY} env variable");
 
 	return jwtConfiguration;
 }

@@ -5,7 +5,7 @@ using Stonks.Administration.Domain.Repositories;
 using Stonks.Common.Db;
 using EF = Stonks.Common.Db.EntityFrameworkModels;
 using CommonRepositories = Stonks.Common.Db.Repositories;
-using Stonks.Common.Utils;
+using Stonks.Common.Utils.Services;
 
 namespace Stonks.Administration.Db.Repositories;
 

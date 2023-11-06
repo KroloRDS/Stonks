@@ -1,4 +1,4 @@
-﻿using Stonks.Common.Utils;
+﻿using Stonks.Common.Utils.Services;
 using Stonks.Trade.Domain.Models;
 using Stonks.Trade.Domain.Repositories;
 

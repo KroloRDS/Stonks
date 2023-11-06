@@ -1,8 +1,9 @@
 ﻿using Moq;
 using NUnit.Framework;
 using Stonks.Common.Db;
-using Stonks.Common.Utils;
-using Stonks.Common.Utils.Response;
+using Stonks.Common.Utils.Models;
+using Stonks.Common.Utils.Models.Constants;
+using Stonks.Common.Utils.Services;
 using Stonks.Trade.Application.Requests;
 using Stonks.Trade.Application.Services;
 using Stonks.Trade.Db;
@@ -11,6 +12,7 @@ using Stonks.Trade.Domain.Repositories;
 
 namespace Stonks.Trade.Tests.Handlers;
 
+[TestFixture]
 public class PlaceOfferTest
 {
 	private readonly Mock<IOfferRepository> _offer = new();
