@@ -3,10 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "test\UnitTests\UnitTests.csproj", "{596E9BEE-38DC-4D64-A454-BBCBEF5D586C}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{EDBECE83-9F47-4166-9ADA-B17FF50098EC}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A3201EE5-D642-47AB-A28E-ADCF5410DD74}"
 	ProjectSection(SolutionItems) = preProject
 		.dockerignore = .dockerignore
@@ -52,15 +48,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stonks.Administration.WebAp
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Auth", "Auth", "{C4C41C32-ECB1-4046-9B05-8B1EBE77EBB2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stonks.Auth.Application", "Stonks.Auth.Application\Stonks.Auth.Application.csproj", "{2F9E5ED7-DD40-4D79-9AA7-B2F10F2CAB32}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stonks.Auth.Application", "Stonks.Auth.Application\Stonks.Auth.Application.csproj", "{2F9E5ED7-DD40-4D79-9AA7-B2F10F2CAB32}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stonks.Auth.Db", "Stonks.Auth.Db\Stonks.Auth.Db.csproj", "{2307BFBC-18AD-4113-819A-4035CCCC456E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stonks.Auth.Db", "Stonks.Auth.Db\Stonks.Auth.Db.csproj", "{2307BFBC-18AD-4113-819A-4035CCCC456E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stonks.Auth.Domain", "Stonks.Auth.Domain\Stonks.Auth.Domain.csproj", "{54F61DA2-A417-4F3A-BFAF-6701E6407E29}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stonks.Auth.Domain", "Stonks.Auth.Domain\Stonks.Auth.Domain.csproj", "{54F61DA2-A417-4F3A-BFAF-6701E6407E29}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stonks.Auth.Tests", "Stonks.Auth.Tests\Stonks.Auth.Tests.csproj", "{85C29755-BB22-49AA-966E-67E6AC61B2E9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stonks.Auth.Tests", "Stonks.Auth.Tests\Stonks.Auth.Tests.csproj", "{85C29755-BB22-49AA-966E-67E6AC61B2E9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stonks.Auth.WebApi", "Stonks.Auth.WebApi\Stonks.Auth.WebApi.csproj", "{462DBC28-4574-43A7-A607-CB1029651F01}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stonks.Auth.WebApi", "Stonks.Auth.WebApi\Stonks.Auth.WebApi.csproj", "{462DBC28-4574-43A7-A607-CB1029651F01}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -68,10 +64,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{596E9BEE-38DC-4D64-A454-BBCBEF5D586C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{596E9BEE-38DC-4D64-A454-BBCBEF5D586C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{596E9BEE-38DC-4D64-A454-BBCBEF5D586C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{596E9BEE-38DC-4D64-A454-BBCBEF5D586C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CDD475AB-6D42-46BC-BBF6-2E75B5166EEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CDD475AB-6D42-46BC-BBF6-2E75B5166EEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CDD475AB-6D42-46BC-BBF6-2E75B5166EEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -153,7 +145,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{596E9BEE-38DC-4D64-A454-BBCBEF5D586C} = {EDBECE83-9F47-4166-9ADA-B17FF50098EC}
 		{CDD475AB-6D42-46BC-BBF6-2E75B5166EEB} = {347E5119-887E-4EA8-9890-C408C780FD4C}
 		{B0BB4119-0F56-493D-B74C-7AD0215A2C4B} = {347E5119-887E-4EA8-9890-C408C780FD4C}
 		{D463A825-1920-4FD0-A3A3-8AC1F56BB7C4} = {347E5119-887E-4EA8-9890-C408C780FD4C}
