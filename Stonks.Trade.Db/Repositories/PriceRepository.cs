@@ -24,9 +24,9 @@ public class PriceRepository : IPriceRepository
 		return prices.Select(_mapper.Map<AvgPrice>);
 	}
 
-	public async Task<decimal> Current(Guid stockId)
+	public async Task<decimal?> Current(Guid stockId)
 	{
 		var price = await _price.Current(stockId);
-		return price.Price;
+		return price?.Price;
 	}
 }

@@ -1,6 +1,7 @@
 ﻿using Stonks.Administration.Domain.Repositories;
 using Stonks.Common.Db;
 using Stonks.Common.Db.EntityFrameworkModels;
+using Stonks.Common.Utils.Models.Constants;
 using CommonRepositories = Stonks.Common.Db.Repositories;
 
 namespace Stonks.Administration.Db.Repositories;
@@ -36,7 +37,7 @@ public class OfferRepository : IOfferRepository
 			await _ctx.AddAsync(new TradeOffer
 			{
 				Amount = amount,
-				Price = price.Price,
+				Price = price?.Price ?? Constants.STOCK_DEFAULT_PRICE,
 				StockId = stock.Id,
 				Type = OfferType.PublicOfferring
 			}, cancellationToken);

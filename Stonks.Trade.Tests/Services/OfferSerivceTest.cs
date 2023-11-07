@@ -66,7 +66,7 @@ public class OfferSerivceTest
 			.ReturnsAsync(new TradeOffer
 			{
 				Id = Guid.NewGuid(),
-				Price = 1M,
+				Price = decimal.One,
 				Type = OfferType.Buy,
 				Amount = offerAmount,
 				WriterId = Guid.NewGuid(),

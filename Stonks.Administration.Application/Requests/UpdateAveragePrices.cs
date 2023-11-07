@@ -1,8 +1,10 @@
 ﻿using MediatR;
+using Stonks.Administration.Application.Services;
 using Stonks.Administration.Db;
 using Stonks.Administration.Domain.Models;
 using Stonks.Administration.Domain.Repositories;
 using Stonks.Common.Utils.Models;
+using Stonks.Common.Utils.Models.Constants;
 using Stonks.Common.Utils.Services;
 
 namespace Stonks.Administration.Application.Requests;
@@ -60,7 +62,7 @@ public class UpdateAveragePricesHandler
 	{
 		var currentPrice = await _price.Current(stockId);
 		var transactions = _transaction.Get(stockId);
-		var (price, sharesTraded) = AverageFromTransactions(
+		var (price, sharesTraded) = AveragePriceCalculator.FromTransactions(
 			transactions, currentPrice);
 
 		await _price.Add(new AvgPrice
@@ -70,23 +72,5 @@ public class UpdateAveragePricesHandler
 			SharesTraded = sharesTraded,
 			Price = price
 		}, cancellationToken);
-	}
-
-	private static (decimal, ulong) AverageFromTransactions(
-		IEnumerable<Transaction> transactions, AvgPrice currentPrice)
-	{
-		var sharesTraded = currentPrice.SharesTraded;
-		var priceSum = currentPrice.Price * sharesTraded;
-
-		foreach (var transaction in transactions)
-		{
-			priceSum += transaction.Amount * transaction.Price;
-			sharesTraded += (ulong)transaction.Amount;
-		}
-
-		var avgPrice = sharesTraded > 0 ?
-			priceSum / sharesTraded : Stock.DEFAULT_PRICE;
-
-		return (avgPrice, sharesTraded);
 	}
 }

@@ -42,7 +42,7 @@ public class PlaceOfferTest
 		var request = new PlaceOffer
 		{
 			Amount = 1,
-			Price = 1M,
+			Price = decimal.One,
 			StockId = Guid.NewGuid(),
 			WriterId = Guid.NewGuid(),
 			Type = OfferType.PublicOfferring
@@ -65,7 +65,7 @@ public class PlaceOfferTest
 		var request = new PlaceOffer
 		{
 			Amount = 1,
-			Price = 1M,
+			Price = decimal.One,
 			StockId = Guid.NewGuid(),
 			WriterId = Guid.NewGuid(),
 			Type = offerType
@@ -90,7 +90,7 @@ public class PlaceOfferTest
 		var request = new PlaceOffer
 		{
 			Amount = amount,
-			Price = 1M,
+			Price = decimal.One,
 			StockId = Guid.NewGuid(),
 			WriterId = Guid.NewGuid(),
 			Type = OfferType.Buy
@@ -143,7 +143,7 @@ public class PlaceOfferTest
 		var request = new PlaceOffer
 		{
 			Amount = offerAmount,
-			Price = 1M,
+			Price = decimal.One,
 			StockId = stockId,
 			WriterId = userId,
 			Type = OfferType.Sell
@@ -170,7 +170,7 @@ public class PlaceOfferTest
 		var request = new PlaceOffer
 		{
 			Amount = 1,
-			Price = 1M,
+			Price = decimal.One,
 			StockId = Guid.NewGuid(),
 			WriterId = userId,
 			Type = OfferType.Buy
@@ -206,7 +206,7 @@ public class PlaceOfferTest
 		var request = new PlaceOffer
 		{
 			Amount = offerAmount,
-			Price = 1M,
+			Price = decimal.One,
 			StockId = Guid.NewGuid(),
 			WriterId = userId,
 			Type = OfferType.Sell
@@ -240,7 +240,7 @@ public class PlaceOfferTest
 		var request = new PlaceOffer
 		{
 			Amount = sellAmount,
-			Price = 1M,
+			Price = decimal.One,
 			StockId = Guid.NewGuid(),
 			WriterId = userId,
 			Type = OfferType.Sell
@@ -265,7 +265,7 @@ public class PlaceOfferTest
 		var request = new PlaceOffer
 		{
 			Amount = 1,
-			Price = 1M,
+			Price = decimal.One,
 			StockId = Guid.NewGuid(),
 			WriterId = userId,
 			Type = OfferType.Buy
@@ -299,7 +299,7 @@ public class PlaceOfferTest
 		var request = new PlaceOffer
 		{
 			Amount = buyAmount,
-			Price = 1M,
+			Price = decimal.One,
 			StockId = Guid.NewGuid(),
 			WriterId = userId,
 			Type = OfferType.Buy
@@ -352,7 +352,7 @@ public class PlaceOfferTest
 			.ReturnsAsync(buyOfferAmounts.Select(x => new TradeOffer
 			{
 				Amount = x,
-				Price = 1M,
+				Price = decimal.One,
 				Type = OfferType.Buy
 			}));
 
@@ -361,7 +361,7 @@ public class PlaceOfferTest
 			.ReturnsAsync(sellOfferAmounts.Select(x => new TradeOffer
 			{
 				Amount = x,
-				Price = 1M,
+				Price = decimal.One,
 				Type = OfferType.Sell
 			}));
 	}

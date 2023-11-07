@@ -7,8 +7,6 @@ namespace Stonks.Common.Db.EntityFrameworkModels;
 [Index(nameof(Ticker), IsUnique = true)]
 public class Stock : HasId
 {
-	public const decimal DEFAULT_PRICE = 1M;
-
 	[MaxLength(50)]
 	public string Name { get; set; } = string.Empty;
 

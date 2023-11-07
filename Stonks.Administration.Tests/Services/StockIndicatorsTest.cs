@@ -1,10 +1,9 @@
 ﻿using NUnit.Framework;
-using System.Linq;
-using System.Collections.Generic;
-using Stonks.CQRS.Queries.Bankruptcy.GetWeakestStock;
+using Stonks.Administration.Application.Services;
 
-namespace UnitTests.CQRS.Queries.Bankruptcy;
+namespace Stonks.Administration.Tests.Services;
 
+[TestFixture]
 public class StockIndicatorsTest
 {
 	[Test]
@@ -13,11 +12,13 @@ public class StockIndicatorsTest
 		IEnumerable<StockIndicator> stocks1 = null!;
 		var stocks2 = new List<StockIndicator>();
 
-		Assert.NotNull(StockIndicator.Normalise(stocks1));
-		Assert.False(StockIndicator.Normalise(stocks1).Any());
-
-		Assert.NotNull(StockIndicator.Normalise(stocks2));
-		Assert.False(StockIndicator.Normalise(stocks2).Any());
+		Assert.Multiple(() =>
+		{
+			Assert.That(stocks1.Normalise(), Is.Not.Null);
+			Assert.That(stocks1.Normalise().Any(), Is.False);
+			Assert.That(stocks2.Normalise(), Is.Not.Null);
+			Assert.That(stocks2.Normalise().Any(), Is.False);
+		});
 	}
 
 	[Test]
@@ -45,15 +46,18 @@ public class StockIndicatorsTest
 		}
 
 		//Act
-		var actual = StockIndicator.Normalise(stocks);
+		var actual = stocks.Normalise();
 
 		//Assert
 		foreach (var stock in actual)
 		{
-			Assert.AreEqual(fun, stock.Fun);
-			Assert.AreEqual(1, stock.MarketCap);
-			Assert.AreEqual(1, stock.StocksAmount);
-			Assert.AreEqual(1, stock.Volatility);
+			Assert.Multiple(() =>
+			{
+				Assert.That(stock.Fun, Is.EqualTo(fun));
+				Assert.That(stock.MarketCap, Is.EqualTo(1));
+				Assert.That(stock.StocksAmount, Is.EqualTo(1));
+				Assert.That(stock.Volatility, Is.EqualTo(1));
+			});
 		}
 	}
 
@@ -92,26 +96,29 @@ public class StockIndicatorsTest
 		};
 
 		//Act
-		var normalised = StockIndicator.Normalise(stocks).ToList();
+		var normalised = stocks.Normalise().ToList();
 		var actual1 = normalised[0];
 		var actual2 = normalised[1];
 		var actual3 = normalised[2];
 
 		//Assert
-		Assert.AreEqual(fun, actual1.Fun);
-		Assert.AreEqual(1, actual1.MarketCap);
-		Assert.AreEqual(1, actual1.StocksAmount);
-		Assert.AreEqual(1, actual1.Volatility);
+		Assert.Multiple(() =>
+		{
+			Assert.That(actual1.Fun, Is.EqualTo(fun));
+			Assert.That(actual1.MarketCap, Is.EqualTo(1));
+			Assert.That(actual1.StocksAmount, Is.EqualTo(1));
+			Assert.That(actual1.Volatility, Is.EqualTo(1));
 
-		Assert.AreEqual(0, actual2.Fun);
-		Assert.AreEqual(0.5, actual2.MarketCap);
-		Assert.AreEqual(0.5, actual2.StocksAmount);
-		Assert.AreEqual(0.5, actual2.Volatility);
+			Assert.That(actual2.Fun, Is.EqualTo(0));
+			Assert.That(actual2.MarketCap, Is.EqualTo(0.5));
+			Assert.That(actual2.StocksAmount, Is.EqualTo(0.5));
+			Assert.That(actual2.Volatility, Is.EqualTo(0.5));
 
-		Assert.AreEqual(-fun, actual3.Fun);
-		Assert.AreEqual(0, actual3.MarketCap);
-		Assert.AreEqual(0, actual3.StocksAmount);
-		Assert.AreEqual(0, actual3.Volatility);
+			Assert.That(actual3.Fun, Is.EqualTo(-fun));
+			Assert.That(actual3.MarketCap, Is.EqualTo(0));
+			Assert.That(actual3.StocksAmount, Is.EqualTo(0));
+			Assert.That(actual3.Volatility, Is.EqualTo(0));
+		});
 	}
 
 	[Test]
@@ -146,25 +153,28 @@ public class StockIndicatorsTest
 		};
 
 		//Act
-		var normalised = StockIndicator.Normalise(stocks).ToList();
+		var normalised = stocks.Normalise().ToList();
 		var actual1 = normalised[0];
 		var actual2 = normalised[1];
 		var actual3 = normalised[2];
 
 		//Assert
-		Assert.AreEqual(fun, actual1.Fun);
-		Assert.AreEqual(1, actual1.MarketCap);
-		Assert.AreEqual(1, actual1.StocksAmount);
-		Assert.AreEqual(1, actual1.Volatility);
+		Assert.Multiple(() =>
+		{
+			Assert.That(actual1.Fun, Is.EqualTo(fun));
+			Assert.That(actual1.MarketCap, Is.EqualTo(1));
+			Assert.That(actual1.StocksAmount, Is.EqualTo(1));
+			Assert.That(actual1.Volatility, Is.EqualTo(1));
 
-		Assert.AreEqual(2 * fun, actual2.Fun);
-		Assert.AreEqual(0.75, actual2.MarketCap);
-		Assert.AreEqual(0.25, actual2.StocksAmount);
-		Assert.AreEqual(0.75, actual2.Volatility);
+			Assert.That(actual2.Fun, Is.EqualTo(2 * fun));
+			Assert.That(actual2.MarketCap, Is.EqualTo(0.75));
+			Assert.That(actual2.StocksAmount, Is.EqualTo(0.25));
+			Assert.That(actual2.Volatility, Is.EqualTo(0.75));
 
-		Assert.AreEqual(3 * fun, actual3.Fun);
-		Assert.AreEqual(0, actual3.MarketCap);
-		Assert.AreEqual(0, actual3.StocksAmount);
-		Assert.AreEqual(0, actual3.Volatility);
+			Assert.That(actual3.Fun, Is.EqualTo(3 * fun));
+			Assert.That(actual3.MarketCap, Is.EqualTo(0));
+			Assert.That(actual3.StocksAmount, Is.EqualTo(0));
+			Assert.That(actual3.Volatility, Is.EqualTo(0));
+		});
 	}
 }

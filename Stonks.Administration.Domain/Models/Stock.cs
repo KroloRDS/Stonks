@@ -2,7 +2,5 @@
 
 public class Stock
 {
-	public const decimal DEFAULT_PRICE = 1M;
-
 	public Guid Id { get; set; }
 }

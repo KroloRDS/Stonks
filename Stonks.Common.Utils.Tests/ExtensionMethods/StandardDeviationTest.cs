@@ -11,13 +11,13 @@ public class StandardDeviationTest
     {
         IEnumerable<decimal> seq1 = null!;
         var seq2 = new List<decimal>();
-        var seq3 = new decimal[] { 1M };
+        var seq3 = new decimal[] { decimal.One };
 
         Assert.Multiple(() =>
         {
-            Assert.That(seq1.StandardDev(), Is.EqualTo(0M));
-            Assert.That(seq2.StandardDev(), Is.EqualTo(0M));
-            Assert.That(seq3.StandardDev(), Is.EqualTo(0M));
+            Assert.That(seq1.StandardDev(), Is.EqualTo(decimal.Zero));
+            Assert.That(seq2.StandardDev(), Is.EqualTo(decimal.Zero));
+            Assert.That(seq3.StandardDev(), Is.EqualTo(decimal.Zero));
         });
     }
 

@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Stonks.Common.Utils.ExtensionMethods;
 using Stonks.Common.Utils.Models;
+using Stonks.Common.Utils.Models.Constants;
 using Stonks.Common.Utils.Services;
 using Stonks.Trade.Application.DTOs;
 using Stonks.Trade.Domain.Models;
@@ -63,7 +64,8 @@ public class GetStocksHandler :
 		CancellationToken cancellationToken = default)
 	{
 		var volatility = GetVolatility(stockId, cancellationToken);
-		var price = await _price.Current(stockId);
+		var price = await _price.Current(stockId) ??
+			Constants.STOCK_DEFAULT_PRICE;
 		var marketCap = GetMarketCap(stockId, price, cancellationToken);
 		var publicallyOfferdShares = _offer.PublicallyOfferdAmount(
 			stockId, cancellationToken);

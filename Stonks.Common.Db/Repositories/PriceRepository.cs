@@ -5,7 +5,7 @@ namespace Stonks.Common.Db.Repositories;
 
 public interface IPriceRepository
 {
-	Task<AvgPrice> Current(Guid stockId,
+	Task<AvgPrice?> Current(Guid stockId,
 		CancellationToken cancellationToken = default);
 
 	IEnumerable<AvgPrice> Prices(Guid? stockId = null,
@@ -21,13 +21,13 @@ public class PriceRepository : IPriceRepository
 		_ctx = ctx;
 	}
 
-	public async Task<AvgPrice> Current(Guid stockId,
+	public async Task<AvgPrice?> Current(Guid stockId,
 		CancellationToken cancellationToken = default)
 	{
 		var price = await _ctx.AvgPrice
 			.Where(x => x.StockId == stockId)
 			.OrderByDescending(x => x.DateTime)
-			.FirstAsync(cancellationToken);
+			.FirstOrDefaultAsync(cancellationToken);
 		return price;
 	}
 
