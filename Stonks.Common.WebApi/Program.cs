@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Stonks.Administration.WebApi;
 using Stonks.Auth.WebApi;
 using Stonks.Common.Db;
+using Stonks.Common.Db.Repositories;
 using Stonks.Common.Utils.Models.Configuration;
 using Stonks.Common.Utils.Models.Constants;
 using Stonks.Common.Utils.Services;
@@ -18,21 +19,26 @@ static void AddServices(WebApplicationBuilder builder)
 	var services = builder.Services;
 	var jwtConfiguration = GetJwtConfiguration(builder);
 
-	AddDb(builder);
 	AddConfigurations(builder)
 		.AddSingleton(jwtConfiguration)
-		.AddScoped<ILogProvider, DbLogProvider>()
 		.AddSingleton<ICurrentTime, CurrentTime>()
-		.AddSingleton<IAuthService, AuthService>()
+		.AddScoped<ILogProvider, DbLogProvider>()
+		.AddScoped<IAuthService, AuthService>()
+		.AddScoped<IOfferRepository, OfferRepository>()
+		.AddScoped<IPriceRepository, PriceRepository>()
+		.AddScoped<IShareRepository, ShareRepository>()
+		.AddScoped<IStockRepository, StockRepository>()
+		.AddScoped<ITransactionRepository, TransactionRepository>()
 		.AddAdministrationEndpoints()
 		.AddAuthEndpoints(jwtConfiguration)
 		.AddTradeEndpoints();
+	AddDb(builder);
 }
 
 static JwtConfiguration GetJwtConfiguration(WebApplicationBuilder builder)
 {
 	var jwtConfiguration = builder.Configuration
-		.GetSection("JwtConfiguration")
+		.GetSection("JwtOptions")
 		.Get<JwtConfiguration>() ??
 		throw new Exception("Missing JwtConfiguration in appsettings.js");
 	jwtConfiguration.SigningKey =
@@ -83,7 +89,12 @@ static void ConfigureApp(WebApplication app)
 {
 	app.UseAdministrationEndpoints()
 		.UseAuthEndpoints()
-		.UseTradeEndpoints();
+		.UseTradeEndpoints()
+		.UseSwagger()
+		.UseSwaggerUI(x => {
+			x.RoutePrefix = string.Empty;
+			x.SwaggerEndpoint("/swagger/v1/swagger.json", "Stonks");
+		});
 
 	UpdateSchema(app);
 }

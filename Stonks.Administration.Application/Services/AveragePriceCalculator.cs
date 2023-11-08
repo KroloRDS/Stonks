@@ -3,7 +3,7 @@ using Stonks.Common.Utils.Models.Constants;
 
 namespace Stonks.Administration.Application.Services;
 
-public class AveragePriceCalculator
+public static class AveragePriceCalculator
 {
 	public static (decimal, ulong) FromTransactions(
 		IEnumerable<Transaction> transactions, AvgPrice? currentPrice)

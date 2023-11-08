@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Stonks.Administration.Application.IoC;
 using Stonks.Administration.Application.Requests;
@@ -16,6 +17,7 @@ public static class AdministrationEndpoints
 		this IServiceCollection services)
 	{
 		services.AddAdministrationModule()
+			.AddEndpointsApiExplorer()
 			.AddSwaggerGen();
 
 		return services;
@@ -24,17 +26,18 @@ public static class AdministrationEndpoints
 	public static IApplicationBuilder UseAdministrationEndpoints(
 		this IApplicationBuilder app)
 	{
-		app.UseEndpoints(app =>
-		{
-			app.MapGet("admin/battleRoyale", BattleRoyale);
-			app.MapGet("admin/updatePrices", UpdatePrices);
-		});
+		app.UseRouting()
+			.UseEndpoints(app =>
+			{
+				app.MapGet("admin/battleRoyale", BattleRoyale);
+				app.MapGet("admin/updatePrices", UpdatePrices);
+			});
 
 		return app;
 	}
 
 	private static async Task<IResult> BattleRoyale(ISender sender,
-		IAuthService auth, HttpContext ctx, string? token)
+		IAuthService auth, HttpContext ctx, [FromQuery] string? token)
 	{
 		if (!await IsAdmin(ctx, auth, token))
 			return TypedResults.Unauthorized();
@@ -44,7 +47,7 @@ public static class AdministrationEndpoints
 	}
 
 	private static async Task<IResult> UpdatePrices(ISender sender,
-		IAuthService auth, HttpContext ctx, string? token)
+		IAuthService auth, HttpContext ctx, [FromQuery] string? token)
 	{
 		if (!await IsAdmin(ctx, auth, token))
 			return TypedResults.Unauthorized();

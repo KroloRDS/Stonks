@@ -19,6 +19,7 @@ public static class AuthEndpoints
 		this IServiceCollection services, JwtConfiguration jwtConfiguration)
 	{
 		services.AddAuthModule()
+			.AddEndpointsApiExplorer()
 			.AddSwaggerGen()
 			.AddJwtAuth(jwtConfiguration);
 
@@ -52,11 +53,12 @@ public static class AuthEndpoints
 	public static IApplicationBuilder UseAuthEndpoints(
 		this IApplicationBuilder app)
 	{
-		app.UseEndpoints(app =>
-		{
-			app.MapPost("auth/login", Login);
-			app.MapPost("auth/register", Register);
-		});
+		app.UseRouting()
+			.UseEndpoints(app =>
+			{
+				app.MapPost("auth/login", Login);
+				app.MapPost("auth/register", Register);
+			});
 
 		return app;
 	}

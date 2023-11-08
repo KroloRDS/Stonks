@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Stonks.Trade.Application.Services;
 using Stonks.Trade.Db;
+using Stonks.Trade.Db.AutoMapper;
 using Stonks.Trade.Db.Repositories;
 using Stonks.Trade.Domain.Repositories;
 using System.Reflection;
@@ -15,8 +16,10 @@ public static class TradeModuleServices
 		var assembly = Assembly.GetExecutingAssembly();
 
 		services.AddMediatR(a => a.RegisterServicesFromAssemblies(assembly))
+			.AddAutoMapper()
 			.AddScoped<IOfferService, OfferService>()
 			.AddScoped<IShareService, ShareService>()
+			.AddScoped<IUserService, UserService>()
 			.AddScoped<IDbWriter, DbWriter>()
 			.AddScoped<IOfferRepository, OfferRepository>()
 			.AddScoped<IPriceRepository, PriceRepository>()

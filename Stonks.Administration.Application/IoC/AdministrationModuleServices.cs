@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Stonks.Administration.Application.Services;
 using Stonks.Administration.Db;
+using Stonks.Administration.Db.AutoMapper;
 using Stonks.Administration.Db.Repositories;
 using Stonks.Administration.Domain.Repositories;
 using System.Reflection;
@@ -15,6 +16,7 @@ public static class AdministrationModuleServices
 		var assembly = Assembly.GetExecutingAssembly();
 
 		services.AddMediatR(a => a.RegisterServicesFromAssemblies(assembly))
+			.AddAutoMapper()
 			.AddScoped<IStockEvaluator, StockEvaluator>()
 			.AddScoped<IDbWriter, DbWriter>()
 			.AddScoped<IOfferRepository, OfferRepository>()

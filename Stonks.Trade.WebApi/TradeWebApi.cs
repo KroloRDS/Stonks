@@ -17,6 +17,7 @@ public static class TradeWebApi
 		this IServiceCollection services)
 	{
 		services.AddTradeModule()
+			.AddEndpointsApiExplorer()
 			.AddSwaggerGen();
 
 		return services;
@@ -25,19 +26,23 @@ public static class TradeWebApi
 	public static IApplicationBuilder UseTradeEndpoints(
 		this IApplicationBuilder app)
 	{
-		app.UseEndpoints(app =>
-		{
-			app.MapDelete("trade/cancelOffer", CancelOffer);
-			app.MapGet("trade/stocks", GetStocks);
-			app.MapGet("trade/userOffers", GetUserOffers);
-			app.MapPost("trade/placeOffer", PlaceOffer);
-		});
+		app.UseRouting()
+			.UseEndpoints(app =>
+			{
+				app.MapDelete("trade/cancelOffer", CancelOffer);
+				app.MapGet("trade/stocks", GetStocks);
+				app.MapGet("trade/userOffers", GetUserOffers);
+				app.MapPost("trade/placeOffer", PlaceOffer);
+			});
 
 		return app;
 	}
 
 	private static async Task<IResult> CancelOffer(ISender sender,
-		IAuthService auth, Guid offerId, HttpContext ctx, string? token)
+		IAuthService auth,
+		Guid offerId,
+		HttpContext ctx,
+		[FromQuery] string? token)
 	{
 		var userId = await GetUserId(ctx, auth, token);
 		if (!userId.HasValue) return TypedResults.Unauthorized();
@@ -53,7 +58,7 @@ public static class TradeWebApi
 	}
 
 	private static async Task<IResult> GetUserOffers(ISender sender,
-		IAuthService auth, HttpContext ctx, string? token)
+		IAuthService auth, HttpContext ctx, [FromQuery] string? token)
 	{
 		var userId = await GetUserId(ctx, auth, token);
 		if (!userId.HasValue) return TypedResults.Unauthorized();
@@ -64,11 +69,10 @@ public static class TradeWebApi
 
 	private static async Task<IResult> PlaceOffer(ISender sender,
 		IAuthService auth,
-		[FromBody] PlaceOffer request,
 		HttpContext ctx,
-		[FromBody] string? token)
+		[FromBody] PlaceOffer request)
 	{
-		var userId = await GetUserId(ctx, auth, token);
+		var userId = await GetUserId(ctx, auth);
 		if (!userId.HasValue) return TypedResults.Unauthorized();
 
 		request.WriterId = userId.Value;

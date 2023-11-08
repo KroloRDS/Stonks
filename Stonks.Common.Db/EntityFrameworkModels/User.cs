@@ -17,11 +17,5 @@ public class User : HasId
 	[Required]
 	public short Salt { get; set; }
 
-	public IEnumerable<Role> Roles { get; set; } = Enumerable.Empty<Role>();
-}
-
-public enum Role
-{
-	Trader,
-	Admin
+	public string Roles { get; set; } = string.Empty;
 }

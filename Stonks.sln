@@ -30,7 +30,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stonks.Trade.Tests", "Stonk
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stonks.Common.Db", "Stonks.Common.Db\Stonks.Common.Db.csproj", "{8EA2E9CB-B775-401D-B17E-799128DC88B9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stonks.Common.WebApi", "Stonks.Common.Start\Stonks.Common.WebApi.csproj", "{5ABF0CC2-C411-46FB-A589-9266E93BD619}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stonks.Common.WebApi", "Stonks.Common.WebApi\Stonks.Common.WebApi.csproj", "{5ABF0CC2-C411-46FB-A589-9266E93BD619}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stonks.Common.Utils", "Stonks.Common.Utils\Stonks.Common.Utils.csproj", "{6C57FD79-2C65-46CA-A44D-537644626433}"
 EndProject

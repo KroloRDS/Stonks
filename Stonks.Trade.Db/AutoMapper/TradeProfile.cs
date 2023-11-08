@@ -4,9 +4,9 @@ using EF = Stonks.Common.Db.EntityFrameworkModels;
 
 namespace Stonks.Administration.Db;
 
-public class MapperProfile : Profile
+public class TradeProfile : Profile
 {
-	public MapperProfile()
+	public TradeProfile()
 	{
 		CreateMap<EF.AvgPrice, AvgPrice>();
 		CreateMap<EF.Stock, Stock>();

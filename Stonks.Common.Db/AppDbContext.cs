@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Stonks.Common.Db.EntityFrameworkModels;
 using Stonks.Common.Utils.Models.Constants;
 
