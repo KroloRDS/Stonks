@@ -37,9 +37,9 @@ public static class TradeWebApi
 	}
 
 	private static async Task<IResult> CancelOffer(ISender sender,
-		IAuthService auth, Guid offerId, HttpContext ctx)
+		IAuthService auth, Guid offerId, HttpContext ctx, string? token)
 	{
-		var userId = await GetUserId(ctx, auth);
+		var userId = await GetUserId(ctx, auth, token);
 		if (!userId.HasValue) return TypedResults.Unauthorized();
 
 		var response = await sender.Send(new CancelOffer(userId.Value, offerId));
@@ -52,10 +52,10 @@ public static class TradeWebApi
 		return response.ToHttpResult();
 	}
 
-	private static async Task<IResult> GetUserOffers(
-		ISender sender, IAuthService auth, HttpContext ctx)
+	private static async Task<IResult> GetUserOffers(ISender sender,
+		IAuthService auth, HttpContext ctx, string? token)
 	{
-		var userId = await GetUserId(ctx, auth);
+		var userId = await GetUserId(ctx, auth, token);
 		if (!userId.HasValue) return TypedResults.Unauthorized();
 
 		var response = await sender.Send(new GetUserOffers(userId.Value));
@@ -63,9 +63,12 @@ public static class TradeWebApi
 	}
 
 	private static async Task<IResult> PlaceOffer(ISender sender,
-		IAuthService auth, [FromBody] PlaceOffer request, HttpContext ctx)
+		IAuthService auth,
+		[FromBody] PlaceOffer request,
+		HttpContext ctx,
+		[FromBody] string? token)
 	{
-		var userId = await GetUserId(ctx, auth);
+		var userId = await GetUserId(ctx, auth, token);
 		if (!userId.HasValue) return TypedResults.Unauthorized();
 
 		request.WriterId = userId.Value;
@@ -73,10 +76,10 @@ public static class TradeWebApi
 		return response.ToHttpResult();
 	}
 
-	private static async Task<Guid?> GetUserId(
-		HttpContext ctx, IAuthService auth)
+	private static async Task<Guid?> GetUserId(HttpContext ctx,
+		IAuthService auth, string? tokenParam = null)
 	{
-		var token = await ctx.GetTokenAsync("access_token");
+		var token = await ctx.GetTokenAsync("access_token") ?? tokenParam;
 		(var id, _) = auth.ReadToken(token);
 		return id;
 	}
