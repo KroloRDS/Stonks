@@ -35,4 +35,4 @@ steps:
   displayName: Deploy
   inputs:
     targetType: inline
-    script: docker run -d -e DB_SERVER='$(DB_SERVER)' -e DB_PASSWORD='$(DB_PASSWORD)' -p 8001:80 --name $(repoName) $(repoName)
+    script: docker run -d -e DB_SERVER='$(DB_SERVER)' -e DB_PASSWORD='$(DB_PASSWORD)' -e JWT_SIGNING_KEY='$(JWT_SIGNING_KEY)' -p 8001:80 --name $(repoName) $(repoName)
