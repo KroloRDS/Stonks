@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MediatR" Version="12.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Stonks.Auth.Db\Stonks.Auth.Db.csproj" />
+    <ProjectReference Include="..\Stonks.Auth.Domain\Stonks.Auth.Domain.csproj" />
+    <ProjectReference Include="..\Stonks.Common.Utils\Stonks.Common.Utils.csproj" />
+  </ItemGroup>
+
+</Project>
