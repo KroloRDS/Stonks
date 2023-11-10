@@ -17,6 +17,8 @@ public class AuthProfile : Profile
 	}
 
 	private static IEnumerable<Role> FromComaSeparatedString(string roles) =>
+		string.IsNullOrWhiteSpace(roles) ?
+		Enumerable.Empty<Role>() :
 		roles.Split(new[] { ',' }).Select(x => (Role)int.Parse(x));
 
 	private static string FromEnum(IEnumerable<Role> roles) =>
