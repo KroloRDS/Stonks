@@ -15,13 +15,10 @@ public class Log
 
 	public DateTime Timestamp { get; set; }
 
-	[MaxLength(150)]
 	public string? ClassName { get; set; }
 
-	[MaxLength(150)]
 	public string? Message { get; set; }
 
-	[MaxLength(9999)]
 	public string? ObjectDump { get; set; }
 
 	public string? Exception { get; set; }
